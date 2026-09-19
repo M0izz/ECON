@@ -67,7 +67,7 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, onNavig
 
           <div className="story-tree-container">
             <div className="tree-root-node">
-              <div className="root-avatar">🤖</div>
+              <div className="root-avatar font-mono font-bold text-xs text-[#CFFF3D]">AG42</div>
               <div className="root-details">
                 <strong>ResearchAgent-42</strong>
                 <span className="font-mono text-muted">ID: agent_research_01 · Treasury: 25.0 MON · Credit: 98</span>
@@ -134,28 +134,28 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, onNavig
       {/* Operational Quick Launcher */}
       <div className="overview-quick-grid">
         <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENTS')}>
-          <div className="q-icon">🪪</div>
+          <div className="q-icon font-mono font-bold text-xs text-[#CFFF3D]">ID</div>
           <h4>Sovereign Agents</h4>
           <p>{agents.length} active ERC-8004 agents with verified passports and credit scores.</p>
           <span className="q-link">View Agents ➔</span>
         </div>
 
         <div className="econ-card econ-card-interactive" onClick={() => onNavigate('RECOVERY')}>
-          <div className="q-icon">♻️</div>
+          <div className="q-icon font-mono font-bold text-xs text-[#FF8FA3]">↻</div>
           <h4>Recovery Engine</h4>
           <p>{plans.length} reclamation opportunities scanned by quantitative EV analysis.</p>
           <span className="q-link">Open GC Engine ➔</span>
         </div>
 
         <div className="econ-card econ-card-interactive" onClick={() => onNavigate('POLICIES')}>
-          <div className="q-icon">🛡️</div>
+          <div className="q-icon font-mono font-bold text-xs text-white/70">⬡</div>
           <h4>Policy Guard</h4>
           <p>Deterministic spend caps, velocity limits, and counterparty whitelists.</p>
           <span className="q-link">Configure Policies ➔</span>
         </div>
 
         <div className="econ-card econ-card-interactive" onClick={() => onNavigate('SIMULATION')}>
-          <div className="q-icon">▶️</div>
+          <div className="q-icon font-mono font-bold text-xs text-white/70">▸</div>
           <h4>Simulation Loop</h4>
           <p>Execute deterministic 10-step autonomous economic scenario.</p>
           <span className="q-link">Run Simulation ➔</span>

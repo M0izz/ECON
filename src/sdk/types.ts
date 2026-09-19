@@ -8,6 +8,7 @@ export type ObjectId = string;
 export type TransactionId = string;
 export type EscrowId = string;
 export type RecoveryId = string;
+export type ObligationId = string;
 
 export type ObjectType =
   | 'GPU_COMPUTE_CREDIT'
@@ -100,6 +101,35 @@ export interface Agent {
   modelProvider?: ModelProvider;
   capabilities?: AgentCapabilities;
   autonomyLevel?: AutonomyLevel;
+}
+
+export type EconomicAgent = Agent;
+
+export type ObligationType =
+  | 'ESCROW_PAYMENT'
+  | 'SUBSCRIPTION_RENEWAL'
+  | 'COMPUTE_DEBT'
+  | 'SERVICE_AGREEMENT';
+
+export type ObligationStatus =
+  | 'PENDING'
+  | 'DUE'
+  | 'FULFILLED'
+  | 'OVERDUE'
+  | 'CANCELLED';
+
+export interface Obligation {
+  id: ObligationId;
+  debtor: AgentId;
+  creditor: AgentId;
+  amountMon: number;
+  type: ObligationType;
+  status: ObligationStatus;
+  dueTimestamp: number;
+  createdAt: number;
+  description: string;
+  referenceId?: string; // e.g. escrowId or contractId
+  fulfilledAt?: number;
 }
 
 export type EscrowStatus =
@@ -196,7 +226,10 @@ export type ECONEventType =
   | 'RECOVERY_PROPOSED'
   | 'RECOVERY_EXECUTED'
   | 'POLICY_BLOCKED'
-  | 'POLICY_UPDATED';
+  | 'POLICY_UPDATED'
+  | 'OBLIGATION_CREATED'
+  | 'OBLIGATION_FULFILLED'
+  | 'OBLIGATION_CANCELLED';
 
 export interface ECONEvent {
   id: string;

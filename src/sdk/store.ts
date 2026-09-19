@@ -10,6 +10,8 @@ import {
   EscrowId,
   RecoveryPlan,
   RecoveryId,
+  Obligation,
+  ObligationId,
   SettlementMode,
 } from './types';
 
@@ -20,6 +22,7 @@ export interface ProtocolState {
   transactions: Map<TransactionId, Transaction>;
   escrows: Map<EscrowId, EscrowRecord>;
   recoveryPlans: Map<RecoveryId, RecoveryPlan>;
+  obligations: Map<ObligationId, Obligation>;
 }
 
 export interface DerivedState {
@@ -47,6 +50,7 @@ export class EconomicStore {
       transactions: new Map(),
       escrows: new Map(),
       recoveryPlans: new Map(),
+      obligations: new Map(),
     };
   }
 
@@ -178,6 +182,64 @@ export class EconomicStore {
     this.notify();
   }
 
+  // Obligations
+  public getObligation(id: ObligationId): Obligation | undefined {
+    return this.state.obligations.get(id);
+  }
+
+  public getAllObligations(): Obligation[] {
+    return Array.from(this.state.obligations.values()).sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  public getObligationsByDebtor(debtor: AgentId): Obligation[] {
+    return Array.from(this.state.obligations.values()).filter((o) => o.debtor === debtor);
+  }
+
+  public getObligationsByCreditor(creditor: AgentId): Obligation[] {
+    return Array.from(this.state.obligations.values()).filter((o) => o.creditor === creditor);
+  }
+
+  public setObligation(obligation: Obligation): void {
+    this.state.obligations.set(obligation.id, { ...obligation });
+    // Update debtor active obligations summary count
+    const agent = this.state.agents.get(obligation.debtor);
+    if (agent && (obligation.status === 'PENDING' || obligation.status === 'DUE')) {
+      const activeMon = this.getObligationsByDebtor(obligation.debtor)
+        .filter((o) => o.status === 'PENDING' || o.status === 'DUE')
+        .reduce((sum, o) => sum + o.amountMon, 0);
+      agent.activeObligations = activeMon;
+    }
+    this.notify();
+  }
+
+  public updateObligationStatus(
+    id: ObligationId,
+    status: Obligation['status'],
+    partialUpdates?: Partial<Obligation>
+  ): boolean {
+    const ob = this.state.obligations.get(id);
+    if (!ob) return false;
+    const updated: Obligation = {
+      ...ob,
+      ...partialUpdates,
+      status,
+      fulfilledAt: status === 'FULFILLED' ? Date.now() : ob.fulfilledAt,
+    };
+    this.state.obligations.set(id, updated);
+
+    // Refresh agent active obligations
+    const agent = this.state.agents.get(ob.debtor);
+    if (agent) {
+      const activeMon = this.getObligationsByDebtor(ob.debtor)
+        .filter((o) => o.status === 'PENDING' || o.status === 'DUE')
+        .reduce((sum, o) => sum + o.amountMon, 0);
+      agent.activeObligations = activeMon;
+    }
+
+    this.notify();
+    return true;
+  }
+
   // Derived State Aggregations
   public getDerivedState(): DerivedState {
     const agents = this.getAllAgents();
@@ -185,6 +247,7 @@ export class EconomicStore {
     const transactions = this.getAllTransactions();
     const escrows = this.getAllEscrows();
     const recoveryPlans = this.getAllRecoveryPlans();
+    const obligations = this.getAllObligations();
 
     const totalTreasuryMon = agents.reduce((acc, a) => acc + a.balanceMon, 0);
     const totalCirculatingObjects = objects.filter((o) => o.status !== 'EXPIRED' && o.status !== 'LIQUIDATED').length;
@@ -196,9 +259,13 @@ export class EconomicStore {
       .filter((p) => p.status === 'EXECUTED')
       .reduce((acc, p) => acc + p.expectedRecoveryMon, 0);
 
-    const totalActiveObligationsMon = escrows
+    const escrowObligations = escrows
       .filter((e) => e.status === 'LOCKED' || e.status === 'DELIVERED' || e.status === 'VERIFIED')
       .reduce((acc, e) => acc + e.amountMon, 0);
+    const directObligations = obligations
+      .filter((o) => o.status === 'PENDING' || o.status === 'DUE')
+      .reduce((acc, o) => acc + o.amountMon, 0);
+    const totalActiveObligationsMon = escrowObligations + directObligations;
 
     const activeAgentsCount = agents.filter((a) => a.active).length;
     const completedTransactionsCount = transactions.filter((t) => t.status === 'SETTLED').length;
@@ -222,6 +289,7 @@ export class EconomicStore {
       transactions: new Map(),
       escrows: new Map(),
       recoveryPlans: new Map(),
+      obligations: new Map(),
     };
     this.notify();
   }

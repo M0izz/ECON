@@ -8,6 +8,9 @@ import { RecoveryEngine } from '../recovery';
 import { EventBus } from '../events';
 import { checkAgentCapability } from './capabilities';
 
+import { DiscoveryRegistry } from '../discovery';
+import { AgentTools, createAgentTools } from './tools';
+
 export interface ProposedAction {
   type: 'PURCHASE' | 'CREATE_ESCROW' | 'RECOVER_OBJECT';
   params: Record<string, any>;
@@ -25,6 +28,7 @@ export interface ActionResult {
 
 export class AgentRuntime {
   public readonly agentId: AgentId;
+  public readonly tools: AgentTools;
   private store: EconomicStore;
   private policy: PolicyEngine;
   private engine: EconomicEngine;
@@ -32,6 +36,7 @@ export class AgentRuntime {
   private gc: EconomicGarbageCollector;
   private recovery: RecoveryEngine;
   private events: EventBus;
+  private discovery?: DiscoveryRegistry;
 
   constructor(
     agentId: AgentId,
@@ -41,7 +46,8 @@ export class AgentRuntime {
     escrow: EscrowManager,
     gc: EconomicGarbageCollector,
     recovery: RecoveryEngine,
-    events: EventBus
+    events: EventBus,
+    discovery?: DiscoveryRegistry
   ) {
     this.agentId = agentId;
     this.store = store;
@@ -51,12 +57,68 @@ export class AgentRuntime {
     this.gc = gc;
     this.recovery = recovery;
     this.events = events;
+    this.discovery = discovery;
+
+    this.tools = createAgentTools(
+      this.agentId,
+      this.store,
+      this.policy,
+      this.engine,
+      this.escrow,
+      this.gc,
+      this.recovery,
+      this.discovery
+    );
   }
 
   public getAgent(): Agent {
     const agent = this.store.getAgent(this.agentId);
     if (!agent) throw new Error(`Agent ${this.agentId} not found in store`);
     return agent;
+  }
+
+  /**
+   * Universal tool execution dispatcher (used by MCP and autonomous loops)
+   */
+  public async executeTool(toolName: string, params: Record<string, any> = {}): Promise<any> {
+    switch (toolName) {
+      case 'discover':
+        return this.tools.discover(params);
+      case 'quote':
+        return this.tools.quote(params as any);
+      case 'buy':
+        return this.tools.buy(params as any);
+      case 'sell':
+        return this.tools.sell(params as any);
+      case 'exchange':
+        return this.tools.exchange(params as any);
+      case 'createEscrow':
+      case 'create_escrow':
+        return this.tools.createEscrow(params as any);
+      case 'checkBalance':
+      case 'check_balance':
+        return this.tools.checkBalance(params);
+      case 'listAssets':
+      case 'list_assets':
+        return this.tools.listAssets(params);
+      case 'listObligations':
+      case 'list_obligations':
+        return this.tools.listObligations(params);
+      case 'scanRecovery':
+      case 'scan_recovery':
+        return this.tools.scanRecovery(params);
+      case 'requestRecovery':
+      case 'request_recovery':
+        return this.tools.requestRecovery(params as any);
+      case 'getTransaction':
+      case 'get_transaction':
+        return this.tools.getTransaction(params as any);
+      case 'getReputation':
+      case 'get_reputation':
+        return this.tools.getReputation(params);
+      default:
+        throw new Error(`Unrecognized economic tool: ${toolName}`);
+    }
   }
 
   /**

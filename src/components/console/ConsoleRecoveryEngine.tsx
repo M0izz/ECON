@@ -112,7 +112,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
               className="econ-btn econ-btn-primary econ-btn-sm"
               onClick={onTriggerScan}
             >
-              <span>♻️ Run GC Scan</span>
+              <span>Scan Residuals ↻</span>
             </button>
           </div>
         </div>
@@ -157,7 +157,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
 
             <div className="showcase-action-footer">
               <div className="safety-badge">
-                <span>🛡️ Policy Validation Mandatory</span>
+                <span className="font-mono text-[11px] text-[#CFFF3D]">✓ Policy Validation Mandatory</span>
               </div>
               <button
                 className="econ-btn econ-btn-primary econ-btn-lg"
@@ -293,7 +293,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
                   </div>
 
                   <div className="safety-warning-banner">
-                    <span className="warn-icon">ℹ️</span>
+                    <span className="warn-icon font-mono font-bold text-xs">[INFO]</span>
                     <span>
                       Transactions are never executed blindly. Clicking below evaluates the proposal against the
                       agent's deterministic Policy Guard.

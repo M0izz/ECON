@@ -110,7 +110,8 @@ export class ECON {
       this.escrow,
       this.gc,
       this.recovery,
-      this.events
+      this.events,
+      this.discovery
     );
   }
 

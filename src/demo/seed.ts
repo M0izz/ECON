@@ -261,3 +261,5 @@ export function initializeDemoSeed(econ: ECON): void {
     details: { totalAgents: 5, initialTreasury: 995.5 },
   });
 }
+
+export const seedInitialNetworkState = initializeDemoSeed;

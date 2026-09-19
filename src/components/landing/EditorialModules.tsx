@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { EconomicStore } from '../../sdk/store';
+import { PolicySimulator } from '../interactive/PolicySimulator';
+import { RecoveryVisualizer } from '../interactive/RecoveryVisualizer';
+import { AgentRuntimeDemo } from '../interactive/AgentRuntimeDemo';
+import { MonadSettlementVisualizer } from '../interactive/MonadSettlementVisualizer';
 
 interface EditorialModulesProps {
   store: EconomicStore;
@@ -7,337 +11,162 @@ interface EditorialModulesProps {
 }
 
 export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnterConsole }) => {
-  const [codeTab, setCodeTab] = useState<'TS' | 'PY'>('TS');
   const derived = store.getDerivedState();
-  const agents = store.getAllAgents();
-  const objects = store.getAllObjects();
 
   return (
-    <div className="editorial-narrative-flow">
-      {/* ACT 04: ECONOMIC NETWORK (HIGH-ENERGY LIME SECTION) */}
-      <section className="act-lime-section">
-        <div className="act-inner-content text-ink">
-          <span className="econ-eyebrow ink">// 04 ECONOMIC NETWORK</span>
-          <h2 className="econ-title-xl text-ink">
-            AGENTS SHOULDN'T OPERATE IN ISOLATION.
+    <div className="w-full space-y-24 py-12">
+      {/* SECTION: COUNTERPARTY DISCOVERY & POLICY */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-left">
+        <div className="max-w-3xl mb-8">
+          <div className="font-mono text-xs tracking-wider text-[#CFFF3D] uppercase font-semibold mb-2">
+            CONTROLLED AUTHORITY
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-tight">
+            Deterministic Spending Boundaries.
           </h2>
-          <p className="econ-lead-text text-ink-muted">
-            The next generation of AI services won't just generate text; they will procure GPU compute,
-            buy high-frequency market data, and settle multi-party agreements without human latency.
+          <p className="text-base text-white/70 mt-3 leading-relaxed">
+            AI proposes transactions; ECON Policy decides. Every attempted transaction is validated against
+            agent velocity limits, minimum reserve balances, and category whitelists prior to settlement.
           </p>
+        </div>
 
-          {/* Network Flow: Discover -> Compare -> Negotiate -> Transact -> Settle */}
-          <div className="network-stages-grid">
-            <div className="net-stage-card">
-              <span className="net-step-tag">STEP 01</span>
-              <h4>DISCOVER</h4>
-              <p>Query the decentralized capability registry for verified agents with matching SLA and pricing.</p>
+        <PolicySimulator />
+      </section>
+
+      {/* SECTION: SETTLEMENT ON MONAD */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-left">
+        <div className="max-w-3xl mb-8">
+          <div className="font-mono text-xs tracking-wider text-[#CFFF3D] uppercase font-semibold mb-2">
+            SETTLEMENT FABRIC
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-tight">
+            Built for Autonomous Economies. Settled on Monad.
+          </h2>
+          <p className="text-base text-white/70 mt-3 leading-relaxed">
+            Sequential blockchains choke when swarms of autonomous agents execute high-frequency micropayments.
+            ECON routes transactions to Monad's 10,000 TPS parallel EVM for sub-second atomic finality.
+          </p>
+        </div>
+
+        <MonadSettlementVisualizer />
+      </section>
+
+      {/* SECTION: SIGNATURE HERO FEATURE — THE ECONOMIC GARBAGE COLLECTOR */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-left">
+        <div className="max-w-4xl mb-8">
+          <div className="font-mono text-xs tracking-wider text-[#FF8FA3] uppercase font-semibold mb-2">
+            VALUE RECOVERY
+          </div>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-tight">
+            What happens to value{' '}
+            <span className="text-[#FF8FA3]">an agent stops using?</span>
+          </h2>
+          <p className="text-base sm:text-lg text-white/70 mt-4 leading-relaxed max-w-2xl font-sans">
+            In standard smart contracts, abandoned deposits, expired API quotas, and forgotten escrows sit stranded forever.
+            ECON's Economic Garbage Collector finds stranded resources and determines whether they should be retained,
+            transferred, sold, or refunded.
+          </p>
+        </div>
+
+        <RecoveryVisualizer />
+      </section>
+
+      {/* SECTION: LIVE NORMALIZED PROTOCOL STATE */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-left">
+        <div className="p-8 md:p-10 rounded-2xl bg-[#062A3B]/40 backdrop-blur-xl border border-white/10">
+          <div className="max-w-2xl mb-8">
+            <div className="font-mono text-xs tracking-wider text-[#CFFF3D] uppercase font-semibold mb-2">
+              NORMALIZED PROTOCOL STATE
             </div>
-            <div className="net-stage-card">
-              <span className="net-step-tag">STEP 02</span>
-              <h4>COMPARE</h4>
-              <p>Evaluate counterparties using verifiable on-chain credit scores, default history, and past volume.</p>
-            </div>
-            <div className="net-stage-card">
-              <span className="net-step-tag">STEP 03</span>
-              <h4>NEGOTIATE</h4>
-              <p>Propose programmatic deal terms, collateral requirements, and execution deadlines.</p>
-            </div>
-            <div className="net-stage-card">
-              <span className="net-step-tag">STEP 04</span>
-              <h4>TRANSACT</h4>
-              <p>Lock funds into non-custodial conditional escrow vaults guarded by the policy engine.</p>
-            </div>
-            <div className="net-stage-card net-stage-highlight">
-              <span className="net-step-tag tag-dark">STEP 05</span>
-              <h4>SETTLE</h4>
-              <p>400ms atomic release upon cryptographic verification of delivered work on Monad.</p>
-            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight uppercase">
+              Verifiable Network Ledger
+            </h3>
+            <p className="text-xs sm:text-sm text-white/60 mt-1">
+              Projected directly from econ.store state engine. Zero synthetic ticker claims.
+            </p>
           </div>
 
-          <div className="lime-cta-bar">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+            <div className="p-5 rounded-xl bg-[#03141D] border border-white/10">
+              <span className="text-[11px] text-white/40 block">TOTAL TREASURY</span>
+              <span className="text-xl md:text-2xl font-bold text-white mt-1 block">
+                {derived.totalTreasuryMon.toFixed(2)} MON
+              </span>
+              <span className="text-[10px] text-white/50 mt-1 block">Non-custodial agent vaults</span>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#03141D] border border-white/10">
+              <span className="text-[11px] text-white/40 block">ACTIVE AGENTS</span>
+              <span className="text-xl md:text-2xl font-bold text-[#CFFF3D] mt-1 block">
+                {derived.activeAgentsCount} Sovereign
+              </span>
+              <span className="text-[10px] text-white/50 mt-1 block">ERC-8004 Registry</span>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#03141D] border border-white/10">
+              <span className="text-[11px] text-white/40 block">ECONOMIC OBJECTS</span>
+              <span className="text-xl md:text-2xl font-bold text-white mt-1 block">
+                {derived.totalCirculatingObjects} Units
+              </span>
+              <span className="text-[10px] text-white/50 mt-1 block">Compute, API, Escrow</span>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#03141D] border border-[#FF8FA3]/20">
+              <span className="text-[11px] text-white/40 block">CAPITAL RECLAIMED</span>
+              <span className="text-xl md:text-2xl font-bold text-[#FF8FA3] mt-1 block">
+                +{derived.totalRecoveredValueMon.toFixed(2)} MON
+              </span>
+              <span className="text-[10px] text-white/50 mt-1 block">Autonomous GC Engine</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION: LIVE SDK RUNTIME DEMO */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-left">
+        <div className="max-w-3xl mb-8">
+          <div className="font-mono text-xs tracking-wider text-[#CFFF3D] uppercase font-semibold mb-2">
+            DEVELOPER INTEGRATION
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase leading-tight">
+            Give Your Agents an Economy.
+          </h2>
+          <p className="text-base text-white/70 mt-3 leading-relaxed">
+            Integrate ECON into existing autonomous agent runtimes in minutes.
+            Watch code execution drive sovereign identity, escrow locks, and value recovery in real-time.
+          </p>
+        </div>
+
+        <AgentRuntimeDemo />
+      </section>
+
+      {/* FINAL CALL TO ACTION */}
+      <section className="w-full max-w-7xl mx-auto px-6 md:px-12 text-center pt-8 pb-16">
+        <div className="p-12 md:p-16 rounded-3xl bg-gradient-to-b from-[#062A3B] to-[#03141D] border border-white/10 flex flex-col items-center">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight uppercase max-w-3xl leading-[1.05]">
+            Deploy an Autonomous Economic Agent.
+          </h2>
+          <p className="text-base text-white/70 max-w-xl mt-4 leading-relaxed font-sans">
+            Connect to Monad Testnet or run deterministic local simulations.
+            Begin building self-sustaining autonomous economies today.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
             <button
-              className="econ-btn econ-btn-primary econ-btn-lg"
-              onClick={() => onEnterConsole('MARKETPLACE')}
-            >
-              <span>Explore Marketplace</span>
-              <span className="econ-btn-arrow">↗</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ACT 05: MONAD SETTLEMENT FABRIC (DARK INK SECTION) */}
-      <section className="act-dark-monad-section">
-        <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 05 SETTLEMENT FABRIC</span>
-          <h2 className="econ-title-xl text-white">
-            AN ECONOMY NEEDS SETTLEMENT.
-          </h2>
-          <p className="econ-lead-text text-light-muted">
-            Sequential EVM blockchains choke when autonomous agent swarms make hundreds of micro-transactions.
-            ECON routes transactions through an unyielding pipeline straight to Monad's parallel architecture.
-          </p>
-
-          {/* Settlement Pipeline Architecture */}
-          <div className="monad-pipeline-box">
-            <div className="pipe-node">
-              <div className="pipe-dot"></div>
-              <span className="pipe-label">ECON SDK</span>
-              <span className="pipe-detail">Autonomous Intent</span>
-            </div>
-            <div className="pipe-arrow">➔</div>
-            <div className="pipe-node pipe-node-lime">
-              <div className="pipe-dot lime"></div>
-              <span className="pipe-label">POLICY GATE</span>
-              <span className="pipe-detail">Velocity & Caps</span>
-            </div>
-            <div className="pipe-arrow">➔</div>
-            <div className="pipe-node">
-              <div className="pipe-dot"></div>
-              <span className="pipe-label">ESCROW VAULT</span>
-              <span className="pipe-detail">Conditional Lock</span>
-            </div>
-            <div className="pipe-arrow">➔</div>
-            <div className="pipe-node pipe-node-monad">
-              <div className="pipe-dot purple"></div>
-              <span className="pipe-label">MONAD PARALLEL</span>
-              <span className="pipe-detail">10,000 TPS · 400ms</span>
-            </div>
-            <div className="pipe-arrow">➔</div>
-            <div className="pipe-node">
-              <div className="pipe-dot"></div>
-              <span className="pipe-label">SETTLEMENT</span>
-              <span className="pipe-detail">Final Atomic State</span>
-            </div>
-          </div>
-
-          <div className="monad-metrics-row">
-            <div className="m-metric">
-              <span className="m-val">10,000</span>
-              <span className="m-lbl">TRANSACTIONS PER SECOND</span>
-            </div>
-            <div className="m-metric">
-              <span className="m-val">400ms</span>
-              <span className="m-lbl">BLOCK TIME TO FINALITY</span>
-            </div>
-            <div className="m-metric">
-              <span className="m-val">gas_limit</span>
-              <span className="m-lbl">DETERMINISTIC GAS PRICING</span>
-            </div>
-            <div className="m-metric">
-              <span className="m-val">10143</span>
-              <span className="m-lbl">MONAD TESTNET CHAIN ID</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ACT 06: SIGNATURE PRODUCT — THE CLIMAX (PINK / CREAM SECTION) */}
-      <section className="act-signature-recovery-section">
-        <div className="act-inner-content">
-          <span className="econ-eyebrow pink">// 06 SIGNATURE HERO FEATURE</span>
-          <h2 className="econ-display-hero recovery-climax-headline">
-            <span>WHAT HAPPENS TO VALUE</span>
-            <span className="text-accent-pink">AN AGENT STOPS USING?</span>
-          </h2>
-          <p className="econ-lead-text">
-            In standard smart contracts, abandoned deposits, expired API subscriptions, and forgotten escrows
-            sit stranded forever. ECON's <strong>Economic Garbage Collector</strong> actively sweeps dead state
-            and reclaims working capital.
-          </p>
-
-          {/* Standout Signature Card requested by user */}
-          <div className="signature-recovery-card">
-            <div className="sig-header">
-              <div>
-                <span className="sig-eyebrow">ECONOMIC GARBAGE COLLECTOR</span>
-                <h3 className="sig-title">STRANDED VALUE DETECTED</h3>
-              </div>
-              <div className="sig-value-tag">
-                {derived.totalStrandedValueMon.toFixed(2)} MON
-              </div>
-            </div>
-
-            <div className="sig-asset-row">
-              <div className="asset-meta">
-                <span className="asset-type">API CREDITS</span>
-                <span className="asset-detail">37 units · 82% unlikely to be used</span>
-              </div>
-              <span className="badge-opportunity">RECOVERY CANDIDATE</span>
-            </div>
-
-            <div className="sig-actions-breakdown">
-              <div className="action-row">
-                <span className="act-name">TRANSFER TO SENTINEL</span>
-                <span className="act-yield text-mint">+4.60 MON</span>
-              </div>
-              <div className="action-row">
-                <span className="act-name">SELL ON SECONDARY MARKET</span>
-                <span className="act-yield text-mint">+4.20 MON</span>
-              </div>
-              <div className="action-row">
-                <span className="act-name">RETAIN MINIMUM RESERVE</span>
-                <span className="act-yield text-muted">+1.80 MON</span>
-              </div>
-            </div>
-
-            <div className="sig-footer">
-              <div className="safety-note">
-                <span className="lock-icon">🔒</span>
-                <span>Requires Policy Engine Validation before execution.</span>
-              </div>
-              <button
-                className="econ-btn econ-btn-primary econ-btn-lg"
-                onClick={() => onEnterConsole('RECOVERY')}
-              >
-                <span>Review Recovery →</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ACT 07: LIVE ECONOMY (DATA & REAL STATE) */}
-      <section className="act-live-economy-section">
-        <div className="act-inner-content">
-          <span className="econ-eyebrow">// 07 VERIFIABLE ON-CHAIN STATE</span>
-          <h2 className="econ-title-xl">
-            LIVE ECONOMIC NETWORK METRICS.
-          </h2>
-          <p className="econ-lead-text">
-            Directly projected from the normalized ECON protocol state engine. Zero synthetic ticker data.
-          </p>
-
-          <div className="live-metrics-quad">
-            <div className="quad-cell">
-              <span className="cell-label">TOTAL CAPITAL ALLOCATED</span>
-              <span className="cell-number">{derived.totalTreasuryMon.toFixed(2)} MON</span>
-              <span className="cell-sub">NON-CUSTODIAL AGENT VAULTS</span>
-            </div>
-            <div className="quad-cell">
-              <span className="cell-label">SOVEREIGN AGENTS</span>
-              <span className="cell-number">{agents.length} AGENTS</span>
-              <span className="cell-sub">ERC-8004 STANDARD</span>
-            </div>
-            <div className="quad-cell">
-              <span className="cell-label">ECONOMIC OBJECTS</span>
-              <span className="cell-number">{objects.length} OBJECTS</span>
-              <span className="cell-sub">ESCROWS & COMMITMENTS</span>
-            </div>
-            <div className="quad-cell highlight-pink">
-              <span className="cell-label">VALUE RECOVERED</span>
-              <span className="cell-number text-accent-pink">+{derived.totalRecoveredValueMon.toFixed(2)} MON</span>
-              <span className="cell-sub">AUTONOMOUS GC ENGINE</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ACT 08: BUILD (DUAL-PATH SDK & FINAL CTA) */}
-      <section className="act-build-section">
-        <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 08 DEVELOPER INTEGRATION</span>
-          <h2 className="econ-title-xl text-white">
-            GIVE YOUR AGENTS AN ECONOMY.
-          </h2>
-          <p className="econ-lead-text text-light-muted">
-            Integrate sovereign balance sheets, spend velocity limits, and automated recovery
-            into your autonomous agents with three lines of code.
-          </p>
-
-          <div className="build-code-container">
-            <div className="code-header">
-              <div className="code-tabs">
-                <button
-                  className={`code-tab-btn ${codeTab === 'TS' ? 'active' : ''}`}
-                  onClick={() => setCodeTab('TS')}
-                >
-                  TypeScript (@econ/sdk)
-                </button>
-                <button
-                  className={`code-tab-btn ${codeTab === 'PY' ? 'active' : ''}`}
-                  onClick={() => setCodeTab('PY')}
-                >
-                  Python (econ-sdk)
-                </button>
-              </div>
-              <span className="code-tag">MONAD TESTNET READY</span>
-            </div>
-
-            <pre className="code-body">
-{codeTab === 'TS' ? (
-`// npm install @econ/sdk
-import { EconClient } from '@econ/sdk';
-
-const econ = new EconClient({
-  network: 'monad-testnet',
-  rpcUrl: 'https://testnet-rpc.monad.xyz',
-  chainId: 10143
-});
-
-// 1. Attach Sovereign Economic Identity (ERC-8004)
-const agent = await econ.identity.register({
-  name: 'TradingAgent-Alpha',
-  capabilities: ['arbitrage', 'liquidity_provision'],
-  initialTreasuryMon: 50.0,
-  policy: {
-    maxTransactionMon: 15.0,
-    dailySpendLimitMon: 60.0,
-    circuitBreaker: true
-  }
-});
-
-// 2. Transact with deterministic Policy Gate protection
-const tx = await agent.transact({
-  target: '0xDataBrokerRegistry',
-  amountMon: 8.5,
-  action: 'PURCHASE_COMPUTE'
-});`
-) : (
-`# pip install econ-sdk
-from econ import EconClient, AgentPolicy
-
-econ = EconClient(network="monad-testnet", chain_id=10143)
-
-# 1. Register external agent with ERC-8004 Identity
-agent = econ.register_agent(
-    name="PythonScraperBot",
-    capabilities=["data_extraction", "oracle_feed"],
-    initial_treasury=25.0,
-    policy=AgentPolicy(
-        max_transaction=5.0,
-        daily_limit=20.0,
-        circuit_breaker=True
-    )
-)
-
-# 2. Autonomous policy-guarded purchase
-result = agent.transact(
-    target="0xDataBroker",
-    amount=2.5,
-    memo="Historical Orderbook Feed"
-)`
-)}
-            </pre>
-          </div>
-
-          <div className="build-action-row">
-            <button
-              className="econ-btn econ-btn-lime econ-btn-lg"
+              type="button"
               onClick={() => onEnterConsole('AGENT_BUILDER')}
+              className="px-8 py-4 rounded-xl font-mono text-sm font-bold bg-[#CFFF3D] text-[#062A3B] hover:bg-[#b8e832] transition-all duration-200 shadow-xl shadow-[#CFFF3D]/25 cursor-pointer flex items-center gap-2"
             >
-              <span>Start building →</span>
+              <span>Launch ECON</span>
+              <span className="text-base font-bold">↗</span>
             </button>
-            <a
-              href="https://github.com/M0izz/ECON"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="econ-btn econ-btn-secondary econ-btn-lg"
-              style={{ color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.2)' }}
+            <button
+              type="button"
+              onClick={() => onEnterConsole('OVERVIEW')}
+              className="px-8 py-4 rounded-xl font-mono text-sm font-semibold bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all duration-200 cursor-pointer flex items-center gap-2"
             >
-              <span>GitHub Repository ↗</span>
-            </a>
+              <span>Enter Console</span>
+              <span className="text-base">→</span>
+            </button>
           </div>
         </div>
       </section>
