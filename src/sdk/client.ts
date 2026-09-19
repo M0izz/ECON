@@ -14,6 +14,7 @@ import { AgentRuntime } from './agent/runtime';
 import { Agent, AgentPolicy, AgentCapabilities, ModelProvider } from './types';
 import { DEFAULT_AGENT_POLICY } from './identity';
 import { DEFAULT_AGENT_CAPABILITIES } from './agent/capabilities';
+import { CreditVault } from './creditVault';
 
 export interface ECONConfig {
   store?: EconomicStore;
@@ -32,6 +33,7 @@ export class ECON {
   public readonly gc: EconomicGarbageCollector;
   public readonly recovery: RecoveryEngine;
   public readonly connector: ExternalAgentConnector;
+  public readonly credits: CreditVault;
 
   private activeSettlement: SettlementAdapter;
 
@@ -50,6 +52,7 @@ export class ECON {
     this.gc = new EconomicGarbageCollector(this.store, this.policy, this.events);
     this.recovery = new RecoveryEngine(this.store, this.activeSettlement, this.policy, this.events);
     this.connector = new ExternalAgentConnector(this.store, this.events);
+    this.credits = new CreditVault(this.store, this.events);
   }
 
   public connectExternalAgent(config: ExternalAgentConnectionConfig): Agent {
@@ -64,13 +67,18 @@ export class ECON {
     initialBalanceMon?: number;
     policy?: Partial<AgentPolicy>;
     capabilities?: Partial<AgentCapabilities>;
+    controller?: string;
+    walletAddress?: string;
+    onChainAgentId?: string;
+    onChainTxHash?: string;
+    metadataURI?: string;
   }): Agent {
-    const wallet = `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    const wallet = config.controller || `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
     const agent: Agent = {
       id: config.id,
       name: config.name,
       controller: wallet,
-      walletAddress: `${wallet.substring(0, 6)}...${wallet.substring(38)}`,
+      walletAddress: config.walletAddress || `${wallet.substring(0, 6)}...${wallet.substring(38)}`,
       balanceMon: config.initialBalanceMon !== undefined ? config.initialBalanceMon : 100,
       reputationScore: 98.5,
       active: true,
@@ -88,6 +96,9 @@ export class ECON {
         ...config.capabilities,
       },
       autonomyLevel: 'FULL',
+      onChainAgentId: config.onChainAgentId,
+      onChainTxHash: config.onChainTxHash,
+      metadataURI: config.metadataURI,
     };
 
     this.store.setAgent(agent);

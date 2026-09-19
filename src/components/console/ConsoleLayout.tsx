@@ -15,7 +15,6 @@ export type ConsoleTab =
   | 'POLICIES'
   | 'PERMISSIONS'
   | 'API_SDK'
-  | 'SIMULATION'
   | 'AGENT_BUILDER';
 
 interface ConsoleLayoutProps {
@@ -24,6 +23,9 @@ interface ConsoleLayoutProps {
   onSelectTab: (tab: ConsoleTab) => void;
   onSwitchToLanding: () => void;
   onToggleSettlement: (mode: SettlementMode) => void;
+  walletAddress?: string;
+  walletError?: string;
+  onConnectWallet: () => void;
   children: React.ReactNode;
 }
 
@@ -33,6 +35,9 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
   onSelectTab,
   onSwitchToLanding,
   onToggleSettlement,
+  walletAddress,
+  walletError,
+  onConnectWallet,
   children,
 }) => {
   const derived = store.getDerivedState();
@@ -82,6 +87,22 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
 
         {/* Real Monad vs Local Simulation State Indicator */}
         <div className="c-header-right">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+            <button
+              className={`settlement-btn ${walletAddress ? 'active' : ''}`}
+              onClick={onConnectWallet}
+              title="Connect your non-custodial browser wallet"
+            >
+              {walletAddress
+                ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                : 'CONNECT WALLET'}
+            </button>
+            {walletError && (
+              <span className="font-mono" style={{ color: 'var(--signal-pink)', fontSize: '9px', maxWidth: '220px' }}>
+                {walletError}
+              </span>
+            )}
+          </div>
           <div className="runtime-network-card">
             <div className="network-status-indicator">
               <span className={`status-dot ${isMonad ? 'monad-purple' : 'sim-blue'}`}></span>
@@ -93,7 +114,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
 
             {isMonad && (
               <div className="monad-contract-preview">
-                <span className="font-mono">ERC-8004: 0x8004A169...</span>
+                <span className="font-mono">ERC-8004: 0x8004A818...</span>
                 <a
                   href="https://testnet.monadexplorer.com"
                   target="_blank"
@@ -146,28 +167,28 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'AGENTS' ? 'active' : ''}`}
               onClick={() => onSelectTab('AGENTS')}
             >
-              <span className="s-icon font-mono text-[11px] text-[#CFFF3D]">ID</span>
+              <span className="s-icon">🪪</span>
               <span>Agents & Passports</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'AGENT_BUILDER' ? 'active' : ''}`}
               onClick={() => onSelectTab('AGENT_BUILDER')}
             >
-              <span className="s-icon font-mono text-[11px] text-[#CFFF3D]">+</span>
+              <span className="s-icon">⚙️</span>
               <span>Agent Builder</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'ASSETS' ? 'active' : ''}`}
               onClick={() => onSelectTab('ASSETS')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">◆</span>
+              <span className="s-icon">💎</span>
               <span>Economic Objects</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'MARKETPLACE' ? 'active' : ''}`}
               onClick={() => onSelectTab('MARKETPLACE')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">◎</span>
+              <span className="s-icon">🌐</span>
               <span>Discovery Market</span>
             </button>
           </div>
@@ -179,14 +200,14 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'TRANSACTIONS' ? 'active' : ''}`}
               onClick={() => onSelectTab('TRANSACTIONS')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">≡</span>
+              <span className="s-icon">📜</span>
               <span>Audit Ledger</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'ESCROW' ? 'active' : ''}`}
               onClick={() => onSelectTab('ESCROW')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">■</span>
+              <span className="s-icon">🔒</span>
               <span>Escrow Contracts</span>
             </button>
           </div>
@@ -198,7 +219,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link recovery-link ${currentTab === 'RECOVERY' ? 'active' : ''}`}
               onClick={() => onSelectTab('RECOVERY')}
             >
-              <span className="s-icon font-mono text-[11px] text-[#FF8FA3]">↻</span>
+              <span className="s-icon">♻️</span>
               <span>Economic GC</span>
               <span className="sidebar-pill-badge">{derived.totalStrandedValueMon.toFixed(1)}M</span>
             </button>
@@ -211,7 +232,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'POLICIES' ? 'active' : ''}`}
               onClick={() => onSelectTab('POLICIES')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">⬡</span>
+              <span className="s-icon">🛡️</span>
               <span>Policies & Caps</span>
             </button>
           </div>
@@ -220,17 +241,10 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
           <div className="sidebar-group">
             <div className="sidebar-group-title">DEVELOPERS</div>
             <button
-              className={`sidebar-link ${currentTab === 'SIMULATION' ? 'active' : ''}`}
-              onClick={() => onSelectTab('SIMULATION')}
-            >
-              <span className="s-icon font-mono text-[11px] text-white/70">▸</span>
-              <span>Simulation Sandbox</span>
-            </button>
-            <button
               className={`sidebar-link ${currentTab === 'API_SDK' ? 'active' : ''}`}
               onClick={() => onSelectTab('API_SDK')}
             >
-              <span className="s-icon font-mono text-[11px] text-white/70">&lt;/&gt;</span>
+              <span className="s-icon">💻</span>
               <span>API & SDK Specs</span>
             </button>
           </div>

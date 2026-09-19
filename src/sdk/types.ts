@@ -8,7 +8,8 @@ export type ObjectId = string;
 export type TransactionId = string;
 export type EscrowId = string;
 export type RecoveryId = string;
-export type ObligationId = string;
+export type CreditReservationId = string;
+export type CreditRequestId = string;
 
 export type ObjectType =
   | 'GPU_COMPUTE_CREDIT'
@@ -101,35 +102,47 @@ export interface Agent {
   modelProvider?: ModelProvider;
   capabilities?: AgentCapabilities;
   autonomyLevel?: AutonomyLevel;
+  onChainAgentId?: string;
+  onChainTxHash?: string;
+  metadataURI?: string;
 }
 
-export type EconomicAgent = Agent;
+export interface CreditBalance {
+  agentId: AgentId;
+  assetType: string;
+  amount: number;
+}
 
-export type ObligationType =
-  | 'ESCROW_PAYMENT'
-  | 'SUBSCRIPTION_RENEWAL'
-  | 'COMPUTE_DEBT'
-  | 'SERVICE_AGREEMENT';
+export type CreditReservationStatus =
+  | 'RESERVED'
+  | 'PARTIALLY_CONSUMED'
+  | 'CONSUMED'
+  | 'RELEASED'
+  | 'RECYCLED';
 
-export type ObligationStatus =
-  | 'PENDING'
-  | 'DUE'
-  | 'FULFILLED'
-  | 'OVERDUE'
-  | 'CANCELLED';
-
-export interface Obligation {
-  id: ObligationId;
-  debtor: AgentId;
-  creditor: AgentId;
-  amountMon: number;
-  type: ObligationType;
-  status: ObligationStatus;
-  dueTimestamp: number;
+export interface CreditReservation {
+  id: CreditReservationId;
+  ownerId: AgentId;
+  assetType: string;
+  amount: number;
+  remainingAmount: number;
+  purpose: string;
   createdAt: number;
-  description: string;
-  referenceId?: string; // e.g. escrowId or contractId
-  fulfilledAt?: number;
+  expiresAt: number;
+  transferable: boolean;
+  status: CreditReservationStatus;
+}
+
+export type CreditRequestStatus = 'OPEN' | 'FULFILLED' | 'CANCELLED';
+
+export interface CreditRequest {
+  id: CreditRequestId;
+  agentId: AgentId;
+  assetType: string;
+  requestedAmount: number;
+  fulfilledAmount: number;
+  createdAt: number;
+  status: CreditRequestStatus;
 }
 
 export type EscrowStatus =
@@ -227,9 +240,13 @@ export type ECONEventType =
   | 'RECOVERY_EXECUTED'
   | 'POLICY_BLOCKED'
   | 'POLICY_UPDATED'
-  | 'OBLIGATION_CREATED'
-  | 'OBLIGATION_FULFILLED'
-  | 'OBLIGATION_CANCELLED';
+  | 'CREDIT_GRANTED'
+  | 'CREDIT_RESERVED'
+  | 'CREDIT_CONSUMED'
+  | 'CREDIT_RELEASED'
+  | 'CREDIT_RECYCLED'
+  | 'CREDIT_REQUESTED'
+  | 'CREDIT_ALLOCATED';
 
 export interface ECONEvent {
   id: string;

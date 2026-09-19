@@ -8,5 +8,6 @@ export * from './escrow';
 export * from './engine';
 export * from './garbageCollector';
 export * from './recovery';
+export * from './creditVault';
 export * from './agent';
 export * from './client';

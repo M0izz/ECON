@@ -253,7 +253,21 @@ export function initializeDemoSeed(econ: ECON): void {
 
   services.forEach((s) => econ.discovery.registerService(s));
 
-  // 4. Seed Initial Events
+  // 4. Seed the recyclable credit lifecycle: reserve, consume, recycle, and reallocate.
+  econ.credits.grant('ResearchAgent-42', 'GPU_MINUTE', 100);
+  const unusedReservation = econ.credits.reserve(
+    'ResearchAgent-42',
+    'GPU_MINUTE',
+    40,
+    'Satellite model inference batch',
+    Date.now() + 6 * 3600000
+  );
+  econ.credits.consume(unusedReservation.id, 12, 'ResearchAgent-42');
+  econ.credits.recycle(unusedReservation.id, 'ResearchAgent-42');
+  const computeRequest = econ.credits.request('ComputeAgent-3', 'GPU_MINUTE', 20);
+  econ.credits.fulfill(computeRequest.id);
+
+  // 5. Seed Initial Events
   econ.events.emit({
     type: 'AGENT_REGISTERED',
     actor: 'ResearchAgent-42',

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { defaultEcon } from './sdk/client';
-import { initializeDemoSeed } from './demo/seed';
-import { EconomicLoopSimulation } from './demo/scenarios';
+import { ECON } from './sdk/client';
 import { LocalSettlementAdapter } from './settlement/LocalSettlementAdapter';
 import { MonadSettlementAdapter } from './settlement/MonadSettlementAdapter';
 import { SettlementMode } from './sdk/types';
@@ -12,9 +10,9 @@ import { ConsoleRecoveryEngine } from './components/console/ConsoleRecoveryEngin
 import { EntitiesView } from './components/EntitiesView';
 import { DiscoveryView } from './components/DiscoveryView';
 import { PolicyControlView } from './components/PolicyControlView';
-import { SimulationSlice } from './components/SimulationSlice';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
+import { MonadAgentPublisher } from './settlement/MonadAgentPublisher';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -22,14 +20,10 @@ export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<AppViewMode>('LANDING');
   const [consoleTab, setConsoleTab] = useState<ConsoleTab>('OVERVIEW');
   const [, setRenderTrigger] = useState(0);
+  const [walletAddress, setWalletAddress] = useState<string>();
+  const [walletError, setWalletError] = useState<string>();
 
-  // Initialize persistent singletons
-  const [econ] = useState(() => {
-    initializeDemoSeed(defaultEcon);
-    return defaultEcon;
-  });
-
-  const [sim] = useState(() => new EconomicLoopSimulation(econ));
+  const [econ] = useState(() => new ECON());
 
   // Subscribe to reactive store and event updates
   useEffect(() => {
@@ -62,9 +56,14 @@ export const App: React.FC = () => {
     setRenderTrigger((p) => p + 1);
   };
 
-  const handleResetSeed = () => {
-    initializeDemoSeed(econ);
-    setRenderTrigger((p) => p + 1);
+  const handleConnectWallet = async () => {
+    setWalletError(undefined);
+    try {
+      const account = await new MonadAgentPublisher().connect();
+      setWalletAddress(account);
+    } catch (error) {
+      setWalletError(error instanceof Error ? error.message : 'Wallet connection failed');
+    }
   };
 
   const handleUpdatePolicy = (agentId: string, updates: any) => {
@@ -102,10 +101,14 @@ export const App: React.FC = () => {
       onSelectTab={setConsoleTab}
       onSwitchToLanding={() => setViewMode('LANDING')}
       onToggleSettlement={handleToggleSettlement}
+      walletAddress={walletAddress}
+      walletError={walletError}
+      onConnectWallet={handleConnectWallet}
     >
       {consoleTab === 'OVERVIEW' && (
         <ConsoleOverview
           store={econ.store}
+          events={events}
           onNavigate={(tab) => setConsoleTab(tab as ConsoleTab)}
         />
       )}
@@ -152,15 +155,6 @@ export const App: React.FC = () => {
           agents={agents}
           events={events}
           onUpdatePolicy={handleUpdatePolicy}
-        />
-      )}
-
-      {consoleTab === 'SIMULATION' && (
-        <SimulationSlice
-          econ={econ}
-          sim={sim}
-          onStateChange={() => setRenderTrigger((p) => p + 1)}
-          onResetSeed={handleResetSeed}
         />
       )}
 
