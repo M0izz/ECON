@@ -3,6 +3,7 @@ import { ECON } from '../sdk/client';
 import { AGENT_TEMPLATES, AgentTemplate } from '../sdk/agent/templates';
 import { ModelProvider, AgentCapabilities, Agent } from '../sdk/types';
 import { DEFAULT_AGENT_CAPABILITIES } from '../sdk/agent/capabilities';
+import { MonadAgentPublisher } from '../settlement/MonadAgentPublisher';
 import {
   Cpu,
   PlusCircle,
@@ -51,6 +52,13 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
 
   // Status message
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [metadataUri, setMetadataUri] = useState('');
+  const [publishedIdentity, setPublishedIdentity] = useState<{
+    agentId?: string;
+    transactionHash: string;
+  } | null>(null);
 
   const applyTemplate = (tmpl: AgentTemplate) => {
     setSelectedTemplateId(tmpl.id);
@@ -90,6 +98,61 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
 
     setSuccessMessage(`Native agent deployed: ${agent.name} with Economic ID ${agent.id}`);
     onAgentCreated(agent);
+  };
+
+  const handlePublishOnMonad = async () => {
+    setPublishError(null);
+    setSuccessMessage(null);
+    setPublishedIdentity(null);
+    setIsPublishing(true);
+    try {
+      const uri = metadataUri.trim() || `data:application/json,${encodeURIComponent(JSON.stringify({
+        type: 'https://eips.ethereum.org/EIPS/eip-8004#registration-v1',
+        name: agentName,
+        description: agentPurpose,
+        services: [
+          { name: 'ECON protocol', endpoint: 'https://github.com/M0izz/ECON' },
+          { name: 'credit recycling', endpoint: 'econ://credit-vault' },
+        ],
+        capabilities: Object.entries(capabilities)
+          .filter(([, enabled]) => enabled)
+          .map(([name]) => name),
+        supportedTrust: ['reputation', 'crypto-economic'],
+        network: 'eip155:10143',
+      }))}`;
+      const publication = await new MonadAgentPublisher().publishAgent(uri);
+      setPublishedIdentity(publication);
+      const uniqueId = `erc8004_${publication.agentId || publication.transactionHash.slice(-8)}`;
+      const agent = econ.createNativeAgent({
+        id: uniqueId,
+        name: agentName,
+        purpose: agentPurpose,
+        modelProvider: selectedModel,
+        initialBalanceMon: initialFundingMon,
+        controller: publication.account,
+        walletAddress: publication.account,
+        onChainAgentId: publication.agentId,
+        onChainTxHash: publication.transactionHash,
+        metadataURI: uri,
+        policy: {
+          maxPerTransaction: maxPerTx,
+          dailySpendingLimit: dailyLimit,
+          minRetainedBalance: minReserve,
+          requireApprovalAbove,
+          autoRecoveryEnabled: autoRecovery,
+          autoTransferEnabled: autoRecovery,
+        },
+        capabilities,
+      });
+      setSuccessMessage(
+        `Published ${agent.name} on Monad Testnet${publication.agentId ? ` as ERC-8004 agent #${publication.agentId}` : ''}.`
+      );
+      onAgentCreated(agent);
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : 'Monad publication failed');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleConnectExternalAgent = () => {
@@ -181,7 +244,36 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
           }}
         >
           <CheckCircle2 size={14} />
-          <span>{successMessage}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span>{successMessage}</span>
+            {publishedIdentity && (
+              <a
+                href={`https://testnet.monadscan.com/tx/${publishedIdentity.transactionHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono"
+                style={{ color: 'var(--accent-blue)', fontSize: '10px' }}
+              >
+                View confirmed Monad receipt ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {publishError && (
+        <div
+          style={{
+            padding: '10px 14px',
+            background: 'var(--bg-panel-secondary)',
+            border: '1px solid var(--signal-pink)',
+            borderRadius: '2px',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11.5px',
+            color: 'var(--signal-pink)',
+          }}
+        >
+          {publishError}
         </div>
       )}
 
@@ -278,6 +370,29 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                       borderRadius: '2px',
                       marginTop: '4px',
                       resize: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label className="font-mono text-muted" style={{ fontSize: '10px' }}>
+                    ON-CHAIN METADATA URI (OPTIONAL)
+                  </label>
+                  <input
+                    type="text"
+                    value={metadataUri}
+                    onChange={(e) => setMetadataUri(e.target.value)}
+                    placeholder="ipfs://... or https://... (data URI generated if empty)"
+                    style={{
+                      width: '100%',
+                      background: 'var(--bg-app)',
+                      border: '1px solid var(--border-color)',
+                      padding: '6px 10px',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '11px',
+                      borderRadius: '2px',
+                      marginTop: '4px',
                     }}
                   />
                 </div>
@@ -524,6 +639,15 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                   <PlusCircle size={14} />
                   <span>Deploy & Activate Native Agent</span>
                 </button>
+                <button
+                  className="btn-econ"
+                  onClick={handlePublishOnMonad}
+                  disabled={isPublishing}
+                  style={{ justifyContent: 'center', padding: '10px 16px', marginTop: '2px' }}
+                >
+                  <ExternalLink size={14} />
+                  <span>{isPublishing ? 'Waiting for Monad Receipt...' : 'Publish Identity on Monad Testnet'}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -699,8 +823,8 @@ const runtime = econ.getRuntime(agent.id);
 const result = await runtime.dispatchAction({
   type: 'PURCHASE',
   params: {
-    sellerId: 'GeoVision-Provider',
-    objectId: 'OBJ-001',
+    sellerId: '<provider-agent-id>',
+    objectId: '<economic-object-id>',
     amountMon: 12.0
   },
   reasoning: 'Acquiring satellite coverage for Mumbai'

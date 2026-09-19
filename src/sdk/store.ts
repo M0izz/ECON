@@ -11,6 +11,11 @@ import {
   RecoveryPlan,
   RecoveryId,
   SettlementMode,
+  CreditBalance,
+  CreditReservation,
+  CreditReservationId,
+  CreditRequest,
+  CreditRequestId,
 } from './types';
 
 export interface ProtocolState {
@@ -20,6 +25,10 @@ export interface ProtocolState {
   transactions: Map<TransactionId, Transaction>;
   escrows: Map<EscrowId, EscrowRecord>;
   recoveryPlans: Map<RecoveryId, RecoveryPlan>;
+  creditBalances: Map<string, CreditBalance>;
+  creditReservations: Map<CreditReservationId, CreditReservation>;
+  creditRequests: Map<CreditRequestId, CreditRequest>;
+  creditPool: Map<string, number>;
 }
 
 export interface DerivedState {
@@ -47,6 +56,10 @@ export class EconomicStore {
       transactions: new Map(),
       escrows: new Map(),
       recoveryPlans: new Map(),
+      creditBalances: new Map(),
+      creditReservations: new Map(),
+      creditRequests: new Map(),
+      creditPool: new Map(),
     };
   }
 
@@ -178,6 +191,67 @@ export class EconomicStore {
     this.notify();
   }
 
+  // Recyclable credit ledger
+  private creditKey(agentId: string, assetType: string): string {
+    return `${agentId}::${assetType}`;
+  }
+
+  public getCreditBalance(agentId: string, assetType: string): number {
+    return this.state.creditBalances.get(this.creditKey(agentId, assetType))?.amount || 0;
+  }
+
+  public setCreditBalance(agentId: string, assetType: string, amount: number): void {
+    this.state.creditBalances.set(this.creditKey(agentId, assetType), {
+      agentId,
+      assetType,
+      amount,
+    });
+    this.notify();
+  }
+
+  public getAllCreditBalances(): CreditBalance[] {
+    return Array.from(this.state.creditBalances.values()).map((balance) => ({ ...balance }));
+  }
+
+  public getCreditReservation(id: CreditReservationId): CreditReservation | undefined {
+    return this.state.creditReservations.get(id);
+  }
+
+  public getAllCreditReservations(): CreditReservation[] {
+    return Array.from(this.state.creditReservations.values()).sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  public setCreditReservation(reservation: CreditReservation): void {
+    this.state.creditReservations.set(reservation.id, { ...reservation });
+    this.notify();
+  }
+
+  public getCreditRequest(id: CreditRequestId): CreditRequest | undefined {
+    return this.state.creditRequests.get(id);
+  }
+
+  public getAllCreditRequests(): CreditRequest[] {
+    return Array.from(this.state.creditRequests.values()).sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  public setCreditRequest(request: CreditRequest): void {
+    this.state.creditRequests.set(request.id, { ...request });
+    this.notify();
+  }
+
+  public getCreditPool(assetType: string): number {
+    return this.state.creditPool.get(assetType) || 0;
+  }
+
+  public setCreditPool(assetType: string, amount: number): void {
+    this.state.creditPool.set(assetType, amount);
+    this.notify();
+  }
+
+  public getAllCreditPool(): Record<string, number> {
+    return Object.fromEntries(this.state.creditPool.entries());
+  }
+
   // Derived State Aggregations
   public getDerivedState(): DerivedState {
     const agents = this.getAllAgents();
@@ -222,6 +296,10 @@ export class EconomicStore {
       transactions: new Map(),
       escrows: new Map(),
       recoveryPlans: new Map(),
+      creditBalances: new Map(),
+      creditReservations: new Map(),
+      creditRequests: new Map(),
+      creditPool: new Map(),
     };
     this.notify();
   }

@@ -1,0 +1,7 @@
+web3>=6.15
+python-dotenv>=1.0
+langgraph>=0.2
+requests>=2.31
+
+# optional — only needed if you set GEMINI_API_KEY in .env
+langchain-google-genai>=1.0

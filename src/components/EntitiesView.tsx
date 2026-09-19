@@ -62,6 +62,22 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                   <td>
                     <div style={{ fontWeight: 600 }}>{a.name}</div>
                     <div className="font-mono text-muted" style={{ fontSize: '10px' }}>{a.id}</div>
+                    {a.onChainAgentId && (
+                      <div className="font-mono text-mint" style={{ fontSize: '10px', marginTop: '3px' }}>
+                        ERC-8004 #{a.onChainAgentId}
+                      </div>
+                    )}
+                    {a.onChainTxHash && (
+                      <a
+                        className="font-mono"
+                        href={`https://testnet.monadscan.com/tx/${a.onChainTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: '10px', color: 'var(--accent-blue)' }}
+                      >
+                        View Monad receipt ↗
+                      </a>
+                    )}
                   </td>
                   <td>
                     <span className="font-mono text-secondary" style={{ fontSize: '11px' }}>

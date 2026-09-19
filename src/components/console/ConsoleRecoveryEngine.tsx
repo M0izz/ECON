@@ -118,8 +118,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
         </div>
       </div>
 
-      {/* Signature Showcase Card: API Credits (Requested by user) */}
-      <div className="econ-card signature-recovery-showcase">
+      {stranded.length > 0 ? <div className="econ-card signature-recovery-showcase">
         <div className="sig-badge-row">
           <span className="econ-badge econ-badge-pink">HIGH YIELD CANDIDATE</span>
           <span className="econ-badge econ-badge-monad">MONAD TESTNET VERIFIED</span>
@@ -180,7 +179,14 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </div> : (
+        <div className="econ-card" style={{ padding: '28px', textAlign: 'center' }}>
+          <h2 className="econ-title-md">NO STRANDED VALUE DETECTED</h2>
+          <p className="text-muted" style={{ marginTop: '8px' }}>
+            Published agents and their economic objects will appear here after real activity is recorded.
+          </p>
+        </div>
+      )}
 
       {/* Active Recovery Opportunities Grid */}
       <div className="recovery-grid-section">

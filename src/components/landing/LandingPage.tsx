@@ -63,7 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
             </li>
 
             <li className="econ-nav-item">
-              <a href="#resources" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('SIMULATION'); }}>
+              <a href="#resources" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>
                 Resources
               </a>
             </li>
@@ -167,14 +167,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
             <a href="https://docs.monad.xyz" target="_blank" rel="noopener noreferrer">10,000 TPS Parallel EVM ↗</a>
             <a href="https://testnet.monadexplorer.com" target="_blank" rel="noopener noreferrer">Monad Explorer ↗</a>
             <span className="footer-code-tag">Chain ID: 10143</span>
-            <span className="footer-code-tag">Identity: 0x8004A169...</span>
+            <span className="footer-code-tag">Identity: 0x8004A818...</span>
           </div>
 
           <div className="footer-links-col">
             <h5>DEVELOPERS</h5>
             <a href="https://github.com/M0izz/ECON" target="_blank" rel="noopener noreferrer">GitHub Repository ↗</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENT_BUILDER'); }}>Agent Builder UI</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('SIMULATION'); }}>Simulation Sandbox</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
           </div>
         </div>
