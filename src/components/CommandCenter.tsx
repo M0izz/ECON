@@ -160,7 +160,7 @@ export const CommandCenter: React.FC<CommandCenterProps> = ({
           <div style={{ padding: '8px 12px', maxHeight: '340px', overflowY: 'auto' }}>
             {events.length === 0 ? (
               <div className="text-muted font-mono" style={{ padding: '16px', textAlign: 'center' }}>
-                No events recorded yet. Run the simulation to trigger economic events.
+                No events recorded yet. Connect a wallet and publish an agent to begin.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

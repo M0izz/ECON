@@ -147,22 +147,19 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
             and reclaims working capital.
           </p>
 
-          {/* Standout Signature Card requested by user */}
-          <div className="signature-recovery-card">
+          {derived.totalStrandedValueMon > 0 ? <div className="signature-recovery-card">
             <div className="sig-header">
               <div>
                 <span className="sig-eyebrow">ECONOMIC GARBAGE COLLECTOR</span>
                 <h3 className="sig-title">STRANDED VALUE DETECTED</h3>
               </div>
-              <div className="sig-value-tag">
-                {derived.totalStrandedValueMon.toFixed(2)} MON
-              </div>
+              <div className="sig-value-tag">{derived.totalStrandedValueMon.toFixed(2)} MON</div>
             </div>
 
             <div className="sig-asset-row">
               <div className="asset-meta">
                 <span className="asset-type">API CREDITS</span>
-                <span className="asset-detail">37 units · 82% unlikely to be used</span>
+                <span className="asset-detail">Live recyclable credit opportunity</span>
               </div>
               <span className="badge-opportunity">RECOVERY CANDIDATE</span>
             </div>
@@ -170,15 +167,15 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
             <div className="sig-actions-breakdown">
               <div className="action-row">
                 <span className="act-name">TRANSFER TO SENTINEL</span>
-                <span className="act-yield text-mint">+4.60 MON</span>
+                <span className="act-yield text-mint">Review available plans</span>
               </div>
               <div className="action-row">
                 <span className="act-name">SELL ON SECONDARY MARKET</span>
-                <span className="act-yield text-mint">+4.20 MON</span>
+                <span className="act-yield text-mint">Review available plans</span>
               </div>
               <div className="action-row">
                 <span className="act-name">RETAIN MINIMUM RESERVE</span>
-                <span className="act-yield text-muted">+1.80 MON</span>
+                <span className="act-yield text-muted">Policy dependent</span>
               </div>
             </div>
 
@@ -194,7 +191,18 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
                 <span>Review Recovery →</span>
               </button>
             </div>
-          </div>
+          </div> : (
+            <div className="signature-recovery-card">
+              <div className="sig-header">
+                <div>
+                  <span className="sig-eyebrow">ECONOMIC GARBAGE COLLECTOR</span>
+                  <h3 className="sig-title">WAITING FOR NETWORK ACTIVITY</h3>
+                </div>
+                <div className="sig-value-tag">0.00 MON</div>
+              </div>
+              <p className="econ-lead-text">No stranded value is currently recorded. Publish an agent and create economic activity to activate recovery analysis.</p>
+            </div>
+          )}
         </div>
       </section>
 

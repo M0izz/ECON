@@ -14,7 +14,7 @@ export const PolicyControlView: React.FC<PolicyControlViewProps> = ({
   events,
   onUpdatePolicy,
 }) => {
-  const [selectedAgentId, setSelectedAgentId] = useState<string>(agents[0]?.id || 'ResearchAgent-42');
+  const [selectedAgentId, setSelectedAgentId] = useState<string>(agents[0]?.id || '');
   const [selectedEvent, setSelectedEvent] = useState<ECONEvent | null>(null);
 
   const activeAgent = agents.find((a) => a.id === selectedAgentId) || agents[0];
