@@ -1,0 +1,52 @@
+/* ==========================================================================
+   ECON PROTOCOL - MOTION & ACCESSIBILITY SYSTEM
+   Fluid easing + Full prefers-reduced-motion compliance
+   ========================================================================== */
+
+:root {
+  --econ-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --econ-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --econ-duration-fast: 0.15s;
+  --econ-duration-normal: 0.25s;
+  --econ-duration-slow: 0.45s;
+}
+
+/* Subtle Pulsing for Status Indicators */
+@keyframes econ-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(207, 255, 61, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(207, 255, 61, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(207, 255, 61, 0);
+  }
+}
+
+.econ-status-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--econ-lime);
+  display: inline-block;
+  animation: econ-pulse 2.2s infinite ease-in-out;
+}
+
+/* Accessibility: Strict Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .econ-status-dot-pulse {
+    animation: none !important;
+  }
+}

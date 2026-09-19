@@ -5,18 +5,22 @@ import { EconomicLoopSimulation } from './demo/scenarios';
 import { LocalSettlementAdapter } from './settlement/LocalSettlementAdapter';
 import { MonadSettlementAdapter } from './settlement/MonadSettlementAdapter';
 import { SettlementMode } from './sdk/types';
-import { Navigation, NavTab } from './components/Navigation';
-import { CommandCenter } from './components/CommandCenter';
+import { LandingPage } from './components/landing/LandingPage';
+import { ConsoleLayout, ConsoleTab } from './components/console/ConsoleLayout';
+import { ConsoleOverview } from './components/console/ConsoleOverview';
+import { ConsoleRecoveryEngine } from './components/console/ConsoleRecoveryEngine';
 import { EntitiesView } from './components/EntitiesView';
 import { DiscoveryView } from './components/DiscoveryView';
-import { RecoveryView } from './components/RecoveryView';
 import { PolicyControlView } from './components/PolicyControlView';
 import { SimulationSlice } from './components/SimulationSlice';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
 
+export type AppViewMode = 'LANDING' | 'CONSOLE';
+
 export const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<NavTab>('SIMULATION_SLICE');
+  const [viewMode, setViewMode] = useState<AppViewMode>('LANDING');
+  const [consoleTab, setConsoleTab] = useState<ConsoleTab>('OVERVIEW');
   const [, setRenderTrigger] = useState(0);
 
   // Initialize persistent singletons
@@ -43,13 +47,11 @@ export const App: React.FC = () => {
     };
   }, [econ]);
 
-  const derived = econ.store.getDerivedState();
   const agents = econ.store.getAllAgents();
   const objects = econ.store.getAllObjects();
   const services = econ.discovery.search({});
   const events = econ.events.getHistory();
   const plans = econ.store.getAllRecoveryPlans();
-  const currentMode = econ.store.getSettlementMode();
 
   const handleToggleSettlement = (mode: SettlementMode) => {
     if (mode === 'LOCAL_SIMULATION') {
@@ -74,136 +76,136 @@ export const App: React.FC = () => {
     setRenderTrigger((p) => p + 1);
   };
 
+  const handleEnterConsole = (targetTab?: string) => {
+    if (targetTab) {
+      setConsoleTab(targetTab as ConsoleTab);
+    }
+    setViewMode('CONSOLE');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Public Editorial Website Experience
+  if (viewMode === 'LANDING') {
+    return (
+      <LandingPage
+        store={econ.store}
+        onEnterConsole={handleEnterConsole}
+      />
+    );
+  }
+
+  // Authenticated Autonomous Operating System Console Experience
   return (
-    <div className="app-container">
-      {/* Top Header & Telemetry Bar */}
-      <header className="top-header">
-        <div className="header-left">
-          <div className="brand-badge">
-            <span className="logo-box">ECON</span>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              ECONOMIC OPERATING LAYER
-            </span>
-          </div>
-
-          <div className="header-metrics">
-            <div className="metric-pill">
-              <span className="label">Treasury</span>
-              <span className="val">{derived.totalTreasuryMon.toFixed(1)} MON</span>
-            </div>
-            <div className="metric-pill">
-              <span className="label">Stranded Value</span>
-              <span className="val text-pink">{derived.totalStrandedValueMon.toFixed(1)} MON</span>
-            </div>
-            <div className="metric-pill">
-              <span className="label">Recovered</span>
-              <span className="val text-mint">+{derived.totalRecoveredValueMon.toFixed(1)} MON</span>
-            </div>
-            <div className="metric-pill">
-              <span className="label">Obligations</span>
-              <span className="val">{derived.totalActiveObligationsMon.toFixed(1)} MON</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="header-right">
-          {/* Explicit Settlement Mode Switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="font-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>
-              SETTLEMENT MODE
-            </span>
-            <div className="settlement-toggle-group">
-              <button
-                className={`settlement-toggle-btn ${
-                  currentMode === 'LOCAL_SIMULATION' ? 'active' : ''
-                }`}
-                onClick={() => handleToggleSettlement('LOCAL_SIMULATION')}
-              >
-                <div className="indicator-dot" />
-                <span>LOCAL SIMULATION</span>
-              </button>
-
-              <button
-                className={`settlement-toggle-btn ${
-                  currentMode === 'MONAD_TESTNET' ? 'active' : ''
-                }`}
-                onClick={() => handleToggleSettlement('MONAD_TESTNET')}
-              >
-                <div className="indicator-dot" />
-                <span>MONAD TESTNET</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Workspace Layout */}
-      <div className="main-workspace">
-        <Navigation
-          currentTab={currentTab}
-          onSelectTab={setCurrentTab}
-          eventCount={events.length}
+    <ConsoleLayout
+      store={econ.store}
+      currentTab={consoleTab}
+      onSelectTab={setConsoleTab}
+      onSwitchToLanding={() => setViewMode('LANDING')}
+      onToggleSettlement={handleToggleSettlement}
+    >
+      {consoleTab === 'OVERVIEW' && (
+        <ConsoleOverview
+          store={econ.store}
+          onNavigate={(tab) => setConsoleTab(tab as ConsoleTab)}
         />
+      )}
 
-        <main className="content-area">
-          {currentTab === 'SIMULATION_SLICE' && (
-            <SimulationSlice
-              econ={econ}
-              sim={sim}
-              onStateChange={() => setRenderTrigger((p) => p + 1)}
-              onResetSeed={handleResetSeed}
-            />
-          )}
+      {consoleTab === 'AGENTS' && (
+        <EntitiesView agents={agents} objects={objects} />
+      )}
 
-          {currentTab === 'AGENT_BUILDER' && (
-            <AgentBuilder
-              econ={econ}
-              onAgentCreated={() => {
-                setRenderTrigger((p) => p + 1);
-              }}
-            />
-          )}
+      {consoleTab === 'AGENT_BUILDER' && (
+        <AgentBuilder
+          econ={econ}
+          onAgentCreated={() => setRenderTrigger((p) => p + 1)}
+        />
+      )}
 
-          {currentTab === 'COMMAND_CENTER' && (
-            <CommandCenter
-              derived={derived}
-              events={events}
-              agents={agents}
-              objects={objects}
-              onNavigateTab={setCurrentTab}
-            />
-          )}
+      {consoleTab === 'ASSETS' && (
+        <EntitiesView agents={agents} objects={objects} />
+      )}
 
-          {currentTab === 'ENTITIES' && (
-            <EntitiesView agents={agents} objects={objects} />
-          )}
+      {consoleTab === 'MARKETPLACE' && (
+        <DiscoveryView services={services} />
+      )}
 
-          {currentTab === 'DISCOVERY' && (
-            <DiscoveryView services={services} />
-          )}
+      {consoleTab === 'TRANSACTIONS' && (
+        <AuditLedger events={events} />
+      )}
 
-          {currentTab === 'RECOVERY' && (
-            <RecoveryView
-              econ={econ}
-              objects={objects}
-              plans={plans}
-              agents={agents}
-              onTriggerScan={handleTriggerScan}
-              onRefresh={() => setRenderTrigger((p) => p + 1)}
-            />
-          )}
+      {consoleTab === 'ESCROW' && (
+        <EntitiesView agents={agents} objects={objects} />
+      )}
 
-          {currentTab === 'POLICY_CONTROL' && (
-            <PolicyControlView
-              agents={agents}
-              events={events}
-              onUpdatePolicy={handleUpdatePolicy}
-            />
-          )}
+      {consoleTab === 'RECOVERY' && (
+        <ConsoleRecoveryEngine
+          econ={econ}
+          objects={objects}
+          plans={plans}
+          onTriggerScan={handleTriggerScan}
+          onRefresh={() => setRenderTrigger((p) => p + 1)}
+        />
+      )}
 
-          {currentTab === 'AUDIT_LOG' && <AuditLedger events={events} />}
-        </main>
-      </div>
-    </div>
+      {consoleTab === 'POLICIES' && (
+        <PolicyControlView
+          agents={agents}
+          events={events}
+          onUpdatePolicy={handleUpdatePolicy}
+        />
+      )}
+
+      {consoleTab === 'SIMULATION' && (
+        <SimulationSlice
+          econ={econ}
+          sim={sim}
+          onStateChange={() => setRenderTrigger((p) => p + 1)}
+          onResetSeed={handleResetSeed}
+        />
+      )}
+
+      {consoleTab === 'API_SDK' && (
+        <div className="econ-card">
+          <span className="econ-eyebrow">// DEVELOPER INTEGRATION SPECIFICATION</span>
+          <h2 className="econ-title-lg" style={{ margin: '8px 0 16px 0' }}>
+            ECON PROTOCOL SDK ARCHITECTURE
+          </h2>
+          <p className="text-secondary" style={{ maxWidth: '640px', marginBottom: '24px' }}>
+            Install the sovereign agent layer directly into your TypeScript or Python agents.
+            Settles natively on Monad Parallel EVM (Chain ID: 10143).
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="econ-card" style={{ backgroundColor: '#03141C', border: '1px solid #0F3B4F' }}>
+              <span className="font-mono text-lime" style={{ fontSize: '12px', fontWeight: 800 }}>
+                TypeScript SDK: @econ/sdk
+              </span>
+              <pre className="font-mono text-muted" style={{ fontSize: '11px', marginTop: '12px' }}>
+{`npm install @econ/sdk
+
+import { EconClient } from '@econ/sdk';
+const econ = new EconClient({
+  network: 'monad-testnet',
+  chainId: 10143
+});`}
+              </pre>
+            </div>
+
+            <div className="econ-card" style={{ backgroundColor: '#03141C', border: '1px solid #0F3B4F' }}>
+              <span className="font-mono text-lime" style={{ fontSize: '12px', fontWeight: 800 }}>
+                Python SDK: econ-sdk
+              </span>
+              <pre className="font-mono text-muted" style={{ fontSize: '11px', marginTop: '12px' }}>
+{`pip install econ-sdk
+
+from econ import EconClient
+econ = EconClient(network="monad-testnet")
+agent = econ.register_agent("ResearchBot")`}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+    </ConsoleLayout>
   );
 };

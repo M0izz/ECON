@@ -1,0 +1,71 @@
+/* ==========================================================================
+   ECON PROTOCOL - CENTRAL DESIGN SYSTEM TOKENS
+   Strict hierarchy: Lime (Primary) -> Ink (Secondary) -> Pink (Tertiary)
+   Flow Accent: Muted Cyan (Rare directional signal only)
+   ========================================================================== */
+
+:root {
+  /* Core Color Hierarchy */
+  --econ-lime: #CFFF3D;
+  --econ-lime-hover: #BCEF2E;
+  --econ-lime-subtle: rgba(207, 255, 61, 0.12);
+  --econ-lime-border: rgba(207, 255, 61, 0.35);
+
+  --econ-ink: #062A3B;
+  --econ-ink-light: #0A354A;
+  --econ-ink-dark: #031822;
+  --econ-ink-muted: #1B4559;
+
+  --econ-pink: #FF8FA3;
+  --econ-pink-subtle: #FFF0F3;
+  --econ-pink-border: #FFCCD5;
+  --econ-pink-dark: #7A092B;
+
+  --econ-cyan-flow: #38BDF8;
+  --econ-cyan-subtle: rgba(56, 189, 248, 0.12);
+
+  /* Backgrounds & Surfaces */
+  --econ-canvas: #F7F8F2;
+  --econ-surface: #FFFFFF;
+  --econ-surface-muted: #F0F2EA;
+  --econ-surface-dark: #062A3B;
+
+  /* Typography Colors */
+  --econ-text-primary: #062A3B;
+  --econ-text-secondary: #4A6370;
+  --econ-text-muted: #7A909C;
+  --econ-text-inverse: #FFFFFF;
+  --econ-text-inverse-muted: #A0B9C6;
+
+  /* Borders & Dividers */
+  --econ-border-subtle: #E6E8DE;
+  --econ-border-medium: #D1D6C5;
+  --econ-border-dark: #123B4E;
+
+  /* Spacing Scale (4px base) */
+  --econ-space-1: 4px;
+  --econ-space-2: 8px;
+  --econ-space-3: 12px;
+  --econ-space-4: 16px;
+  --econ-space-5: 20px;
+  --econ-space-6: 24px;
+  --econ-space-8: 32px;
+  --econ-space-10: 40px;
+  --econ-space-12: 48px;
+  --econ-space-16: 64px;
+  --econ-space-20: 80px;
+  --econ-space-24: 96px;
+
+  /* Border Radii */
+  --econ-radius-sm: 8px;
+  --econ-radius-md: 14px;
+  --econ-radius-lg: 18px;
+  --econ-radius-xl: 24px;
+  --econ-radius-pill: 9999px;
+
+  /* Shadows */
+  --econ-shadow-sm: 0 2px 4px rgba(6, 42, 59, 0.04);
+  --econ-shadow-md: 0 8px 24px rgba(6, 42, 59, 0.08);
+  --econ-shadow-lg: 0 16px 40px rgba(6, 42, 59, 0.12);
+  --econ-shadow-lime: 0 12px 32px rgba(207, 255, 61, 0.25);
+}

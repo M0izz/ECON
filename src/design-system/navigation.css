@@ -1,0 +1,217 @@
+/* ==========================================================================
+   ECON PROTOCOL - NAVIGATION SYSTEM
+   Corporate Product Header + Dropdown Previews + Mobile Drawer + Console Sidebar
+   ========================================================================== */
+
+/* Marketing Website Navbar */
+.econ-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  background-color: rgba(247, 248, 242, 0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--econ-border-subtle);
+  transition: all 0.2s ease;
+}
+
+.econ-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+/* Brand Mark: Custom Circulation Glyphs */
+.econ-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.econ-brand-mark {
+  background-color: var(--econ-lime);
+  color: var(--econ-ink);
+  font-family: var(--econ-font-grotesk);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  padding: 5px 10px;
+  border-radius: var(--econ-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(207, 255, 61, 0.35);
+}
+
+.econ-brand-symbol {
+  font-size: 14px;
+}
+
+.econ-brand-title {
+  font-family: var(--econ-font-grotesk);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--econ-ink);
+}
+
+/* Nav Links */
+.econ-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.econ-nav-item {
+  position: relative;
+}
+
+.econ-nav-link {
+  font-family: var(--econ-font-grotesk);
+  font-size: 14.5px;
+  font-weight: 650;
+  color: var(--econ-text-secondary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  transition: color 0.15s ease;
+  cursor: pointer;
+}
+
+.econ-nav-link:hover {
+  color: var(--econ-ink);
+}
+
+.econ-nav-chevron {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+
+.econ-nav-item:hover .econ-nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* Nav Dropdown Menu */
+.econ-nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: -16px;
+  padding-top: 14px;
+  display: none;
+  z-index: 1050;
+}
+
+.econ-nav-item:hover .econ-nav-dropdown {
+  display: block;
+}
+
+.econ-dropdown-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--econ-border-subtle);
+  border-radius: var(--econ-radius-md);
+  box-shadow: var(--econ-shadow-lg);
+  padding: 16px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.econ-dropdown-link {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-radius: var(--econ-radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.econ-dropdown-link:hover {
+  background-color: var(--econ-surface-muted);
+}
+
+.econ-dropdown-title {
+  font-family: var(--econ-font-grotesk);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--econ-ink);
+}
+
+.econ-dropdown-desc {
+  font-size: 11.5px;
+  color: var(--econ-text-muted);
+}
+
+/* Right Nav Controls */
+.econ-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.econ-nav-text-link {
+  font-family: var(--econ-font-grotesk);
+  font-size: 14.5px;
+  font-weight: 650;
+  color: var(--econ-text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.econ-nav-text-link:hover {
+  color: var(--econ-ink);
+}
+
+/* Mobile Hamburger Toggle */
+.econ-mobile-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--econ-ink);
+  font-size: 24px;
+}
+
+/* Mobile Navigation Drawer */
+.econ-mobile-drawer {
+  display: none;
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background-color: var(--econ-canvas);
+  border-bottom: 1px solid var(--econ-border-medium);
+  padding: 24px;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--econ-shadow-lg);
+  z-index: 999;
+}
+
+.econ-mobile-drawer.open {
+  display: flex;
+}
+
+/* Responsive Navigation Breakpoints */
+@media (max-width: 1024px) {
+  .econ-navbar {
+    padding: 16px 24px;
+  }
+  .econ-nav-menu {
+    display: none;
+  }
+  .econ-mobile-toggle {
+    display: block;
+  }
+}

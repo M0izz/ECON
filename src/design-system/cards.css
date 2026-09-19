@@ -1,0 +1,87 @@
+/* ==========================================================================
+   ECON PROTOCOL - CARD & SURFACE SYSTEM
+   Geometric, rounded 18-24px, crisp borders and material surfaces
+   ========================================================================== */
+
+.econ-card {
+  background-color: var(--econ-surface);
+  border: 1px solid var(--econ-border-subtle);
+  border-radius: var(--econ-radius-lg);
+  padding: 32px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.econ-card-interactive:hover {
+  border-color: var(--econ-border-medium);
+  box-shadow: var(--econ-shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Material Variations */
+.econ-card-ink {
+  background-color: var(--econ-ink);
+  color: #FFFFFF;
+  border-color: var(--econ-border-dark);
+}
+
+.econ-card-lime {
+  background-color: var(--econ-lime);
+  color: var(--econ-ink);
+  border-color: rgba(6, 42, 59, 0.12);
+}
+
+.econ-card-pink {
+  background-color: var(--econ-pink-subtle);
+  color: var(--econ-ink);
+  border: 1px solid var(--econ-pink-border);
+}
+
+/* Badges & Tags */
+.econ-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--econ-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: var(--econ-radius-sm);
+  text-transform: uppercase;
+}
+
+.econ-badge-lime {
+  background-color: var(--econ-lime);
+  color: var(--econ-ink);
+}
+
+.econ-badge-ink {
+  background-color: var(--econ-ink);
+  color: #FFFFFF;
+}
+
+.econ-badge-pink {
+  background-color: var(--econ-pink);
+  color: var(--econ-pink-dark);
+}
+
+.econ-badge-demo {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+}
+
+.econ-badge-monad {
+  background-color: var(--econ-ink);
+  color: var(--econ-lime);
+  border: 1px solid var(--econ-border-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .econ-card {
+    padding: 22px 18px;
+    border-radius: var(--econ-radius-md);
+  }
+}
