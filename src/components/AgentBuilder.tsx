@@ -27,10 +27,8 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
 
   // Native Agent Form State
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('TEMPLATE_RESEARCH');
-  const [agentName, setAgentName] = useState('ResearchAgent-99');
-  const [agentPurpose, setAgentPurpose] = useState(
-    'Autonomous satellite imagery intelligence and geospatial dataset synthesis.'
-  );
+  const [agentName, setAgentName] = useState('');
+  const [agentPurpose, setAgentPurpose] = useState('');
   const [selectedModel, setSelectedModel] = useState<ModelProvider>('GEMINI');
   const [initialFundingMon, setInitialFundingMon] = useState<number>(100);
 
@@ -55,6 +53,7 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
   const [publishError, setPublishError] = useState<string | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [metadataUri, setMetadataUri] = useState('');
+  const [serviceEndpoint, setServiceEndpoint] = useState('http://localhost:3000/run');
   const [publishedIdentity, setPublishedIdentity] = useState<{
     agentId?: string;
     transactionHash: string;
@@ -104,6 +103,18 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
     setPublishError(null);
     setSuccessMessage(null);
     setPublishedIdentity(null);
+    if (!agentName.trim() || !agentPurpose.trim()) {
+      setPublishError('Agent name and purpose are required before publishing.');
+      return;
+    }
+    let endpoint: URL;
+    try {
+      endpoint = new URL(serviceEndpoint.trim());
+      if (!['http:', 'https:'].includes(endpoint.protocol)) throw new Error();
+    } catch {
+      setPublishError('A public HTTP or HTTPS service endpoint is required to make the agent usable.');
+      return;
+    }
     setIsPublishing(true);
     try {
       const uri = metadataUri.trim() || `data:application/json,${encodeURIComponent(JSON.stringify({
@@ -112,7 +123,7 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
         description: agentPurpose,
         services: [
           { name: 'ECON protocol', endpoint: 'https://github.com/M0izz/ECON' },
-          { name: 'credit recycling', endpoint: 'econ://credit-vault' },
+          { name: 'agent task endpoint', endpoint: endpoint.toString(), protocol: 'HTTP POST' },
         ],
         capabilities: Object.entries(capabilities)
           .filter(([, enabled]) => enabled)
@@ -120,6 +131,8 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
         supportedTrust: ['reputation', 'crypto-economic'],
         network: 'eip155:10143',
       }))}`;
+      // Publication is independent from runtime availability. The endpoint is
+      // called only when another user actually runs this agent.
       const publication = await new MonadAgentPublisher().publishAgent(uri);
       setPublishedIdentity(publication);
       const uniqueId = `erc8004_${publication.agentId || publication.transactionHash.slice(-8)}`;
@@ -186,21 +199,8 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-app)', padding: '2px', borderRadius: '3px' }}>
-            <button
-              className={`settlement-toggle-btn ${activePath === 'NATIVE' ? 'active' : ''}`}
-              onClick={() => setActivePath('NATIVE')}
-            >
-              <div className="indicator-dot" />
-              <span>CREATE NATIVE AGENT</span>
-            </button>
-            <button
-              className={`settlement-toggle-btn ${activePath === 'EXTERNAL' ? 'active' : ''}`}
-              onClick={() => setActivePath('EXTERNAL')}
-            >
-              <div className="indicator-dot" />
-              <span>BRING YOUR AGENT (SDK)</span>
-            </button>
+          <div className="econ-badge econ-badge-monad">
+            WALLET-SIGNED MONAD PUBLICATION
           </div>
         </div>
 
@@ -217,8 +217,8 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
           }}
         >
           {activePath === 'NATIVE' ? (
-            <span>
-              <strong className="text-mint">PATH A: NATIVE ECON AGENT</strong> — Configure an autonomous agent directly within ECON. ECON provisions an Economic Identity, assigns intelligence runtime hooks, and grants calibrated economic authority.
+              <span>
+                <strong className="text-mint">PUBLIC ERC-8004 IDENTITY</strong> — Connect your wallet, describe the agent, and publish its identity to Monad Testnet. Every user can discover the confirmed registration.
             </span>
           ) : (
             <span>
@@ -333,6 +333,23 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                 </div>
               </div>
               <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <label className="font-mono text-muted" style={{ fontSize: '10px' }}>
+                    PUBLIC AGENT SERVICE ENDPOINT (REQUIRED)
+                  </label>
+                  <input
+                    type="url"
+                    value={serviceEndpoint}
+                    onChange={(e) => setServiceEndpoint(e.target.value)}
+                    placeholder="http://localhost:3000/run or https://your-agent.example/run"
+                    style={{
+                      width: '100%', background: 'var(--bg-app)', border: '1px solid var(--border-color)',
+                      padding: '6px 10px', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)',
+                      fontSize: '11px', borderRadius: '2px', marginTop: '4px',
+                    }}
+                  />
+                </div>
+
                 <div>
                   <label className="font-mono text-muted" style={{ fontSize: '10px' }}>AGENT IDENTIFIER / NAME</label>
                   <input
@@ -634,7 +651,7 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                 <button
                   className="btn-econ btn-econ-primary"
                   onClick={handleCreateNativeAgent}
-                  style={{ justifyContent: 'center', padding: '10px 16px', marginTop: '6px' }}
+                  style={{ display: 'none' }}
                 >
                   <PlusCircle size={14} />
                   <span>Deploy & Activate Native Agent</span>

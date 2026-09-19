@@ -80,6 +80,13 @@ export interface AgentCapabilities {
   automaticMarketplaceListing: boolean;
 }
 
+export interface AgentService {
+  name: string;
+  endpoint: string;
+  protocol?: string;
+  priceCredits?: number;
+}
+
 export type AgentOrigin = 'NATIVE' | 'EXTERNAL';
 export type ModelProvider = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'LOCAL' | 'EXTERNAL_RUNTIME';
 export type AutonomyLevel = 'MANUAL' | 'SEMI_AUTONOMOUS' | 'FULL';
@@ -105,6 +112,7 @@ export interface Agent {
   onChainAgentId?: string;
   onChainTxHash?: string;
   metadataURI?: string;
+  services?: AgentService[];
 }
 
 export interface CreditBalance {

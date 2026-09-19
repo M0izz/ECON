@@ -9,6 +9,46 @@ interface EntitiesViewProps {
 
 export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) => {
   const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>('AGENTS');
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [task, setTask] = useState('');
+  const [useStatus, setUseStatus] = useState<string | null>(null);
+  const [isUsing, setIsUsing] = useState(false);
+
+  const invokeAgent = async () => {
+    if (!task.trim() || !selectedAgent) return;
+    setIsUsing(true);
+    setUseStatus(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      const requestId = `req_${Date.now().toString(36)}`;
+      const result = {
+        success: true,
+        mode: 'demo',
+        status: 'completed',
+        agentId: selectedAgent.onChainAgentId,
+        requestId,
+        task: task.trim(),
+        result: {
+          summary: `Task analyzed by ${selectedAgent.name}.`,
+          recommendation: 'The agent identified the request and prepared an execution plan.',
+          confidence: 0.94,
+          nextSteps: [
+            'Validate the requested input',
+            'Execute the agent capability',
+            'Return the verified output',
+          ],
+        },
+        creditsConsumed: 5,
+        creditsReturned: 0,
+        timestamp: new Date().toISOString(),
+      };
+      setUseStatus(JSON.stringify(result, null, 2));
+    } catch (error) {
+      setUseStatus(error instanceof Error ? error.message : 'Demo agent execution failed.');
+    } finally {
+      setIsUsing(false);
+    }
+  };
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -40,9 +80,14 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
               <span>Economic Agent Registry</span>
             </div>
             <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
-              Persistent Economic Identities with Spending Policies
+              Public ERC-8004 identities read from Monad Testnet
             </span>
           </div>
+          {agents.length === 0 ? (
+            <div className="text-muted font-mono" style={{ padding: '28px', textAlign: 'center' }}>
+              No agents are published yet. Publish the first agent from Agent Builder.
+            </div>
+          ) : (
           <table className="econ-table">
             <thead>
               <tr>
@@ -54,6 +99,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                 <th>Daily Limit</th>
                 <th>Min Reserve</th>
                 <th>Auto-GC</th>
+                <th>Use Agent</th>
               </tr>
             </thead>
             <tbody>
@@ -77,6 +123,15 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                       >
                         View Monad receipt ↗
                       </a>
+                    )}
+                  </td>
+                  <td>
+                    {a.services?.some((service) => /^https?:\/\//.test(service.endpoint)) ? (
+                      <button className="btn-econ btn-econ-primary" onClick={() => { setSelectedAgent(a); setTask(''); setUseStatus(null); }}>
+                        Use Agent
+                      </button>
+                    ) : (
+                      <span className="font-mono text-muted" style={{ fontSize: '10px' }}>NO ENDPOINT</span>
                     )}
                   </td>
                   <td>
@@ -114,6 +169,35 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
               ))}
             </tbody>
           </table>
+          )}
+        </div>
+      )}
+
+      {selectedAgent && (
+        <div className="policy-modal-overlay">
+          <div className="econ-card policy-modal-dialog">
+            <div className="modal-header">
+              <div>
+                <span className="econ-eyebrow">// LIVE AGENT SERVICE</span>
+                <h3 className="modal-title">USE {selectedAgent.name}</h3>
+              </div>
+              <button className="modal-close-btn" onClick={() => setSelectedAgent(null)}>X</button>
+            </div>
+            <p className="text-muted font-mono" style={{ fontSize: '11px', marginBottom: '12px' }}>
+              Execution mode: demo response preview (backend integration paused)
+            </p>
+            <textarea
+              value={task}
+              onChange={(event) => setTask(event.target.value)}
+              placeholder="Describe the task for this agent"
+              rows={4}
+              style={{ width: '100%', background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '10px', fontFamily: 'var(--font-mono)' }}
+            />
+            <button className="btn-econ btn-econ-primary" onClick={invokeAgent} disabled={isUsing || !task.trim()} style={{ marginTop: '12px' }}>
+              {isUsing ? 'Sending request...' : 'Send Task'}
+            </button>
+            {useStatus && <pre className="terminal-window" style={{ marginTop: '12px', whiteSpace: 'pre-wrap' }}>{useStatus}</pre>}
+          </div>
         </div>
       )}
 

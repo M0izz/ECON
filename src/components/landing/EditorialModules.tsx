@@ -58,7 +58,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
           <div className="lime-cta-bar">
             <button
               className="econ-btn econ-btn-primary econ-btn-lg"
-              onClick={() => onEnterConsole('MARKETPLACE')}
+              onClick={() => onEnterConsole('AGENTS')}
             >
               <span>Explore Marketplace</span>
               <span className="econ-btn-arrow">↗</span>
@@ -186,7 +186,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
               </div>
               <button
                 className="econ-btn econ-btn-primary econ-btn-lg"
-                onClick={() => onEnterConsole('RECOVERY')}
+                onClick={() => onEnterConsole('AGENTS')}
               >
                 <span>Review Recovery →</span>
               </button>

@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ECON } from './sdk/client';
-import { LocalSettlementAdapter } from './settlement/LocalSettlementAdapter';
-import { MonadSettlementAdapter } from './settlement/MonadSettlementAdapter';
-import { SettlementMode } from './sdk/types';
 import { LandingPage } from './components/landing/LandingPage';
 import { ConsoleLayout, ConsoleTab } from './components/console/ConsoleLayout';
 import { ConsoleOverview } from './components/console/ConsoleOverview';
@@ -13,6 +10,7 @@ import { PolicyControlView } from './components/PolicyControlView';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
 import { MonadAgentPublisher } from './settlement/MonadAgentPublisher';
+import { MonadAgentDirectory } from './settlement/MonadAgentDirectory';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -22,8 +20,24 @@ export const App: React.FC = () => {
   const [, setRenderTrigger] = useState(0);
   const [walletAddress, setWalletAddress] = useState<string>();
   const [walletError, setWalletError] = useState<string>();
+  const [directory] = useState(() => new MonadAgentDirectory());
+  const [directoryStatus, setDirectoryStatus] = useState('Loading published agents from Monad...');
 
   const [econ] = useState(() => new ECON());
+
+  const syncPublishedAgents = async () => {
+    try {
+      const publishedAgents = await directory.listPublishedAgents();
+      publishedAgents.forEach((agent) => econ.store.setAgent(agent));
+      setDirectoryStatus(`${publishedAgents.length} published agents found on Monad Testnet`);
+    } catch (error) {
+      setDirectoryStatus(error instanceof Error ? error.message : 'Could not read Monad agent registry');
+    }
+  };
+
+  useEffect(() => {
+    void syncPublishedAgents();
+  }, [directory]);
 
   // Subscribe to reactive store and event updates
   useEffect(() => {
@@ -41,20 +55,11 @@ export const App: React.FC = () => {
     };
   }, [econ]);
 
-  const agents = econ.store.getAllAgents();
+  const agents = econ.store.getAllAgents().filter((agent) => agent.onChainAgentId);
   const objects = econ.store.getAllObjects();
   const services = econ.discovery.search({});
   const events = econ.events.getHistory();
   const plans = econ.store.getAllRecoveryPlans();
-
-  const handleToggleSettlement = (mode: SettlementMode) => {
-    if (mode === 'LOCAL_SIMULATION') {
-      econ.setSettlementAdapter(new LocalSettlementAdapter(econ.store, econ.events));
-    } else {
-      econ.setSettlementAdapter(new MonadSettlementAdapter(econ.store, econ.events));
-    }
-    setRenderTrigger((p) => p + 1);
-  };
 
   const handleConnectWallet = async () => {
     setWalletError(undefined);
@@ -100,7 +105,6 @@ export const App: React.FC = () => {
       currentTab={consoleTab}
       onSelectTab={setConsoleTab}
       onSwitchToLanding={() => setViewMode('LANDING')}
-      onToggleSettlement={handleToggleSettlement}
       walletAddress={walletAddress}
       walletError={walletError}
       onConnectWallet={handleConnectWallet}
@@ -109,6 +113,7 @@ export const App: React.FC = () => {
         <ConsoleOverview
           store={econ.store}
           events={events}
+          directoryStatus={directoryStatus}
           onNavigate={(tab) => setConsoleTab(tab as ConsoleTab)}
         />
       )}
@@ -120,7 +125,11 @@ export const App: React.FC = () => {
       {consoleTab === 'AGENT_BUILDER' && (
         <AgentBuilder
           econ={econ}
-          onAgentCreated={() => setRenderTrigger((p) => p + 1)}
+            onAgentCreated={(agent) => {
+              directory.rememberPublishedAgent(agent);
+              setRenderTrigger((p) => p + 1);
+              void syncPublishedAgents();
+            }}
         />
       )}
 
