@@ -1,4 +1,4 @@
-import { Agent, AgentId, AgentPolicy, ObjectType, RecoveryPlan } from './types';
+import { Agent, AgentId, ObjectType, RecoveryPlan } from './types';
 import { EconomicStore } from './store';
 import { EventBus } from './events';
 
@@ -104,22 +104,6 @@ export class PolicyEngine {
     }
 
     return { allowed: true };
-  }
-
-  public updatePolicy(agentId: AgentId, updates: Partial<AgentPolicy>): void {
-    const agent = this.store.getAgent(agentId);
-    if (!agent) throw new Error(`Agent ${agentId} not found`);
-    agent.policy = {
-      ...agent.policy,
-      ...updates,
-    };
-    this.store.setAgent(agent);
-    this.eventBus.emit({
-      type: 'POLICY_UPDATED',
-      actor: agentId,
-      summary: `Policy updated for agent ${agent.name}`,
-      details: { agentId, updates },
-    });
   }
 
   private recordViolation(

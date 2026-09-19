@@ -9,12 +9,12 @@ import { EscrowManager } from './escrow';
 import { EconomicEngine } from './engine';
 import { EconomicGarbageCollector } from './garbageCollector';
 import { RecoveryEngine } from './recovery';
+import { CreditVault } from './creditVault';
 import { ExternalAgentConnector, ExternalAgentConnectionConfig } from './agent/connect';
 import { AgentRuntime } from './agent/runtime';
 import { Agent, AgentPolicy, AgentCapabilities, ModelProvider } from './types';
 import { DEFAULT_AGENT_POLICY } from './identity';
 import { DEFAULT_AGENT_CAPABILITIES } from './agent/capabilities';
-import { CreditVault } from './creditVault';
 
 export interface ECONConfig {
   store?: EconomicStore;
@@ -32,8 +32,8 @@ export class ECON {
   public readonly engine: EconomicEngine;
   public readonly gc: EconomicGarbageCollector;
   public readonly recovery: RecoveryEngine;
-  public readonly connector: ExternalAgentConnector;
   public readonly credits: CreditVault;
+  public readonly connector: ExternalAgentConnector;
 
   private activeSettlement: SettlementAdapter;
 
@@ -51,8 +51,8 @@ export class ECON {
     this.engine = new EconomicEngine(this.store, this.activeSettlement, this.policy, this.events);
     this.gc = new EconomicGarbageCollector(this.store, this.policy, this.events);
     this.recovery = new RecoveryEngine(this.store, this.activeSettlement, this.policy, this.events);
-    this.connector = new ExternalAgentConnector(this.store, this.events);
     this.credits = new CreditVault(this.store, this.events);
+    this.connector = new ExternalAgentConnector(this.store, this.events);
   }
 
   public connectExternalAgent(config: ExternalAgentConnectionConfig): Agent {
@@ -65,19 +65,21 @@ export class ECON {
     purpose?: string;
     modelProvider?: ModelProvider;
     initialBalanceMon?: number;
-    policy?: Partial<AgentPolicy>;
-    capabilities?: Partial<AgentCapabilities>;
     controller?: string;
     walletAddress?: string;
     onChainAgentId?: string;
     onChainTxHash?: string;
     metadataURI?: string;
+    policy?: Partial<AgentPolicy>;
+    capabilities?: Partial<AgentCapabilities>;
   }): Agent {
-    const wallet = config.controller || `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    const generatedWallet = `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    const wallet = config.walletAddress || generatedWallet;
+    const controller = config.controller || wallet;
     const agent: Agent = {
       id: config.id,
       name: config.name,
-      controller: wallet,
+      controller,
       walletAddress: config.walletAddress || `${wallet.substring(0, 6)}...${wallet.substring(38)}`,
       balanceMon: config.initialBalanceMon !== undefined ? config.initialBalanceMon : 100,
       reputationScore: 98.5,
@@ -121,8 +123,7 @@ export class ECON {
       this.escrow,
       this.gc,
       this.recovery,
-      this.events,
-      this.discovery
+      this.events
     );
   }
 
@@ -142,3 +143,4 @@ export class ECON {
 }
 
 export const defaultEcon = new ECON();
+
