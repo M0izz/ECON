@@ -7,6 +7,7 @@ export interface MonadConfig {
   rpcUrl?: string;
   chainId?: number;
   identityRegistryAddress?: string;
+  reputationRegistryAddress?: string;
   economicObjectAddress?: string;
   escrowAddress?: string;
 }
@@ -14,7 +15,9 @@ export interface MonadConfig {
 export const MONAD_TESTNET_CONFIG: MonadConfig = {
   rpcUrl: 'https://testnet-rpc.monad.xyz',
   chainId: 10143,
-  identityRegistryAddress: '0x8A127d420E4D9C861BDeF29fE32190A2b5C74F01',
+  // Official Monad ERC-8004 AI & Agent Identity Standards
+  identityRegistryAddress: '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432',
+  reputationRegistryAddress: '0x8004BAa17C55a88189AE136b182e5fdA19dE9b63',
   economicObjectAddress: '0x39F494E03d3f9b2A4C2a01D7aB4BFe5aDe71C802',
   escrowAddress: '0x62B9D90e964C108779951664c39832B6F9A27F03',
 };

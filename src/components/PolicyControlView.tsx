@@ -182,11 +182,21 @@ export const PolicyControlView: React.FC<PolicyControlViewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ padding: '8px 10px', background: 'var(--bg-app)', border: '1px solid var(--border-color)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="font-mono" style={{ fontWeight: 600 }}>ECONIdentityRegistry.sol</span>
-                  <span className="badge badge-mint font-mono">DEPLOYED</span>
+                  <span className="font-mono" style={{ fontWeight: 600 }}>ERC-8004 IdentityRegistry</span>
+                  <span className="badge badge-mint font-mono">MONAD STANDARD</span>
                 </div>
                 <div className="font-mono text-muted" style={{ fontSize: '10.5px', marginTop: '3px' }}>
                   {MONAD_TESTNET_CONFIG.identityRegistryAddress}
+                </div>
+              </div>
+
+              <div style={{ padding: '8px 10px', background: 'var(--bg-app)', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="font-mono" style={{ fontWeight: 600 }}>ERC-8004 ReputationRegistry</span>
+                  <span className="badge badge-mint font-mono">MONAD STANDARD</span>
+                </div>
+                <div className="font-mono text-muted" style={{ fontSize: '10.5px', marginTop: '3px' }}>
+                  {MONAD_TESTNET_CONFIG.reputationRegistryAddress}
                 </div>
               </div>
 
