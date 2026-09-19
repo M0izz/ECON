@@ -4,10 +4,11 @@ import { EconomicStore } from '../../sdk/store';
 interface ConsoleOverviewProps {
   store: EconomicStore;
   events: { id: string; timestamp: number; actor: string; type: string; summary: string }[];
+  directoryStatus: string;
   onNavigate: (tab: string) => void;
 }
 
-export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, events, onNavigate }) => {
+export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, events, directoryStatus, onNavigate }) => {
   const derived = store.getDerivedState();
   const agents = store.getAllAgents();
   const objects = store.getAllObjects();
@@ -28,8 +29,8 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, events,
           <span className="econ-eyebrow">// CONSOLE HEADQUARTERS</span>
           <h1 className="welcome-headline">GOOD MORNING, RESEARCH NETWORK.</h1>
           <p className="welcome-sub">
-            <strong className="text-lime-contrast">{agents.length} autonomous economic entities</strong> are
-            currently active and policy-governed across the network.
+            <strong className="text-lime-contrast">{agents.length} published agents</strong> are
+            currently discoverable from Monad Testnet.
           </p>
         </div>
 
@@ -67,7 +68,7 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({ store, events,
             <span className="econ-eyebrow">// REAL-TIME CHRONICLE</span>
             <h3 className="econ-title-md">AUTONOMOUS ECONOMIC ACTIVITY TIMELINE</h3>
           </div>
-          <span className="econ-badge econ-badge-lime">LIVE LEDGER</span>
+          <span className="econ-badge econ-badge-lime">{directoryStatus}</span>
         </div>
         {events.length === 0 ? (
           <div className="text-muted font-mono" style={{ padding: '28px', textAlign: 'center' }}>

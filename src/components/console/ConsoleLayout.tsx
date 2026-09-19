@@ -1,5 +1,4 @@
 import React from 'react';
-import { SettlementMode } from '../../sdk/types';
 import { EconomicStore } from '../../sdk/store';
 
 export type ConsoleTab =
@@ -22,7 +21,6 @@ interface ConsoleLayoutProps {
   currentTab: ConsoleTab;
   onSelectTab: (tab: ConsoleTab) => void;
   onSwitchToLanding: () => void;
-  onToggleSettlement: (mode: SettlementMode) => void;
   walletAddress?: string;
   walletError?: string;
   onConnectWallet: () => void;
@@ -34,15 +32,13 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
   currentTab,
   onSelectTab,
   onSwitchToLanding,
-  onToggleSettlement,
   walletAddress,
   walletError,
   onConnectWallet,
   children,
 }) => {
   const derived = store.getDerivedState();
-  const currentMode = store.getSettlementMode();
-  const isMonad = currentMode === 'MONAD_TESTNET';
+  const isMonad = true;
 
   return (
     <div className="console-app-root">
@@ -127,21 +123,6 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
             )}
           </div>
 
-          {/* Settlement Mode Selector Toggle */}
-          <div className="settlement-selector-group">
-            <button
-              className={`settlement-btn ${!isMonad ? 'active' : ''}`}
-              onClick={() => onToggleSettlement('LOCAL_SIMULATION')}
-            >
-              SIMULATOR
-            </button>
-            <button
-              className={`settlement-btn ${isMonad ? 'active' : ''}`}
-              onClick={() => onToggleSettlement('MONAD_TESTNET')}
-            >
-              MONAD 10143
-            </button>
-          </div>
         </div>
       </header>
 
@@ -193,60 +174,11 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
             </button>
           </div>
 
-          {/* Activity */}
           <div className="sidebar-group">
-            <div className="sidebar-group-title">ACTIVITY</div>
-            <button
-              className={`sidebar-link ${currentTab === 'TRANSACTIONS' ? 'active' : ''}`}
-              onClick={() => onSelectTab('TRANSACTIONS')}
-            >
-              <span className="s-icon">📜</span>
-              <span>Audit Ledger</span>
-            </button>
-            <button
-              className={`sidebar-link ${currentTab === 'ESCROW' ? 'active' : ''}`}
-              onClick={() => onSelectTab('ESCROW')}
-            >
-              <span className="s-icon">🔒</span>
-              <span>Escrow Contracts</span>
-            </button>
-          </div>
-
-          {/* Recovery - Signature Feature */}
-          <div className="sidebar-group highlight-recovery-group">
-            <div className="sidebar-group-title text-accent-pink">RECOVERY</div>
-            <button
-              className={`sidebar-link recovery-link ${currentTab === 'RECOVERY' ? 'active' : ''}`}
-              onClick={() => onSelectTab('RECOVERY')}
-            >
-              <span className="s-icon">♻️</span>
-              <span>Economic GC</span>
-              <span className="sidebar-pill-badge">{derived.totalStrandedValueMon.toFixed(1)}M</span>
-            </button>
-          </div>
-
-          {/* Control */}
-          <div className="sidebar-group">
-            <div className="sidebar-group-title">CONTROL</div>
-            <button
-              className={`sidebar-link ${currentTab === 'POLICIES' ? 'active' : ''}`}
-              onClick={() => onSelectTab('POLICIES')}
-            >
-              <span className="s-icon">🛡️</span>
-              <span>Policies & Caps</span>
-            </button>
-          </div>
-
-          {/* Developers */}
-          <div className="sidebar-group">
-            <div className="sidebar-group-title">DEVELOPERS</div>
-            <button
-              className={`sidebar-link ${currentTab === 'API_SDK' ? 'active' : ''}`}
-              onClick={() => onSelectTab('API_SDK')}
-            >
-              <span className="s-icon">💻</span>
-              <span>API & SDK Specs</span>
-            </button>
+            <div className="sidebar-group-title">CORE ECONOMY</div>
+            <div className="font-mono text-muted" style={{ padding: '8px 12px', fontSize: '10px', lineHeight: 1.5 }}>
+              Publish identities on Monad, discover the public network, and prepare credit allocation.
+            </div>
           </div>
         </aside>
 

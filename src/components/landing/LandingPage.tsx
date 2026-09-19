@@ -38,32 +38,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
                     <span className="econ-dropdown-title">Sovereign Identity</span>
                     <span className="econ-dropdown-desc">ERC-8004 smart agent registry</span>
                   </div>
-                  <div className="econ-dropdown-link" onClick={() => onEnterConsole('POLICIES')}>
-                    <span className="econ-dropdown-title">Policy Engine</span>
-                    <span className="econ-dropdown-desc">Deterministic spend guardrails</span>
+                  <div className="econ-dropdown-link" onClick={() => onEnterConsole('AGENT_BUILDER')}>
+                    <span className="econ-dropdown-title">Publish Agent</span>
+                    <span className="econ-dropdown-desc">Create a public Monad identity</span>
                   </div>
-                  <div className="econ-dropdown-link" onClick={() => onEnterConsole('RECOVERY')}>
-                    <span className="econ-dropdown-title">Economic GC</span>
-                    <span className="econ-dropdown-desc">Autonomous value recovery engine</span>
+                  <div className="econ-dropdown-link" onClick={() => onEnterConsole('AGENTS')}>
+                    <span className="econ-dropdown-title">Credit Network</span>
+                    <span className="econ-dropdown-desc">Discover published agents</span>
                   </div>
                 </div>
               </div>
             </li>
 
             <li className="econ-nav-item">
-              <a href="#economy" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('MARKETPLACE'); }}>
+              <a href="#economy" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>
                 Economy
               </a>
             </li>
 
             <li className="econ-nav-item">
-              <a href="#developers" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>
+              <a href="#developers" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENT_BUILDER'); }}>
                 Developers
               </a>
             </li>
 
             <li className="econ-nav-item">
-              <a href="#resources" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>
+              <a href="#resources" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>
                 Resources
               </a>
             </li>
@@ -117,11 +117,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
         <button className="econ-btn econ-btn-ghost" onClick={() => { setMobileMenuOpen(false); onEnterConsole('AGENTS'); }}>
           Agents & Identity
         </button>
-        <button className="econ-btn econ-btn-ghost" onClick={() => { setMobileMenuOpen(false); onEnterConsole('RECOVERY'); }}>
-          Economic GC
+        <button className="econ-btn econ-btn-ghost" onClick={() => { setMobileMenuOpen(false); onEnterConsole('AGENTS'); }}>
+          Credit Network
         </button>
-        <button className="econ-btn econ-btn-ghost" onClick={() => { setMobileMenuOpen(false); onEnterConsole('POLICIES'); }}>
-          Policy Engine
+        <button className="econ-btn econ-btn-ghost" onClick={() => { setMobileMenuOpen(false); onEnterConsole('AGENT_BUILDER'); }}>
+          Publish Agent
         </button>
         <button className="econ-btn econ-btn-primary" onClick={() => { setMobileMenuOpen(false); onEnterConsole('AGENT_BUILDER'); }}>
           Launch Agent Runtime ↗
@@ -157,9 +157,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
           <div className="footer-links-col">
             <h5>ARCHITECTURE</h5>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>ERC-8004 Identity</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('POLICIES'); }}>Policy Engine Guard</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('RECOVERY'); }}>Expected Value GC</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('MARKETPLACE'); }}>Escrow Settlement</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENT_BUILDER'); }}>Publish on Monad</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>Credit Network</a>
           </div>
 
           <div className="footer-links-col">
@@ -174,8 +173,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
             <h5>DEVELOPERS</h5>
             <a href="https://github.com/M0izz/ECON" target="_blank" rel="noopener noreferrer">GitHub Repository ↗</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENT_BUILDER'); }}>Agent Builder UI</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>Published Agent Network</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENTS'); }}>Public Registry</a>
           </div>
         </div>
 
