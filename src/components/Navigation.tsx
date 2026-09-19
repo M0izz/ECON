@@ -11,12 +11,13 @@ import {
 } from 'lucide-react';
 
 export type NavTab =
+  | 'SIMULATION_SLICE'
+  | 'AGENT_BUILDER'
   | 'COMMAND_CENTER'
   | 'ENTITIES'
   | 'DISCOVERY'
   | 'RECOVERY'
   | 'POLICY_CONTROL'
-  | 'SIMULATION_SLICE'
   | 'AUDIT_LOG';
 
 interface NavigationProps {
@@ -34,7 +35,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     <aside className="sidebar">
       {/* Simulation Vertical Slice Highlight */}
       <div className="sidebar-nav-section" style={{ paddingBottom: '4px' }}>
-        <div className="sidebar-section-title">Central Demo</div>
+        <div className="sidebar-section-title">Autonomous Core</div>
         <button
           className={`sidebar-btn ${currentTab === 'SIMULATION_SLICE' ? 'active' : ''}`}
           onClick={() => onSelectTab('SIMULATION_SLICE')}
@@ -44,6 +45,16 @@ export const Navigation: React.FC<NavigationProps> = ({
         >
           <PlaySquare size={14} className="text-mint" />
           <span>10-Step Simulation</span>
+        </button>
+        <button
+          className={`sidebar-btn ${currentTab === 'AGENT_BUILDER' ? 'active' : ''}`}
+          onClick={() => onSelectTab('AGENT_BUILDER')}
+          style={{
+            borderColor: currentTab === 'AGENT_BUILDER' ? 'var(--accent-blue)' : undefined,
+          }}
+        >
+          <Boxes size={14} className="text-blue" />
+          <span>Agent Builder</span>
         </button>
       </div>
 

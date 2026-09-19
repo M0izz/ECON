@@ -12,6 +12,7 @@ import { DiscoveryView } from './components/DiscoveryView';
 import { RecoveryView } from './components/RecoveryView';
 import { PolicyControlView } from './components/PolicyControlView';
 import { SimulationSlice } from './components/SimulationSlice';
+import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
 
 export const App: React.FC = () => {
@@ -151,6 +152,15 @@ export const App: React.FC = () => {
               sim={sim}
               onStateChange={() => setRenderTrigger((p) => p + 1)}
               onResetSeed={handleResetSeed}
+            />
+          )}
+
+          {currentTab === 'AGENT_BUILDER' && (
+            <AgentBuilder
+              econ={econ}
+              onAgentCreated={() => {
+                setRenderTrigger((p) => p + 1);
+              }}
             />
           )}
 

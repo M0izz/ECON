@@ -55,6 +55,33 @@ export interface AgentPolicy {
   minRetainedBalance: number; // In MON floor that cannot be spent
 }
 
+export interface AgentCapabilities {
+  // Economic Capabilities
+  canPurchaseServices: boolean;
+  canSellAssets: boolean;
+  canExchangeAssets: boolean;
+  canCreateContracts: boolean;
+  canUseEscrow: boolean;
+  canReceivePayments: boolean;
+  canTransferObjects: boolean;
+  canRecoverValue: boolean;
+
+  // Data & Compute Capabilities
+  canSearchDatasets: boolean;
+  canPurchaseApis: boolean;
+  canSellDatasets: boolean;
+  canLeaseCompute: boolean;
+
+  // Autonomy Rules
+  autonomousTransactions: boolean;
+  automaticRecovery: boolean;
+  automaticMarketplaceListing: boolean;
+}
+
+export type AgentOrigin = 'NATIVE' | 'EXTERNAL';
+export type ModelProvider = 'OPENAI' | 'ANTHROPIC' | 'GEMINI' | 'LOCAL' | 'EXTERNAL_RUNTIME';
+export type AutonomyLevel = 'MANUAL' | 'SEMI_AUTONOMOUS' | 'FULL';
+
 export interface Agent {
   id: AgentId;
   name: string;
@@ -66,6 +93,13 @@ export interface Agent {
   registeredAt: number;
   policy: AgentPolicy;
   activeObligations: number; // MON owed in active locks
+
+  // Extended Agent Layer
+  origin?: AgentOrigin;
+  purpose?: string;
+  modelProvider?: ModelProvider;
+  capabilities?: AgentCapabilities;
+  autonomyLevel?: AutonomyLevel;
 }
 
 export type EscrowStatus =

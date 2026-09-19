@@ -9,6 +9,11 @@ import { EscrowManager } from './escrow';
 import { EconomicEngine } from './engine';
 import { EconomicGarbageCollector } from './garbageCollector';
 import { RecoveryEngine } from './recovery';
+import { ExternalAgentConnector, ExternalAgentConnectionConfig } from './agent/connect';
+import { AgentRuntime } from './agent/runtime';
+import { Agent, AgentPolicy, AgentCapabilities, ModelProvider } from './types';
+import { DEFAULT_AGENT_POLICY } from './identity';
+import { DEFAULT_AGENT_CAPABILITIES } from './agent/capabilities';
 
 export interface ECONConfig {
   store?: EconomicStore;
@@ -22,10 +27,11 @@ export class ECON {
   public readonly policy: PolicyEngine;
   public readonly identity: IdentityRegistry;
   public readonly discovery: DiscoveryRegistry;
-  public readonly escrow: EscrowManager;
+  public escrow: EscrowManager;
   public readonly engine: EconomicEngine;
   public readonly gc: EconomicGarbageCollector;
   public readonly recovery: RecoveryEngine;
+  public readonly connector: ExternalAgentConnector;
 
   private activeSettlement: SettlementAdapter;
 
@@ -43,6 +49,69 @@ export class ECON {
     this.engine = new EconomicEngine(this.store, this.activeSettlement, this.policy, this.events);
     this.gc = new EconomicGarbageCollector(this.store, this.policy, this.events);
     this.recovery = new RecoveryEngine(this.store, this.activeSettlement, this.policy, this.events);
+    this.connector = new ExternalAgentConnector(this.store, this.events);
+  }
+
+  public connectExternalAgent(config: ExternalAgentConnectionConfig): Agent {
+    return this.connector.connect(config);
+  }
+
+  public createNativeAgent(config: {
+    id: string;
+    name: string;
+    purpose?: string;
+    modelProvider?: ModelProvider;
+    initialBalanceMon?: number;
+    policy?: Partial<AgentPolicy>;
+    capabilities?: Partial<AgentCapabilities>;
+  }): Agent {
+    const wallet = `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+    const agent: Agent = {
+      id: config.id,
+      name: config.name,
+      controller: wallet,
+      walletAddress: `${wallet.substring(0, 6)}...${wallet.substring(38)}`,
+      balanceMon: config.initialBalanceMon !== undefined ? config.initialBalanceMon : 100,
+      reputationScore: 98.5,
+      active: true,
+      registeredAt: Date.now(),
+      policy: {
+        ...DEFAULT_AGENT_POLICY,
+        ...config.policy,
+      },
+      activeObligations: 0,
+      origin: 'NATIVE',
+      purpose: config.purpose || 'Autonomous native entity inside ECON',
+      modelProvider: config.modelProvider || 'GEMINI',
+      capabilities: {
+        ...DEFAULT_AGENT_CAPABILITIES,
+        ...config.capabilities,
+      },
+      autonomyLevel: 'FULL',
+    };
+
+    this.store.setAgent(agent);
+    this.events.emit({
+      type: 'AGENT_REGISTERED',
+      actor: agent.id,
+      summary: `Native ECON agent deployed: ${agent.name} (Model: ${agent.modelProvider}, Budget: ${agent.balanceMon} MON)`,
+      details: { id: agent.id, name: agent.name, origin: 'NATIVE', model: agent.modelProvider },
+    });
+
+    return agent;
+  }
+
+  public getRuntime(agentId: string): AgentRuntime {
+    return new AgentRuntime(
+      agentId,
+      this.store,
+      this.policy,
+      this.engine,
+      this.escrow,
+      this.gc,
+      this.recovery,
+      this.events
+    );
   }
 
   public setSettlementAdapter(adapter: SettlementAdapter): void {
