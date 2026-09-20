@@ -253,7 +253,43 @@ export function initializeDemoSeed(econ: ECON): void {
 
   services.forEach((s) => econ.discovery.registerService(s));
 
-  // 4. Seed Initial Events
+  // 4. Seed Escrow Commitments
+  econ.store.setEscrow({
+    id: 'esc-monad-h100-batch',
+    buyer: 'ResearchAgent-42',
+    seller: 'ComputeAgent-3',
+    amountMon: 18.0,
+    condition: 'NVIDIA H100 8-node GPU batch execution cluster SLA 99.9%',
+    status: 'LOCKED',
+    createdAt: Date.now() - 1800000,
+    deadline: Date.now() + 86400000,
+  });
+
+  econ.store.setEscrow({
+    id: 'esc-geovision-sat-01',
+    buyer: 'AlphaArbitrage-7',
+    seller: 'GeoVision-Provider',
+    amountMon: 12.0,
+    condition: 'High-resolution Mumbai satellite orthorectified imagery tile',
+    deliveryHash: '0x8f3c71a92e104bda8571028c312d4a5b6c7e8f90123456789abcdef012345678',
+    status: 'DELIVERED',
+    createdAt: Date.now() - 3600000,
+    deadline: Date.now() + 43200000,
+  });
+
+  econ.store.setEscrow({
+    id: 'esc-storage-backup-02',
+    buyer: 'StorageAgent-8',
+    seller: 'MarketAgent-5',
+    amountMon: 4.5,
+    condition: 'Decentralized encrypted model weights cold storage reservation',
+    status: 'RELEASED',
+    createdAt: Date.now() - 7200000,
+    deadline: Date.now() - 3600000,
+    releasedAt: Date.now() - 1800000,
+  });
+
+  // 5. Seed Initial Events
   econ.events.emit({
     type: 'AGENT_REGISTERED',
     actor: 'ResearchAgent-42',

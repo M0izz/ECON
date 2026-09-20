@@ -12,6 +12,7 @@ import { DiscoveryView } from './components/DiscoveryView';
 import { PolicyControlView } from './components/PolicyControlView';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
+import { EscrowContractsView } from './components/EscrowContractsView';
 import { MonadAgentPublisher } from './settlement/MonadAgentPublisher';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
@@ -46,14 +47,11 @@ export const App: React.FC = () => {
   const services = econ.discovery.search({});
   const events = econ.events.getHistory();
   const plans = econ.store.getAllRecoveryPlans();
+  const escrows = econ.store.getAllEscrows();
 
   const handleToggleSettlement = (mode: SettlementMode) => {
-    if (mode === 'LOCAL_SIMULATION') {
-      econ.setSettlementAdapter(new LocalSettlementAdapter(econ.store, econ.events));
-    } else {
-      econ.setSettlementAdapter(new MonadSettlementAdapter(econ.store, econ.events));
-    }
-    setRenderTrigger((p) => p + 1);
+    econ.store.setSettlementMode(mode);
+    setRenderTrigger((prev) => prev + 1);
   };
 
   const handleConnectWallet = async () => {
@@ -137,7 +135,12 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'ESCROW' && (
-        <EntitiesView agents={agents} objects={objects} />
+        <EscrowContractsView
+          econ={econ}
+          agents={agents}
+          escrows={escrows}
+          onRefresh={() => setRenderTrigger((p) => p + 1)}
+        />
       )}
 
       {consoleTab === 'RECOVERY' && (
@@ -159,43 +162,112 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'API_SDK' && (
-        <div className="econ-card">
-          <span className="econ-eyebrow">// DEVELOPER INTEGRATION SPECIFICATION</span>
-          <h2 className="econ-title-lg" style={{ margin: '8px 0 16px 0' }}>
-            ECON PROTOCOL SDK ARCHITECTURE
-          </h2>
-          <p className="text-secondary" style={{ maxWidth: '640px', marginBottom: '24px' }}>
-            Install the sovereign agent layer directly into your TypeScript or Python agents.
-            Settles natively on Monad Parallel EVM (Chain ID: 10143).
-          </p>
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="panel" style={{ padding: '20px' }}>
+            <span className="font-mono text-mint" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em' }}>
+              // DEVELOPER INTEGRATION SPECIFICATIONS
+            </span>
+            <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '8px 0 6px 0', color: '#FFF' }}>
+              ECON PROTOCOL & AGENT BACKEND APIS
+            </h2>
+            <p className="text-secondary" style={{ maxWidth: '720px', fontSize: '13px' }}>
+              Connect autonomous agents through our client SDKs or deploy sovereign execution nodes using the dedicated agent backend. Settles natively on Monad Parallel EVM (Chain ID: 10143).
+            </p>
+          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div className="econ-card" style={{ backgroundColor: '#03141C', border: '1px solid #0F3B4F' }}>
-              <span className="font-mono text-lime" style={{ fontSize: '12px', fontWeight: 800 }}>
-                TypeScript SDK: @econ/sdk
-              </span>
-              <pre className="font-mono text-muted" style={{ fontSize: '11px', marginTop: '12px' }}>
-{`npm install @econ/sdk
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {/* TypeScript SDK */}
+            <div className="panel" style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span className="font-mono text-mint" style={{ fontSize: '12px', fontWeight: 800 }}>
+                  TypeScript SDK: @econ/sdk
+                </span>
+                <span className="badge badge-mint font-mono">v1.0.0</span>
+              </div>
+              <pre className="font-mono" style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-app)', padding: '14px', borderRadius: '4px', overflowX: 'auto', lineHeight: '1.6' }}>
+{`// 1. Install and Initialize
+import { ECON } from '@econ/sdk';
 
-import { EconClient } from '@econ/sdk';
-const econ = new EconClient({
-  network: 'monad-testnet',
-  chainId: 10143
-});`}
+const econ = new ECON();
+
+// 2. Register Sovereign Economic Identity
+const agent = econ.createNativeAgent({
+  id: 'ArbitrageBot-1',
+  name: 'Arbitrage Strategy Agent',
+  initialBalanceMon: 25.0,
+  policy: {
+    maxPerTransaction: 5.0,
+    dailySpendingLimit: 20.0,
+    minRetainedBalance: 2.0,
+    autoRecoveryEnabled: true,
+  },
+});
+
+// 3. Conditional Escrow Lock
+const escrow = await econ.escrow.createEscrow(
+  'ArbitrageBot-1',
+  '0xComputeProvider',
+  4.5,
+  'Batch inference SLA 99.8%'
+);`}
               </pre>
             </div>
 
-            <div className="econ-card" style={{ backgroundColor: '#03141C', border: '1px solid #0F3B4F' }}>
-              <span className="font-mono text-lime" style={{ fontSize: '12px', fontWeight: 800 }}>
-                Python SDK: econ-sdk
-              </span>
-              <pre className="font-mono text-muted" style={{ fontSize: '11px', marginTop: '12px' }}>
-{`pip install econ-sdk
+            {/* Backend REST API */}
+            <div className="panel" style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span className="font-mono" style={{ fontSize: '12px', fontWeight: 800, color: '#CFFF3D' }}>
+                  Agent Backend API (backend/)
+                </span>
+                <span className="badge badge-cyan font-mono">PORT 3001</span>
+              </div>
+              <pre className="font-mono" style={{ fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-app)', padding: '14px', borderRadius: '4px', overflowX: 'auto', lineHeight: '1.6' }}>
+{`# Health Check
+GET /health
+-> { "status": "ok", "uptime": 1204 }
 
-from econ import EconClient
-econ = EconClient(network="monad-testnet")
-agent = econ.register_agent("ResearchBot")`}
+# Agent Metadata & Verification
+GET /metadata
+-> { "name": "ECON Agent Node", "erc8004": true }
+
+# Execute Idempotent Task
+POST /run
+Headers:
+  X-Request-ID: <uuid>
+Body:
+  {
+    "task": "analyze_orderbook",
+    "wallet": "0x123...abc",
+    "credits": 5
+  }
+-> { "status": "completed", "creditsConsumed": 5 }`}
               </pre>
+            </div>
+          </div>
+
+          {/* Smart Contract Reference */}
+          <div className="panel" style={{ padding: '16px' }}>
+            <span className="font-mono text-muted" style={{ fontSize: '11px', fontWeight: 700 }}>
+              VERIFIED MONAD TESTNET SMART CONTRACTS
+            </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '12px' }}>
+              <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONEscrow.sol</div>
+                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x62B9D90e964C108779951664c39832B6F9A27F03</div>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Conditional value locks & releases</div>
+              </div>
+
+              <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONCreditVault.sol</div>
+                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x7E3a8451D879F439fDa744747B0593B6Eda30022</div>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Recyclable credit reserves & allocations</div>
+              </div>
+
+              <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONIdentity (ERC-8004)</div>
+                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x8004A818b43A4F469612C57cEC58c9735D1e1234</div>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Cryptographic agent passport registry</div>
+              </div>
             </div>
           </div>
         </div>

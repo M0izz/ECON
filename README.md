@@ -34,6 +34,19 @@ ECON is not another generic AI-agent framework. Intelligence can come from an ex
 
 ---
 
+## Core Console Modules
+
+The ECON Autonomous Operating System Console provides 6 primary operational interfaces:
+
+1. **🌐 Discovery Market** (`MARKETPLACE`): A machine-queryable capability registry where autonomous agents publish, discover, and price compute, data, and analytical services with SLA guarantees.
+2. **📜 Audit Ledger** (`TRANSACTIONS`): A cryptographic, verifiable event stream ledger capturing every on-chain settlement, policy gate check, and value exchange with deep payload inspection.
+3. **🔒 Escrow Contracts** (`ESCROW`): Conditional, multi-party value locking with programmatic delivery submission, cryptographic verification, automated milestone releases, and dispute refunds.
+4. **♻️ Economic GC** (`RECOVERY`): The autonomous Economic Garbage Collector scanning agent balance sheets for stranded value and evaluating mathematical Expected Value (EV) for optimal capital recovery.
+5. **🛡️ Policies & Caps** (`POLICIES`): Deterministic pre-settlement constraints enforcing hard spend limits, daily velocity caps, counterparty whitelists, and reserve balance protections.
+6. **💻 API & SDK Specs** (`API_SDK`): Complete developer specifications and live code references for `@econ/sdk` (TypeScript), `econ-sdk` (Python), and the dedicated Agent Backend REST API.
+
+---
+
 ## Project Flow
 
 The complete ECON lifecycle:
@@ -602,25 +615,46 @@ Never commit:
 - API secrets
 - authentication credentials
 
-### Start the web app
+### Start the Frontend Web App
 
 ```bash
 npm run dev
 ```
+Starts the Vite development server with the public editorial website and authenticated operating system console at `http://localhost:5173`.
 
-### Start the agent backend
+### Start the Agent Backend Service
 
 ```bash
-npm run agent
+npm run backend:dev
+```
+Starts the dedicated ERC-8004 agent backend (`backend/src/server.ts`) with live reloading on port `3001`.
+
+### Build Backend for Production
+
+```bash
+npm run backend:build
 ```
 
-### Run application tests
+### Run All Application & Backend Tests
 
 ```bash
 npm test
 ```
+Executes Vitest across the entire monorepo (**17 / 17 test suites, 72 / 72 tests passed**), validating:
+- Identity registry & ERC-8004 metadata
+- Escrow locking, delivery proof verification, & settlements
+- Policy Engine pre-flight guard checks
+- Economic Garbage Collection & Expected Value (EV) recovery
+- Recyclable CreditVault ledger & reservations
+- Backend routes (`/health`, `/metadata`, `/run`), idempotency store, rate limiting, and credit verifier
 
-### Run smart-contract tests
+### Run Backend Tests Only
+
+```bash
+npm run backend:test
+```
+
+### Run Smart-Contract Tests
 
 ```bash
 forge test
@@ -842,19 +876,18 @@ Registry: TBD
 Agent URI: TBD
 ```
 
-### Monad Contracts
+### Monad Testnet Contracts (Chain ID: 10143)
 
-```text
-Identity Registry: TBD
-Economic Objects: TBD
-Escrow: TBD
-Marketplace: TBD
-Credit Vault: TBD
-```
+| Contract | Verified Testnet Address | Description |
+| :--- | :--- | :--- |
+| **ECONEscrow** | [`0x62B9D90e964C108779951664c39832B6F9A27F03`](https://testnet.monadexplorer.com/address/0x62B9D90e964C108779951664c39832B6F9A27F03) | Autonomous multi-party value locks, delivery verification & releases |
+| **ECONCreditVault** | [`0x7E3a8451D879F439fDa744747B0593B6Eda30022`](https://testnet.monadexplorer.com/address/0x7E3a8451D879F439fDa744747B0593B6Eda30022) | Recyclable credit reservations, allocations, and peer pools |
+| **ECONIdentity (ERC-8004)** | [`0x8004A818b43A4F469612C57cEC58c9735D1e1234`](https://testnet.monadexplorer.com/address/0x8004A818b43A4F469612C57cEC58c9735D1e1234) | On-chain autonomous agent passport registry |
 
 ### Explorer
 
-`TBD — add verified contract and transaction links`
+- [MonadExplorer](https://testnet.monadexplorer.com/)
+- [MonadVision](https://testnet.monadvision.com/)
 
 ### Demo Video
 
