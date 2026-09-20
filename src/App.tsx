@@ -13,7 +13,9 @@ import { PolicyControlView } from './components/PolicyControlView';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
 import { EscrowContractsView } from './components/EscrowContractsView';
-import { MonadAgentPublisher } from './settlement/MonadAgentPublisher';
+import { useAppKit } from '@reown/appkit/react';
+import { useAccount, useBalance, useSwitchChain } from 'wagmi';
+import { monadTestnet } from './config/wagmi';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -21,10 +23,31 @@ export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<AppViewMode>('LANDING');
   const [consoleTab, setConsoleTab] = useState<ConsoleTab>('OVERVIEW');
   const [, setRenderTrigger] = useState(0);
-  const [walletAddress, setWalletAddress] = useState<string>();
-  const [walletError, setWalletError] = useState<string>();
+
+  // Genuine Reown AppKit & Wagmi EVM hooks
+  const { open } = useAppKit();
+  const { address, isConnected, chain } = useAccount();
+  const { switchChain } = useSwitchChain();
+
+  // Retrieve the REAL live MON balance from the connected controller on Monad Testnet (Chain ID 10143)
+  const { data: balanceData } = useBalance({
+    address,
+    chainId: monadTestnet.id,
+  });
+
+  const isWrongNetwork = isConnected && chain?.id !== monadTestnet.id;
+  const formattedBalance = balanceData
+    ? `${Number(balanceData.formatted).toFixed(2)} ${balanceData.symbol}`
+    : undefined;
 
   const [econ] = useState(() => new ECON());
+
+  // Automatically activate Monad Testnet settlement mode when controller wallet connects
+  useEffect(() => {
+    if (isConnected && address) {
+      econ.store.setSettlementMode('MONAD_TESTNET');
+    }
+  }, [isConnected, address, econ]);
 
   // Subscribe to reactive store and event updates
   useEffect(() => {
@@ -54,16 +77,6 @@ export const App: React.FC = () => {
     setRenderTrigger((prev) => prev + 1);
   };
 
-  const handleConnectWallet = async () => {
-    setWalletError(undefined);
-    try {
-      const account = await new MonadAgentPublisher().connect();
-      setWalletAddress(account);
-    } catch (error) {
-      setWalletError(error instanceof Error ? error.message : 'Wallet connection failed');
-    }
-  };
-
   const handleUpdatePolicy = (agentId: string, updates: any) => {
     econ.identity.updatePolicy(agentId, updates);
   };
@@ -79,6 +92,14 @@ export const App: React.FC = () => {
     }
     setViewMode('CONSOLE');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSwitchToMonad = () => {
+    if (switchChain) {
+      switchChain({ chainId: monadTestnet.id });
+    } else {
+      open({ view: 'Networks' });
+    }
   };
 
   // Public Editorial Website Experience
@@ -99,15 +120,25 @@ export const App: React.FC = () => {
       onSelectTab={setConsoleTab}
       onSwitchToLanding={() => setViewMode('LANDING')}
       onToggleSettlement={handleToggleSettlement}
-      walletAddress={walletAddress}
-      walletError={walletError}
-      onConnectWallet={handleConnectWallet}
+      walletAddress={address}
+      walletBalance={formattedBalance}
+      isWrongNetwork={isWrongNetwork}
+      onSwitchToMonad={handleSwitchToMonad}
+      onOpenAccount={() => open({ view: 'Account' })}
+      onConnectWallet={() => open()}
     >
       {consoleTab === 'OVERVIEW' && (
         <ConsoleOverview
           store={econ.store}
           events={events}
           onNavigate={(tab) => setConsoleTab(tab as ConsoleTab)}
+          walletAddress={address}
+          walletBalance={formattedBalance}
+          isConnected={isConnected}
+          isWrongNetwork={isWrongNetwork}
+          onConnectWallet={() => open()}
+          onSwitchNetwork={handleSwitchToMonad}
+          onOpenAccount={() => open({ view: 'Account' })}
         />
       )}
 

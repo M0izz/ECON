@@ -24,7 +24,10 @@ interface ConsoleLayoutProps {
   onSwitchToLanding: () => void;
   onToggleSettlement: (mode: SettlementMode) => void;
   walletAddress?: string;
-  walletError?: string;
+  walletBalance?: string;
+  isWrongNetwork?: boolean;
+  onSwitchToMonad?: () => void;
+  onOpenAccount?: () => void;
   onConnectWallet: () => void;
   children: React.ReactNode;
 }
@@ -36,7 +39,10 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
   onSwitchToLanding,
   onToggleSettlement,
   walletAddress,
-  walletError,
+  walletBalance,
+  isWrongNetwork,
+  onSwitchToMonad,
+  onOpenAccount,
   onConnectWallet,
   children,
 }) => {
@@ -72,7 +78,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
           <div className="c-telemetry-strip">
             <div className="c-pill">
               <span className="c-lbl">TREASURY</span>
-              <span className="c-val">{derived.totalTreasuryMon.toFixed(1)} MON</span>
+              <span className="c-val">{walletBalance || `${derived.totalTreasuryMon.toFixed(1)} MON`}</span>
             </div>
             <div className="c-pill">
               <span className="c-lbl">STRANDED</span>
@@ -88,19 +94,38 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
         {/* Real Monad vs Local Simulation State Indicator */}
         <div className="c-header-right">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
-            <button
-              className={`settlement-btn ${walletAddress ? 'active' : ''}`}
-              onClick={onConnectWallet}
-              title="Connect your non-custodial browser wallet"
-            >
-              {walletAddress
-                ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-                : 'CONNECT WALLET'}
-            </button>
-            {walletError && (
-              <span className="font-mono" style={{ color: 'var(--signal-pink)', fontSize: '9px', maxWidth: '220px' }}>
-                {walletError}
-              </span>
+            {isWrongNetwork ? (
+              <button
+                className="settlement-btn"
+                style={{ background: '#E5A500', color: '#041B26', fontWeight: 800, border: '1px solid #FFD000' }}
+                onClick={onSwitchToMonad}
+                title="Your wallet is on another network. Click to switch to Monad Testnet."
+              >
+                SWITCH TO MONAD
+              </button>
+            ) : walletAddress ? (
+              <button
+                className="settlement-btn active"
+                onClick={onOpenAccount}
+                title="Manage connected controller wallet via AppKit"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#00E599', display: 'inline-block' }}></span>
+                <span>{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+                {walletBalance && (
+                  <span style={{ background: 'rgba(0, 229, 153, 0.15)', color: '#00E599', padding: '1px 5px', borderRadius: '4px', fontSize: '10px' }}>
+                    {walletBalance}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                className="settlement-btn"
+                onClick={onConnectWallet}
+                title="Connect your non-custodial browser or mobile wallet via Reown AppKit"
+              >
+                CONNECT WALLET
+              </button>
             )}
           </div>
           <div className="runtime-network-card">

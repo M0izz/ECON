@@ -47,7 +47,7 @@ const identityRegistryAbi = [
   },
 ] as const;
 
-interface Eip1193Provider {
+export interface Eip1193Provider {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
 }
 
@@ -70,8 +70,8 @@ export class MonadAgentPublisher {
     });
   }
 
-  public async connect(): Promise<Address> {
-    const provider = this.getProvider();
+  public async connect(targetProvider?: Eip1193Provider): Promise<Address> {
+    const provider = targetProvider || this.getProvider();
     await this.ensureMonadNetwork(provider);
     this.walletClient = createWalletClient({
       chain: MONAD_TESTNET,
@@ -85,9 +85,9 @@ export class MonadAgentPublisher {
     return account as Address;
   }
 
-  public async publishAgent(agentURI: string): Promise<MonadPublication> {
+  public async publishAgent(agentURI: string, targetProvider?: Eip1193Provider): Promise<MonadPublication> {
     if (!agentURI.trim()) throw new Error('Agent metadata URI is required');
-    const account = await this.connect();
+    const account = await this.connect(targetProvider);
     if (!this.walletClient) throw new Error('Wallet client is not connected');
 
     const deployedCode = await this.publicClient.getBytecode({
