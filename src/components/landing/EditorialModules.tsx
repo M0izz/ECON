@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { EconomicStore } from '../../sdk/store';
 import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS } from '../../sdk/fee';
 
@@ -9,16 +9,37 @@ interface EditorialModulesProps {
 
 export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnterConsole }) => {
   const [codeTab, setCodeTab] = useState<'TS' | 'PY'>('TS');
+  const containerRef = useRef<HTMLDivElement>(null);
   const derived = store.getDerivedState();
   const agents = store.getAllAgents();
   const objects = store.getAllObjects();
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('section-visible');
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+
+    const el = containerRef.current;
+    if (el) {
+      el.querySelectorAll('section').forEach((section) => observer.observe(section));
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="editorial-narrative-flow">
+    <div className="editorial-narrative-flow" ref={containerRef}>
       {/* ACT 04: ECONOMIC NETWORK (HIGH-ENERGY LIME SECTION) */}
       <section className="act-lime-section">
         <div className="act-inner-content text-ink">
-          <span className="econ-eyebrow ink">// 04 ECONOMIC NETWORK</span>
+          <span className="econ-eyebrow ink">ECONOMIC NETWORK</span>
           <h2 className="econ-title-xl text-ink">
             AGENTS SHOULDN'T OPERATE IN ISOLATION.
           </h2>
@@ -70,7 +91,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       {/* ACT 05: MONAD SETTLEMENT FABRIC (DARK INK SECTION) */}
       <section className="act-dark-monad-section">
         <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 05 SETTLEMENT FABRIC</span>
+          <span className="econ-eyebrow lime">SETTLEMENT FABRIC</span>
           <h2 className="econ-title-xl text-white">
             AN ECONOMY NEEDS SETTLEMENT.
           </h2>
@@ -136,7 +157,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       {/* ACT 06: SIGNATURE PRODUCT — THE CLIMAX (PINK / CREAM SECTION) */}
       <section className="act-signature-recovery-section">
         <div className="act-inner-content">
-          <span className="econ-eyebrow pink">// 06 SIGNATURE HERO FEATURE</span>
+          <span className="econ-eyebrow pink">SIGNATURE HERO FEATURE</span>
           <h2 className="econ-display-hero recovery-climax-headline">
             <span>WHAT HAPPENS TO VALUE</span>
             <span className="text-accent-pink">AN AGENT STOPS USING?</span>
@@ -209,7 +230,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       {/* ACT 07: LIVE ECONOMY (DATA & REAL STATE) */}
       <section className="act-live-economy-section">
         <div className="act-inner-content">
-          <span className="econ-eyebrow">// 07 VERIFIABLE ON-CHAIN STATE</span>
+          <span className="econ-eyebrow">VERIFIABLE ON-CHAIN STATE</span>
           <h2 className="econ-title-xl">
             LIVE ECONOMIC NETWORK METRICS.
           </h2>
@@ -245,7 +266,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       {/* ACT 09: REVENUE MODEL (DARK SECTION BEFORE BUILD) */}
       <section className="act-dark-monad-section" id="revenue-model">
         <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 09 REVENUE MODEL</span>
+          <span className="econ-eyebrow lime">REVENUE MODEL</span>
           <h2 className="econ-title-xl text-white">
             ECON EARNS WHEN IT CREATES VALUE.
           </h2>
@@ -342,7 +363,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       {/* ACT 08: BUILD (DUAL-PATH SDK & FINAL CTA) */}
       <section className="act-build-section">
         <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 08 DEVELOPER INTEGRATION</span>
+          <span className="econ-eyebrow lime">DEVELOPER INTEGRATION</span>
           <h2 className="econ-title-xl text-white">
             GIVE YOUR AGENTS AN ECONOMY.
           </h2>

@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export const BigStatementSection: React.FC = () => {
+  const containerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('section-visible');
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+
+    const el = containerRef.current;
+    if (el) {
+      el.querySelectorAll(':scope > div').forEach((div) => observer.observe(div));
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="narrative-act-container">
+    <section className="narrative-act-container" ref={containerRef}>
       {/* ACT 02: BIG STATEMENT (DARK INK SECTION) */}
       <div className="act-dark-statement">
         <div className="act-inner-content">
-          <span className="econ-eyebrow lime">// 02 THE THESIS</span>
+          <span className="econ-eyebrow lime">THE THESIS</span>
           <p className="statement-lead">SOFTWARE CAN ACT.</p>
           <h2 className="statement-headline">
             NOW IT CAN PARTICIPATE<br />
@@ -51,7 +73,7 @@ export const BigStatementSection: React.FC = () => {
       {/* ACT 03: IDENTITY (OFF-WHITE SECTION) */}
       <div className="act-identity-section">
         <div className="act-inner-content">
-          <span className="econ-eyebrow">// 03 SOVEREIGN IDENTITY</span>
+          <span className="econ-eyebrow">SOVEREIGN IDENTITY</span>
           <h2 className="econ-title-xl section-title">
             EVERY AGENT NEEDS MORE THAN INTELLIGENCE.
           </h2>

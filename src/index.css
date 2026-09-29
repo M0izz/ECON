@@ -1983,6 +1983,51 @@ body {
   margin: 0;
 }
 
+/* ============================================================
+   SMOOTH SCROLL + SECTION BLEND TRANSITIONS
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Each landing section fades in as it enters the viewport */
+.editorial-narrative-flow section,
+.narrative-act-container > div {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.editorial-narrative-flow section.section-visible,
+.narrative-act-container > div.section-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Gradient blend mask between sections — fades bottom of each section into the next */
+.editorial-narrative-flow section::after,
+.narrative-act-container > div::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: inherit;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.editorial-narrative-flow section,
+.narrative-act-container > div {
+  position: relative;
+}
+
 /* ACT 04: ECONOMIC NETWORK (LIME SECTION) */
 .act-lime-section {
   background-color: var(--econ-lime);
