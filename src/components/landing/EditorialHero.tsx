@@ -42,7 +42,6 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onEnterConsole }) 
             onClick={() => onEnterConsole('AGENT_BUILDER')}
           >
             <span>Start building</span>
-            <span className="econ-btn-arrow">↗</span>
           </button>
 
           <button
@@ -50,7 +49,6 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({ onEnterConsole }) 
             onClick={() => onEnterConsole('OVERVIEW')}
           >
             <span>Explore ECON</span>
-            <span className="econ-btn-arrow">→</span>
           </button>
         </div>
       </div>

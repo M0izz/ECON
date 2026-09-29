@@ -78,7 +78,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
             rel="noopener noreferrer"
             className="econ-nav-text-link"
           >
-            GitHub ↗
+            GitHub
           </a>
 
           <a
@@ -95,7 +95,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
             onClick={() => onEnterConsole('OVERVIEW')}
           >
             <span>Launch ECON</span>
-            <span className="econ-btn-arrow">↗</span>
           </button>
 
           {/* Mobile hamburger button */}

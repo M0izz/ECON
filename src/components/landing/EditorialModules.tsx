@@ -62,7 +62,6 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
               onClick={() => onEnterConsole('MARKETPLACE')}
             >
               <span>Explore Marketplace</span>
-              <span className="econ-btn-arrow">↗</span>
             </button>
           </div>
         </div>
