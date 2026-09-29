@@ -913,6 +913,70 @@ The architecture is designed around real Monad Testnet deployment. Deployment-sp
 
 ---
 
+## Business Model
+
+> **ECON earns when it creates or facilitates economic value — through settlement, commerce, infrastructure, and recovered value.**
+
+ECON monetizes economic activity through transaction and marketplace fees, while advanced agent infrastructure is offered through subscription plans and successful value recovery is monetized through a recovery fee.
+
+### Revenue Streams
+
+| Revenue Stream | How ECON Earns | Rate |
+|---|---|---|
+| **Transaction Fee** | Small fee on eligible ECON-settled transactions | 0.5% (50 bps) |
+| **Marketplace Fee** | Fee when an economic object is bought through the marketplace | 1.0% (100 bps) |
+| **Agent Plans** | Recurring subscription for advanced ECON infrastructure | Free / Builder / Enterprise |
+| **Recovery Fee** | Percentage of successfully recovered stranded value | 5.0% (500 bps) |
+
+### Fee Flow Examples
+
+```text
+NORMAL ECON TRANSACTION
+10 MON
+    ↓
+0.05 MON ECON fee (0.5%)
+9.95 MON → recipient
+
+
+MARKETPLACE PURCHASE
+10 MON
+    ↓
+0.10 MON marketplace fee (1.0%)
+9.90 MON → seller
+
+
+RECOVERY
+4.00 MON recovered
+    ↓
+0.20 MON recovery success fee (5.0%)
+3.80 MON → agent
+```
+
+### Agent Infrastructure Plans
+
+| Plan | Price | Includes |
+|---|---|---|
+| **ECON Free** | Free | Basic economic identity · Basic policies · Limited activity |
+| **ECON Builder** | 49 MON/month | Multiple agents · Advanced policies · API access · Analytics · Automated recovery |
+| **ECON Enterprise** | Custom | Organization controls · Advanced risk policies · Higher limits · Private infrastructure · Custom economics |
+
+### Fee Non-Stacking Rule
+
+Transaction fees and marketplace fees are **mutually exclusive** — they never stack on the same operation.
+
+The fee engine (`src/sdk/fee.ts`) routes each transaction to exactly one revenue stream:
+
+| Transaction Context | Fee Stream Applied |
+|---|---|
+| Marketplace object purchase | Marketplace Fee (1.0%) |
+| Regular ECON settlement | Transaction Fee (0.5%) |
+| Recovery execution | Recovery Fee (5.0%) |
+| Escrow lock / internal | None |
+
+Recovery fees only apply to the recovery engine and never combine with transaction or marketplace fees on the same operation.
+
+---
+
 ## Core Principle
 
 ECON should never be a dashboard that **looks** like an economic network.
