@@ -11,3 +11,4 @@ export * from './recovery';
 export * from './creditVault';
 export * from './agent';
 export * from './client';
+export * from './fee';

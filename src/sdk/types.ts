@@ -173,6 +173,13 @@ export type TransactionStatus =
   | 'FAILED'
   | 'BLOCKED_BY_POLICY';
 
+/**
+ * ECON revenue stream applied to this transaction.
+ * Transaction and Marketplace fees are mutually exclusive.
+ * RECOVERY fees appear only on recovery transfers.
+ */
+export type TransactionFeeStream = 'TRANSACTION' | 'MARKETPLACE' | 'RECOVERY' | 'NONE';
+
 export interface Transaction {
   id: TransactionId;
   type: 'BUY' | 'SELL' | 'ESCROW_LOCK' | 'ESCROW_RELEASE' | 'RECOVERY_TRANSFER' | 'REFUND';
@@ -185,6 +192,10 @@ export interface Transaction {
   timestamp: number;
   settlementHash?: string;
   memo: string;
+  /** ECON protocol fee charged on this transaction (in MON) */
+  protocolFeeMon?: number;
+  /** Which ECON revenue stream applies */
+  feeStream?: TransactionFeeStream;
 }
 
 export interface ServiceOffering {
@@ -264,6 +275,8 @@ export interface SettlementResult {
   settledAt: number;
   feeMon: number;
   error?: string;
+  /** ECON revenue stream that applied to this settlement */
+  feeStream?: 'TRANSACTION' | 'MARKETPLACE' | 'RECOVERY' | 'NONE';
 }
 
 export type SettlementMode = 'LOCAL_SIMULATION' | 'MONAD_TESTNET';

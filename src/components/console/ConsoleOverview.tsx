@@ -1,5 +1,6 @@
 import React from 'react';
 import { EconomicStore } from '../../sdk/store';
+import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS } from '../../sdk/fee';
 
 interface ConsoleOverviewProps {
   store: EconomicStore;
@@ -289,6 +290,84 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
           <h4>Publish An Agent</h4>
           <p>Connect a wallet and publish a real ERC-8004 identity on Monad Testnet.</p>
           <span className="q-link">Open Agent Builder ➔</span>
+        </div>
+      </div>
+
+      {/* Revenue Model Panel */}
+      <div className="econ-card" style={{ marginTop: '20px', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <span className="econ-eyebrow" style={{ color: '#00E599' }}>// PROTOCOL REVENUE MODEL</span>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFF', margin: '6px 0 4px 0' }}>ECON REVENUE STREAMS</h3>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+              ECON earns when it creates or facilitates economic value — through settlement, commerce, infrastructure, and recovered value.
+            </p>
+          </div>
+          <span className="econ-badge econ-badge-lime">4 STREAMS ACTIVE</span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+          {/* Transaction Fee */}
+          <div style={{ background: 'rgba(0,229,153,0.07)', border: '1px solid rgba(0,229,153,0.18)', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#00E599' }}>TRANSACTION FEE</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#00E599' }}>{TRANSACTION_FEE_BPS / 100}%</span>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>On eligible ECON-settled transactions</p>
+            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+              10 MON → {(10 * TRANSACTION_FEE_BPS / 10000).toFixed(3)} fee → {(10 - 10 * TRANSACTION_FEE_BPS / 10000).toFixed(3)} net
+            </div>
+          </div>
+
+          {/* Marketplace Fee */}
+          <div style={{ background: 'rgba(131,110,249,0.07)', border: '1px solid rgba(131,110,249,0.2)', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#836EF9' }}>MARKETPLACE FEE</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#836EF9' }}>{MARKETPLACE_FEE_BPS / 100}%</span>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>On economic object marketplace purchases</p>
+            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+              10 MON → {(10 * MARKETPLACE_FEE_BPS / 10000).toFixed(3)} fee → {(10 - 10 * MARKETPLACE_FEE_BPS / 10000).toFixed(3)} net
+            </div>
+          </div>
+
+          {/* Recovery Fee */}
+          <div style={{ background: 'rgba(255,94,120,0.07)', border: '1px solid rgba(255,94,120,0.2)', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#FF5E78' }}>RECOVERY FEE</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#FF5E78' }}>{RECOVERY_FEE_BPS / 100}%</span>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>Of successfully recovered stranded value</p>
+            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+              4 MON → {(4 * RECOVERY_FEE_BPS / 10000).toFixed(3)} fee → {(4 - 4 * RECOVERY_FEE_BPS / 10000).toFixed(3)} net
+            </div>
+          </div>
+
+          {/* Agent Plans */}
+          <div style={{ background: 'rgba(255,208,0,0.06)', border: '1px solid rgba(255,208,0,0.18)', borderRadius: '10px', padding: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#FFD000' }}>AGENT PLANS</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#FFD000' }}>SaaS</span>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>Recurring infrastructure subscriptions</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {(['FREE', 'BUILDER', 'ENTERPRISE'] as const).map((tier) => (
+                <div key={tier} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'monospace', fontSize: '10px' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.45)' }}>{AGENT_PLANS[tier].label}</span>
+                  <span style={{ color: '#FFD000', fontWeight: 700 }}>
+                    {tier === 'FREE' ? 'FREE' : tier === 'ENTERPRISE' ? 'CUSTOM' : `${AGENT_PLANS[tier].monthlyMon} MON/mo`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '14px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '14px' }}>⚖️</span>
+          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+            <strong style={{ color: 'rgba(255,255,255,0.75)' }}>Fee engine rule:</strong> Transaction and marketplace fees are mutually exclusive — the fee engine routes each transaction to exactly one stream. Recovery fees never stack with other fees.
+          </span>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { EconomicStore } from './store';
 import { SettlementAdapter } from '../settlement/interface';
 import { PolicyEngine } from './policy';
 import { EventBus } from './events';
+import { feeEngine } from './fee';
 
 export class RecoveryEngine {
   private store: EconomicStore;
@@ -41,7 +42,11 @@ export class RecoveryEngine {
     plan.status = 'EXECUTING';
     this.store.setRecoveryPlan(plan);
 
-    const recoveredAmount = plan.expectedRecoveryMon;
+    const rawRecoveredAmount = plan.expectedRecoveryMon;
+
+    // Apply the ECON Recovery Success Fee (5%) — charged only on confirmed recovered value
+    const recoveryFee = feeEngine.calculateRecoveryFee(rawRecoveredAmount);
+    const recoveredAmount = recoveryFee.netMon; // Net MON delivered to agent after fee
 
     // Step 2: Strategy-specific settlement execution
     if (plan.recommendedStrategy === 'TRANSFER') {
@@ -91,12 +96,15 @@ export class RecoveryEngine {
     this.eventBus.emit({
       type: 'RECOVERY_EXECUTED',
       actor: plan.ownerId,
-      summary: `Successfully executed ${plan.recommendedStrategy} recovery for ${obj.id} (+${recoveredAmount} MON recovered)`,
+      summary: `Successfully executed ${plan.recommendedStrategy} recovery for ${obj.id} (+${recoveredAmount.toFixed(4)} MON net, ECON fee: ${recoveryFee.feeMon.toFixed(4)} MON)`,
       details: {
         planId: plan.id,
         objectId: obj.id,
         strategy: plan.recommendedStrategy,
+        grossRecoveredAmount: rawRecoveredAmount,
         recoveredAmount,
+        recoveryFeeMon: recoveryFee.feeMon,
+        feeStream: 'RECOVERY',
         targetBuyer: plan.targetBuyerId,
       },
     });

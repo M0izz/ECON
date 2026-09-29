@@ -3,6 +3,7 @@ import { EconomicStore } from './store';
 import { SettlementAdapter } from '../settlement/interface';
 import { PolicyEngine } from './policy';
 import { EventBus } from './events';
+import { feeEngine } from './fee';
 
 export class EconomicEngine {
   private store: EconomicStore;
@@ -35,12 +36,17 @@ export class EconomicEngine {
     sellerId: AgentId,
     objectId: ObjectId,
     amountMon: number,
-    memo: string = 'Purchase of Economic Resource'
+    memo: string = 'Purchase of Economic Resource',
+    isMarketplacePurchase: boolean = false
   ): Promise<Transaction> {
     const object = this.store.getObject(objectId);
     if (!object) {
       throw new Error(`Economic object ${objectId} not found`);
     }
+
+    // Step 0: Determine fee stream (transaction vs. marketplace — non-stacking)
+    const feeContext = isMarketplacePurchase ? 'MARKETPLACE_PURCHASE' : 'ECON_TRANSACTION';
+    const fee = feeEngine.route(amountMon, feeContext);
 
     // Step 1: Policy Pre-Flight Guard
     const policyCheck = this.policyEngine.validateTransaction(buyerId, amountMon, object.type);
@@ -55,6 +61,7 @@ export class EconomicEngine {
         status: 'BLOCKED_BY_POLICY',
         timestamp: Date.now(),
         memo: `BLOCKED: ${policyCheck.reason}`,
+        feeStream: 'NONE',
       };
       this.store.setTransaction(failedTx);
       throw new Error(`Transaction rejected by policy: ${policyCheck.reason}`);
@@ -72,18 +79,21 @@ export class EconomicEngine {
       status: 'PENDING',
       timestamp: Date.now(),
       memo,
+      protocolFeeMon: fee.feeMon,
+      feeStream: fee.stream,
     };
     this.store.setTransaction(tx);
 
     this.eventBus.emit({
       type: 'TRANSACTION_CREATED',
       actor: buyerId,
-      summary: `Created purchase transaction: ${amountMon} MON for ${object.denomination}`,
-      details: { txId, buyerId, sellerId, objectId, amountMon },
+      summary: `Created ${fee.stream === 'MARKETPLACE' ? 'marketplace' : 'settlement'} transaction: ${amountMon} MON for ${object.denomination} (ECON fee: ${fee.feeMon.toFixed(4)} MON)`,
+      details: { txId, buyerId, sellerId, objectId, amountMon, feeMon: fee.feeMon, feeStream: fee.stream },
     });
 
     // Step 3: Execute Financial Settlement via Adapter
-    const settlementResult = await this.settlement.transfer(buyerId, sellerId, amountMon, memo);
+    // Net amount settles to seller; ECON retains feeMon as protocol revenue
+    const settlementResult = await this.settlement.transfer(buyerId, sellerId, fee.netMon, memo);
     if (!settlementResult.success) {
       tx.status = 'FAILED';
       tx.memo = `Settlement failure: ${settlementResult.error}`;
