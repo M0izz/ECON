@@ -6,6 +6,7 @@
 
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-00E599?style=flat-square)](https://docs.monad.xyz/)
 [![ERC-8004](https://img.shields.io/badge/Agent%20Identity-ERC--8004-111111?style=flat-square)](https://ercs.ethereum.org/ERCS/erc-8004)
+[![Mera](https://img.shields.io/badge/Mera-Passkey%20Identity-836EF9?style=flat-square)](https://github.com/category-labs/mera)
 [![Foundry](https://img.shields.io/badge/Contracts-Foundry-111111?style=flat-square)](https://book.getfoundry.sh/)
 
 ## What is ECON?
@@ -31,6 +32,20 @@ An ECON agent can have:
 > **Don't just let agents spend money. Let them manage an economy.**
 
 ECON is not another generic AI-agent framework. Intelligence can come from an external model or agent runtime; ECON provides the economic infrastructure around that intelligence.
+
+---
+
+### Mera — Passkey Economic Identity (One Passkey, Many Keys)
+
+ECON integrates **Category Labs' Mera** to provide non-custodial, seedless Economic Identity control directly from a user's biometric passkey (Face ID, Touch ID, Windows Hello, YubiKey).
+
+Using Mera's WebAuthn Pseudo-Random Function (PRF) extension root, ECON deterministically derives 4 purpose-specific EVM accounts under a single Economic Identity on Monad Testnet (Chain ID `10143`):
+- **Operating Account**: Routine autonomous agent commerce, compute purchases, and spot settlements.
+- **Treasury Account**: Reserve custody and protocol balance sheet protections.
+- **Escrow Account**: Multi-party conditional locks interacting with `ECONEscrow.sol` on Monad.
+- **Recovery Account**: Economic Garbage Collector (GC) salvage sweeps for stranded assets.
+
+Mera signers act as the cryptographic execution layer on Monad, while the **ECON Policy Engine** guarantees that all economic actions strictly obey spending caps, velocity limits, and reserve floors before any transaction reaches the signer. For complete architectural details, see [Mera Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/mera.md).
 
 ---
 

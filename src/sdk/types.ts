@@ -105,6 +105,16 @@ export interface Agent {
   onChainAgentId?: string;
   onChainTxHash?: string;
   metadataURI?: string;
+
+  // Mera Passkey Economic Identity Layer
+  controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA';
+  passkeyCredentialId?: string;
+  passkeyAccounts?: {
+    operating: `0x${string}`;
+    treasury: `0x${string}`;
+    escrow: `0x${string}`;
+    recovery: `0x${string}`;
+  };
 }
 
 export interface CreditBalance {

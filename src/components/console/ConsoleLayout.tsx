@@ -17,6 +17,8 @@ export type ConsoleTab =
   | 'API_SDK'
   | 'AGENT_BUILDER';
 
+import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
+
 interface ConsoleLayoutProps {
   store: EconomicStore;
   currentTab: ConsoleTab;
@@ -29,6 +31,8 @@ interface ConsoleLayoutProps {
   onSwitchToMonad?: () => void;
   onOpenAccount?: () => void;
   onConnectWallet: () => void;
+  onOpenPasskeyModal?: (mode?: 'CREATE' | 'SIGNIN') => void;
+  passkeyMetadata?: ECONPasskeyPublicMetadata | null;
   children: React.ReactNode;
 }
 
@@ -44,6 +48,8 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
   onSwitchToMonad,
   onOpenAccount,
   onConnectWallet,
+  onOpenPasskeyModal,
+  passkeyMetadata,
   children,
 }) => {
   const derived = store.getDerivedState();
@@ -94,7 +100,17 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
         {/* Real Monad vs Local Simulation State Indicator */}
         <div className="c-header-right">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
-            {isWrongNetwork ? (
+            {passkeyMetadata ? (
+              <button
+                className="settlement-btn active"
+                onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
+                title="Mera Passkey Identity Active. Click to view accounts."
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#00E599', display: 'inline-block' }}></span>
+                <span style={{ fontFamily: 'monospace' }}>PASSKEY: {passkeyMetadata.addresses.operating.slice(0, 6)}...{passkeyMetadata.addresses.operating.slice(-4)}</span>
+              </button>
+            ) : isWrongNetwork ? (
               <button
                 className="settlement-btn"
                 style={{ background: '#E5A500', color: '#041B26', fontWeight: 800, border: '1px solid #FFD000' }}
@@ -119,13 +135,23 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
                 )}
               </button>
             ) : (
-              <button
-                className="settlement-btn"
-                onClick={onConnectWallet}
-                title="Connect your non-custodial browser or mobile wallet via Reown AppKit"
-              >
-                CONNECT WALLET
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  className="settlement-btn"
+                  onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
+                  style={{ background: 'rgba(0, 229, 153, 0.15)', color: '#00E599', border: '1px solid #00E599' }}
+                  title="Create or authenticate Economic Identity with a Passkey (Mera)"
+                >
+                  PASSKEY
+                </button>
+                <button
+                  className="settlement-btn"
+                  onClick={onConnectWallet}
+                  title="Connect your non-custodial browser or mobile wallet via Reown AppKit"
+                >
+                  CONNECT WALLET
+                </button>
+              </div>
             )}
           </div>
           <div className="runtime-network-card">

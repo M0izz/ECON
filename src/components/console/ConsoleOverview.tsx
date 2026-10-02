@@ -1,6 +1,8 @@
-import React from 'react';
 import { EconomicStore } from '../../sdk/store';
 import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS } from '../../sdk/fee';
+import { Key, Shield, LogOut } from 'lucide-react';
+import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
+import { OnePasskeyManyKeysVisual } from '../mera/OnePasskeyManyKeysVisual';
 
 interface ConsoleOverviewProps {
   store: EconomicStore;
@@ -13,6 +15,9 @@ interface ConsoleOverviewProps {
   onConnectWallet?: () => void;
   onSwitchNetwork?: () => void;
   onOpenAccount?: () => void;
+  onOpenPasskeyModal?: (mode?: 'CREATE' | 'SIGNIN') => void;
+  passkeyMetadata?: ECONPasskeyPublicMetadata | null;
+  onDisconnectPasskey?: () => void;
 }
 
 export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
@@ -26,6 +31,9 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
   onConnectWallet,
   onSwitchNetwork,
   onOpenAccount,
+  onOpenPasskeyModal,
+  passkeyMetadata,
+  onDisconnectPasskey,
 }) => {
   const derived = store.getDerivedState();
   const agents = store.getAllAgents();
@@ -101,36 +109,72 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
                   fontFamily: 'monospace',
                   padding: '2px 8px',
                   borderRadius: '10px',
-                  background: isConnected
+                  background: passkeyMetadata
+                    ? 'rgba(0, 229, 153, 0.15)'
+                    : isConnected
                     ? isWrongNetwork
                       ? 'rgba(229, 165, 0, 0.2)'
                       : 'rgba(0, 229, 153, 0.15)'
                     : 'rgba(255, 255, 255, 0.08)',
-                  color: isConnected ? (isWrongNetwork ? '#FFD000' : '#00E599') : 'rgba(255, 255, 255, 0.5)',
-                  border: isConnected
+                  color: passkeyMetadata
+                    ? '#00E599'
+                    : isConnected
+                    ? (isWrongNetwork ? '#FFD000' : '#00E599')
+                    : 'rgba(255, 255, 255, 0.5)',
+                  border: passkeyMetadata
+                    ? '1px solid #00E599'
+                    : isConnected
                     ? isWrongNetwork
                       ? '1px solid #FFD000'
                       : '1px solid #00E599'
                     : '1px solid rgba(255, 255, 255, 0.15)',
                 }}
               >
-                {isConnected
+                {passkeyMetadata
+                  ? 'PASSKEY CONTROLLER ACTIVE (MERA PRF)'
+                  : isConnected
                   ? isWrongNetwork
                     ? 'WRONG NETWORK'
-                    : 'AUTHENTICATED CONTROLLER'
-                  : 'NO WALLET CONNECTED'}
+                    : 'AUTHENTICATED CONTROLLER (WALLET)'
+                  : 'NO CONTROLLER CONNECTED'}
               </span>
             </div>
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFF', margin: '8px 0 4px 0' }}>
-              {isConnected ? 'Active Cryptographic Controller' : 'Non-Custodial Controller Authority'}
+              {passkeyMetadata
+                ? 'Biometric Passkey Authority (Mera)'
+                : isConnected
+                ? 'Active Cryptographic Controller'
+                : 'Non-Custodial Controller Authority'}
             </h3>
             <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.65)', margin: 0, maxWidth: '640px' }}>
-              Your non-custodial wallet provides cryptographic authority. ECON operates the persistent economic environment, sovereign identities, policy enforcement, and autonomous treasury settlement on Monad.
+              {passkeyMetadata
+                ? 'Your biometric passkey deterministically derives 4 purpose-specific accounts (operating, treasury, escrow, recovery) via Mera PRF on Monad Testnet without seed phrases.'
+                : 'Your non-custodial wallet or biometric passkey provides cryptographic authority. ECON operates the persistent economic environment, sovereign identities, policy enforcement, and autonomous treasury settlement on Monad.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {isConnected ? (
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {passkeyMetadata ? (
+              <button
+                onClick={onDisconnectPasskey}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  color: '#F87171',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '8px',
+                  padding: '8px 14px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <LogOut size={13} />
+                <span>Disconnect Passkey</span>
+              </button>
+            ) : isConnected ? (
               <>
                 {isWrongNetwork ? (
                   <button
@@ -167,28 +211,74 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
                 )}
               </>
             ) : (
-              <button
-                onClick={onConnectWallet}
-                style={{
-                  background: '#00E599',
-                  color: '#041B26',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '10px 20px',
-                  fontWeight: 800,
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(0, 229, 153, 0.3)',
-                }}
-              >
-                Connect Wallet (AppKit)
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
+                  style={{
+                    background: '#00E599',
+                    color: '#041B26',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    fontWeight: 800,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(0, 229, 153, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Key size={14} />
+                  <span>Create with Passkey</span>
+                </button>
+
+                <button
+                  onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('SIGNIN')}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: '#FFF',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sign In (Passkey)
+                </button>
+
+                <button
+                  onClick={onConnectWallet}
+                  style={{
+                    background: 'transparent',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Connect Wallet (AppKit)
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Real Live Metrics Strip */}
-        {isConnected && !isWrongNetwork && (
+        {/* Passkey Derived Accounts Strip or External Wallet Strip */}
+        {passkeyMetadata ? (
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <OnePasskeyManyKeysVisual
+              accounts={passkeyMetadata.addresses}
+              credentialId={passkeyMetadata.credentialId}
+              compact={true}
+            />
+          </div>
+        ) : isConnected && !isWrongNetwork ? (
           <div
             style={{
               display: 'grid',
@@ -231,7 +321,7 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
               </span>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Main Economic Activity Timeline */}

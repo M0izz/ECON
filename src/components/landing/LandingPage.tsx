@@ -7,9 +7,10 @@ import { EditorialModules } from './EditorialModules';
 interface LandingPageProps {
   store: EconomicStore;
   onEnterConsole: (targetTab?: string) => void;
+  onOpenPasskeyModal?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole, onOpenPasskeyModal }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -89,6 +90,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole 
           >
             Docs
           </a>
+
+          <button
+            className="econ-btn econ-btn-secondary"
+            onClick={onOpenPasskeyModal || (() => onEnterConsole('AGENT_BUILDER'))}
+            style={{ borderColor: 'rgba(0, 229, 153, 0.4)', color: '#00E599' }}
+          >
+            <span>Passkey Identity</span>
+          </button>
 
           <button
             className="econ-btn econ-btn-primary"

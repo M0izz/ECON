@@ -17,6 +17,9 @@ import { useAppKit } from '@reown/appkit/react';
 import { useAccount, useBalance, useSwitchChain } from 'wagmi';
 import { monadTestnet } from './config/wagmi';
 import { MONAD_TESTNET_ADDRESSES, MONAD_EXPLORER_BASE } from './contracts/addresses';
+import { PasskeyModal } from './components/mera/PasskeyModal';
+import { globalMeraSession } from './integrations/mera/meraSession';
+import { ECONPasskeyPublicMetadata } from './integrations/mera/meraTypes';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -42,6 +45,37 @@ export const App: React.FC = () => {
     : undefined;
 
   const [econ] = useState(() => new ECON());
+
+  // Mera Passkey State
+  const [isPasskeyModalOpen, setIsPasskeyModalOpen] = useState(false);
+  const [passkeyModalMode, setPasskeyModalMode] = useState<'CREATE' | 'SIGNIN'>('CREATE');
+  const [passkeyMetadata, setPasskeyMetadata] = useState<ECONPasskeyPublicMetadata | null>(
+    () => globalMeraSession.getPublicMetadata()
+  );
+
+  // Subscribe to Mera passkey session lifecycle
+  useEffect(() => {
+    const unsubSession = globalMeraSession.subscribe(() => {
+      const meta = globalMeraSession.getPublicMetadata();
+      setPasskeyMetadata(meta);
+      if (meta) {
+        econ.store.setSettlementMode('MONAD_TESTNET');
+        const activeIdentity = globalMeraSession.getActiveIdentity();
+        if (activeIdentity) {
+          const currentAdapter = econ.getSettlementAdapter();
+          if (currentAdapter instanceof MonadSettlementAdapter) {
+            currentAdapter.setMeraAccount(activeIdentity.accounts.operating.viemAccount);
+          } else {
+            const monadAdapter = new MonadSettlementAdapter(econ.store, econ.events);
+            monadAdapter.setMeraAccount(activeIdentity.accounts.operating.viemAccount);
+            econ.setSettlementAdapter(monadAdapter);
+          }
+        }
+      }
+      setRenderTrigger((p) => p + 1);
+    });
+    return () => unsubSession();
+  }, [econ]);
 
   // Automatically activate Monad Testnet settlement mode when controller wallet connects
   useEffect(() => {
@@ -75,6 +109,16 @@ export const App: React.FC = () => {
 
   const handleToggleSettlement = (mode: SettlementMode) => {
     econ.store.setSettlementMode(mode);
+    if (mode === 'MONAD_TESTNET') {
+      const monadAdapter = new MonadSettlementAdapter(econ.store, econ.events);
+      const activeIdentity = globalMeraSession.getActiveIdentity();
+      if (activeIdentity) {
+        monadAdapter.setMeraAccount(activeIdentity.accounts.operating.viemAccount);
+      }
+      econ.setSettlementAdapter(monadAdapter);
+    } else {
+      econ.setSettlementAdapter(new LocalSettlementAdapter(econ.store, econ.events));
+    }
     setRenderTrigger((prev) => prev + 1);
   };
 
@@ -95,6 +139,17 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenPasskeyModal = (mode: 'CREATE' | 'SIGNIN' = 'CREATE') => {
+    setPasskeyModalMode(mode);
+    setIsPasskeyModalOpen(true);
+  };
+
+  const handleDisconnectPasskey = () => {
+    globalMeraSession.disconnect();
+    setPasskeyMetadata(null);
+    setRenderTrigger((p) => p + 1);
+  };
+
   const handleSwitchToMonad = () => {
     if (switchChain) {
       switchChain({ chainId: monadTestnet.id });
@@ -106,10 +161,24 @@ export const App: React.FC = () => {
   // Public Editorial Website Experience
   if (viewMode === 'LANDING') {
     return (
-      <LandingPage
-        store={econ.store}
-        onEnterConsole={handleEnterConsole}
-      />
+      <>
+        <LandingPage
+          store={econ.store}
+          onEnterConsole={handleEnterConsole}
+          onOpenPasskeyModal={() => handleOpenPasskeyModal('CREATE')}
+        />
+        <PasskeyModal
+          isOpen={isPasskeyModalOpen}
+          onClose={() => setIsPasskeyModalOpen(false)}
+          econ={econ}
+          initialMode={passkeyModalMode}
+          onSuccess={() => {
+            setIsPasskeyModalOpen(false);
+            setConsoleTab('OVERVIEW');
+            setViewMode('CONSOLE');
+          }}
+        />
+      </>
     );
   }
 
@@ -127,6 +196,8 @@ export const App: React.FC = () => {
       onSwitchToMonad={handleSwitchToMonad}
       onOpenAccount={() => open({ view: 'Account' })}
       onConnectWallet={() => open()}
+      onOpenPasskeyModal={handleOpenPasskeyModal}
+      passkeyMetadata={passkeyMetadata}
     >
       {consoleTab === 'OVERVIEW' && (
         <ConsoleOverview
@@ -140,6 +211,9 @@ export const App: React.FC = () => {
           onConnectWallet={() => open()}
           onSwitchNetwork={handleSwitchToMonad}
           onOpenAccount={() => open({ view: 'Account' })}
+          onOpenPasskeyModal={handleOpenPasskeyModal}
+          passkeyMetadata={passkeyMetadata}
+          onDisconnectPasskey={handleDisconnectPasskey}
         />
       )}
 
@@ -359,6 +433,16 @@ Body:
           </div>
         </div>
       )}
+      <PasskeyModal
+        isOpen={isPasskeyModalOpen}
+        onClose={() => setIsPasskeyModalOpen(false)}
+        econ={econ}
+        initialMode={passkeyModalMode}
+        onSuccess={() => {
+          setIsPasskeyModalOpen(false);
+          setConsoleTab('OVERVIEW');
+        }}
+      />
     </ConsoleLayout>
   );
 };

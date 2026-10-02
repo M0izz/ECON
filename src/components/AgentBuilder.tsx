@@ -15,7 +15,15 @@ import {
   Terminal,
   ExternalLink,
   Layers,
+  Key,
+  Lock,
+  Loader2,
 } from 'lucide-react';
+import { defaultMeraClient } from '../integrations/mera/meraClient';
+import { globalMeraSession } from '../integrations/mera/meraSession';
+import { ECONPasskeyIdentity } from '../integrations/mera/meraTypes';
+import { OnePasskeyManyKeysVisual } from './mera/OnePasskeyManyKeysVisual';
+import { MonadSettlementAdapter } from '../settlement/MonadSettlementAdapter';
 
 interface AgentBuilderProps {
   econ: ECON;
@@ -50,6 +58,14 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
   const [extLanguageTab, setExtLanguageTab] = useState<'PYTHON' | 'TYPESCRIPT'>('PYTHON');
   const [extInitialFunding, setExtInitialFunding] = useState<number>(50);
 
+  // Economic Control State: Passkey (Mera PRF) vs Existing Wallet
+  const [controlMethod, setControlMethod] = useState<'PASSKEY' | 'EXTERNAL_WALLET'>('PASSKEY');
+  const [passkeyIdentity, setPasskeyIdentity] = useState<ECONPasskeyIdentity | null>(
+    () => globalMeraSession.getActiveIdentity()
+  );
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+
   // Status message
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -74,29 +90,106 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
     setCapabilities({ ...tmpl.capabilities });
   };
 
-  const handleCreateNativeAgent = () => {
-    const uniqueId = `econ_${agentName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Math.random()
-      .toString(36)
-      .substring(2, 6)}`;
+  const handlePasskeyCeremony = async () => {
+    setIsPasskeyLoading(true);
+    setPasskeyError(null);
+    try {
+      const { identity } = await defaultMeraClient.createEconomicIdentity({
+        agentName,
+      });
+      setPasskeyIdentity(identity);
+    } catch (err: any) {
+      setPasskeyError(err.message || 'Passkey ceremony failed.');
+    } finally {
+      setIsPasskeyLoading(false);
+    }
+  };
 
-    const agent = econ.createNativeAgent({
-      id: uniqueId,
-      name: agentName,
-      purpose: agentPurpose,
-      modelProvider: selectedModel,
-      initialBalanceMon: initialFundingMon,
-      policy: {
-        maxPerTransaction: maxPerTx,
-        dailySpendingLimit: dailyLimit,
-        minRetainedBalance: minReserve,
-        requireApprovalAbove: requireApprovalAbove,
-        autoRecoveryEnabled: autoRecovery,
-        autoTransferEnabled: autoRecovery,
-      },
-      capabilities,
-    });
+  const handleCreateNativeAgent = async () => {
+    setPasskeyError(null);
 
-    setSuccessMessage(`Native agent deployed: ${agent.name} with Economic ID ${agent.id}`);
+    // If Passkey method is chosen but not yet created, trigger ceremony
+    let activePasskey = passkeyIdentity;
+    if (controlMethod === 'PASSKEY' && !activePasskey) {
+      setIsPasskeyLoading(true);
+      try {
+        const { identity } = await defaultMeraClient.createEconomicIdentity({
+          agentName,
+        });
+        activePasskey = identity;
+        setPasskeyIdentity(identity);
+      } catch (err: any) {
+        setPasskeyError(err.message || 'Passkey authentication failed.');
+        setIsPasskeyLoading(false);
+        return;
+      } finally {
+        setIsPasskeyLoading(false);
+      }
+    }
+
+    const uniqueId = controlMethod === 'PASSKEY'
+      ? `econ_mera_${agentName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Math.random().toString(36).substring(2, 6)}`
+      : `econ_${agentName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Math.random().toString(36).substring(2, 6)}`;
+
+    let agent: Agent;
+
+    if (controlMethod === 'PASSKEY' && activePasskey) {
+      agent = econ.createPasskeyAgent({
+        id: uniqueId,
+        name: agentName,
+        purpose: agentPurpose,
+        modelProvider: selectedModel,
+        initialBalanceMon: initialFundingMon,
+        credentialId: activePasskey.credentialId,
+        accounts: {
+          operating: activePasskey.accounts.operating.address,
+          treasury: activePasskey.accounts.treasury.address,
+          escrow: activePasskey.accounts.escrow.address,
+          recovery: activePasskey.accounts.recovery.address,
+        },
+        policy: {
+          maxPerTransaction: maxPerTx,
+          dailySpendingLimit: dailyLimit,
+          minRetainedBalance: minReserve,
+          requireApprovalAbove: requireApprovalAbove,
+          autoRecoveryEnabled: autoRecovery,
+          autoTransferEnabled: autoRecovery,
+        },
+        capabilities,
+      });
+
+      // Connect MonadSettlementAdapter with the live Mera operating signer
+      const currentAdapter = econ.getSettlementAdapter();
+      if (currentAdapter instanceof MonadSettlementAdapter) {
+        currentAdapter.setMeraAccount(activePasskey.accounts.operating.viemAccount);
+      } else {
+        const monadAdapter = new MonadSettlementAdapter(econ.store, econ.events);
+        monadAdapter.setMeraAccount(activePasskey.accounts.operating.viemAccount);
+        econ.setSettlementAdapter(monadAdapter);
+      }
+
+      setSuccessMessage(`Mera Passkey Economic Identity deployed: ${agent.name} with 4 derived accounts on Monad Testnet`);
+    } else {
+      agent = econ.createNativeAgent({
+        id: uniqueId,
+        name: agentName,
+        purpose: agentPurpose,
+        modelProvider: selectedModel,
+        initialBalanceMon: initialFundingMon,
+        policy: {
+          maxPerTransaction: maxPerTx,
+          dailySpendingLimit: dailyLimit,
+          minRetainedBalance: minReserve,
+          requireApprovalAbove: requireApprovalAbove,
+          autoRecoveryEnabled: autoRecovery,
+          autoTransferEnabled: autoRecovery,
+        },
+        capabilities,
+      });
+
+      setSuccessMessage(`Native agent deployed: ${agent.name} with Economic ID ${agent.id}`);
+    }
+
     onAgentCreated(agent);
   };
 
@@ -441,6 +534,129 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Economic Control Authority: Passkey vs Existing Wallet */}
+            <div className="panel">
+              <div className="panel-header">
+                <div className="panel-title">
+                  <Key size={13} className="text-mint" />
+                  <span>3. Economic Control Authority</span>
+                </div>
+              </div>
+              <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div
+                    onClick={() => setControlMethod('PASSKEY')}
+                    style={{
+                      padding: '12px',
+                      background: controlMethod === 'PASSKEY' ? 'rgba(0, 229, 153, 0.08)' : 'var(--bg-app)',
+                      border: `1px solid ${controlMethod === 'PASSKEY' ? '#00E599' : 'var(--border-color)'}`,
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px', color: '#FFF' }}>
+                      <Key size={14} style={{ color: '#00E599' }} />
+                      <span>Biometric Passkey (Mera)</span>
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
+                      1 Passkey derives 4 purpose-specific accounts (Operating, Treasury, Escrow, Recovery). Seedless.
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setControlMethod('EXTERNAL_WALLET')}
+                    style={{
+                      padding: '12px',
+                      background: controlMethod === 'EXTERNAL_WALLET' ? 'rgba(59, 130, 246, 0.08)' : 'var(--bg-app)',
+                      border: `1px solid ${controlMethod === 'EXTERNAL_WALLET' ? 'var(--accent-blue)' : 'var(--border-color)'}`,
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px', color: '#FFF' }}>
+                      <Shield size={14} style={{ color: 'var(--accent-blue)' }} />
+                      <span>Existing External Wallet</span>
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
+                      MetaMask, Rabby, Coinbase Wallet, or WalletConnect via Reown AppKit.
+                    </div>
+                  </div>
+                </div>
+
+                {controlMethod === 'PASSKEY' && (
+                  <div style={{ marginTop: '4px' }}>
+                    {passkeyIdentity ? (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#00E599', fontWeight: 700, fontFamily: 'monospace' }}>
+                            ✓ PASSKEY AUTHENTICATED: 4 ACCOUNTS READY
+                          </span>
+                          <button
+                            className="btn-econ"
+                            onClick={handlePasskeyCeremony}
+                            style={{ fontSize: '10px', padding: '3px 8px' }}
+                          >
+                            Re-authenticate
+                          </button>
+                        </div>
+                        <OnePasskeyManyKeysVisual
+                          accounts={{
+                            operating: passkeyIdentity.accounts.operating.address,
+                            treasury: passkeyIdentity.accounts.treasury.address,
+                            escrow: passkeyIdentity.accounts.escrow.address,
+                            recovery: passkeyIdentity.accounts.recovery.address,
+                          }}
+                          credentialId={passkeyIdentity.credentialId}
+                          agentName={agentName}
+                          compact={true}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: 'rgba(0, 229, 153, 0.04)',
+                          border: '1px dashed rgba(0, 229, 153, 0.3)',
+                          borderRadius: '6px',
+                          padding: '14px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#FFF', marginBottom: '4px' }}>
+                          Passkey Root Not Yet Generated
+                        </div>
+                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 12px 0' }}>
+                          Click below to trigger the WebAuthn passkey ceremony (Face ID, Touch ID, or security key).
+                        </p>
+                        <button
+                          className="btn-econ btn-econ-primary"
+                          onClick={handlePasskeyCeremony}
+                          disabled={isPasskeyLoading}
+                          style={{ margin: '0 auto', fontSize: '12px' }}
+                        >
+                          {isPasskeyLoading ? (
+                            <>
+                              <Loader2 size={13} className="animate-spin" />
+                              <span>Evaluating WebAuthn PRF...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Key size={13} />
+                              <span>Generate Passkey Accounts</span>
+                            </>
+                          )}
+                        </button>
+                        {passkeyError && (
+                          <div style={{ color: 'var(--signal-pink)', fontSize: '11px', marginTop: '8px' }}>
+                            {passkeyError}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -72,6 +72,14 @@ export class ECON {
     metadataURI?: string;
     policy?: Partial<AgentPolicy>;
     capabilities?: Partial<AgentCapabilities>;
+    controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA';
+    passkeyCredentialId?: string;
+    passkeyAccounts?: {
+      operating: `0x${string}`;
+      treasury: `0x${string}`;
+      escrow: `0x${string}`;
+      recovery: `0x${string}`;
+    };
   }): Agent {
     const generatedWallet = `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
     const wallet = config.walletAddress || generatedWallet;
@@ -80,7 +88,7 @@ export class ECON {
       id: config.id,
       name: config.name,
       controller,
-      walletAddress: config.walletAddress || `${wallet.substring(0, 6)}...${wallet.substring(38)}`,
+      walletAddress: config.walletAddress || wallet,
       balanceMon: config.initialBalanceMon !== undefined ? config.initialBalanceMon : 100,
       reputationScore: 98.5,
       active: true,
@@ -101,17 +109,49 @@ export class ECON {
       onChainAgentId: config.onChainAgentId,
       onChainTxHash: config.onChainTxHash,
       metadataURI: config.metadataURI,
+      controllerType: config.controllerType || (config.passkeyAccounts ? 'PASSKEY_MERA' : 'EXTERNAL_WALLET'),
+      passkeyCredentialId: config.passkeyCredentialId,
+      passkeyAccounts: config.passkeyAccounts,
     };
 
     this.store.setAgent(agent);
     this.events.emit({
       type: 'AGENT_REGISTERED',
       actor: agent.id,
-      summary: `Native ECON agent deployed: ${agent.name} (Model: ${agent.modelProvider}, Budget: ${agent.balanceMon} MON)`,
-      details: { id: agent.id, name: agent.name, origin: 'NATIVE', model: agent.modelProvider },
+      summary: `Native ECON agent deployed: ${agent.name} (Controller: ${agent.controllerType || 'EXTERNAL_WALLET'}, Budget: ${agent.balanceMon} MON)`,
+      details: { id: agent.id, name: agent.name, origin: 'NATIVE', model: agent.modelProvider, controllerType: agent.controllerType },
     });
 
     return agent;
+  }
+
+  public createPasskeyAgent(config: {
+    id: string;
+    name: string;
+    purpose?: string;
+    modelProvider?: ModelProvider;
+    initialBalanceMon?: number;
+    credentialId: string;
+    accounts: {
+      operating: `0x${string}`;
+      treasury: `0x${string}`;
+      escrow: `0x${string}`;
+      recovery: `0x${string}`;
+    };
+    policy?: Partial<AgentPolicy>;
+    capabilities?: Partial<AgentCapabilities>;
+    onChainAgentId?: string;
+    onChainTxHash?: string;
+    metadataURI?: string;
+  }): Agent {
+    return this.createNativeAgent({
+      ...config,
+      controllerType: 'PASSKEY_MERA',
+      controller: `Passkey (${config.credentialId.slice(0, 10)}...)`,
+      walletAddress: config.accounts.operating,
+      passkeyCredentialId: config.credentialId,
+      passkeyAccounts: config.accounts,
+    });
   }
 
   public getRuntime(agentId: string): AgentRuntime {

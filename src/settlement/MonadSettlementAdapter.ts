@@ -108,6 +108,14 @@ export class MonadSettlementAdapter implements SettlementAdapter {
     this.walletClient = client;
   }
 
+  public setMeraAccount(account: any): void {
+    this.walletClient = createWalletClient({
+      account,
+      chain: monadTestnetChain,
+      transport: http(this.config.rpcUrl || 'https://testnet-rpc.monad.xyz'),
+    });
+  }
+
   public getPublicClient(): PublicClient {
     return this.publicClient;
   }
