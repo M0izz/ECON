@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { ECON } from '../../sdk/client';
 import { EconomicObject, RecoveryPlan } from '../../sdk/types';
 import { RecoveryHistory } from '../envio/RecoveryHistory';
-import { Recycle, Database } from 'lucide-react';
+import { Recycle, Database, Eye } from 'lucide-react';
+import { CounterpartyIntelligenceModal } from '../nansen/CounterpartyIntelligenceModal';
 
 interface ConsoleRecoveryEngineProps {
   econ: ECON;
@@ -32,6 +33,12 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
     options: { label: string; yieldMon: number; action: string }[];
   } | null>(null);
 
+  const [selectedIntelTarget, setSelectedIntelTarget] = useState<{
+    address: string;
+    name: string;
+    role: 'SELLER' | 'BUYER' | 'AGENT' | 'RECOVERY_TARGET' | 'GENERAL';
+  } | null>(null);
+
   const [validationStep, setValidationStep] = useState<
     'REVIEW' | 'VALIDATING_POLICY' | 'POLICY_APPROVED' | 'SETTLING' | 'SETTLED' | 'REJECTED'
   >('REVIEW');
@@ -51,6 +58,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
       '[POLICY_GUARD] Checking Target Agent Policy: agent_research_01...',
       '[POLICY_GUARD] Evaluating spend limit & velocity caps: PASS (Yield: Inflow)',
       '[POLICY_GUARD] Validating Counterparty Whitelist (0x8004...): PASS',
+      '[POLICY_GUARD] Nansen Intelligence: Recipient 0x7772...47A7 verified on Monad (No exploit labels)',
       '[POLICY_GUARD] Monad Execution Reserve Balance: 15.00 MON (Sufficient)',
     ]);
 
@@ -148,6 +156,16 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
         <div className="sig-badge-row">
           <span className="econ-badge econ-badge-pink">HIGH YIELD CANDIDATE</span>
           <span className="econ-badge econ-badge-monad">MONAD TESTNET VERIFIED</span>
+          <span
+            className="econ-badge"
+            style={{
+              background: 'rgba(99, 102, 241, 0.15)',
+              color: '#818cf8',
+              borderColor: 'rgba(99, 102, 241, 0.4)',
+            }}
+          >
+            NANSEN INTELLIGENCE CONTEXT
+          </span>
         </div>
 
         <div className="showcase-content-split">
@@ -157,6 +175,54 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
               Originating from <code>agent_research_01</code> batch subscription.
               Agent idle duration: 18 hours. Probability of natural utilization before expiry: <strong>18% (82% Stranded)</strong>.
             </p>
+
+            <div
+              style={{
+                marginTop: '10px',
+                marginBottom: '12px',
+                padding: '8px 12px',
+                background: 'rgba(99, 102, 241, 0.05)',
+                borderRadius: '4px',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
+                  TARGET BUYER / RECIPIENT:
+                </span>{' '}
+                <strong style={{ color: 'var(--text-primary)', fontSize: '12px' }}>
+                  DataAgent-7
+                </strong>{' '}
+                <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
+                  (0x7772...47A7)
+                </span>
+              </div>
+              <button
+                className="btn-econ"
+                style={{
+                  padding: '2px 8px',
+                  fontSize: '10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: '#818cf8',
+                  borderColor: 'rgba(99, 102, 241, 0.4)',
+                }}
+                onClick={() =>
+                  setSelectedIntelTarget({
+                    address: '0x777286A645c110E663B514571A15C198547A7',
+                    name: 'DataAgent-7 (Target Buyer)',
+                    role: 'RECOVERY_TARGET',
+                  })
+                }
+              >
+                <Eye size={10} />
+                <span>Nansen Profile</span>
+              </button>
+            </div>
 
             <div className="ev-equation-bar">
               <span className="eq-label">MATHEMATICAL EXPECTED VALUE</span>
@@ -327,6 +393,53 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
                     </span>
                   </div>
 
+                  {/* Nansen On-Chain Context for Recipient */}
+                  <div
+                    style={{
+                      margin: '12px 0',
+                      padding: '10px 14px',
+                      background: 'rgba(99, 102, 241, 0.06)',
+                      borderRadius: '4px',
+                      border: '1px solid rgba(99, 102, 241, 0.25)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="font-mono text-xs" style={{ color: '#818cf8', fontWeight: 600 }}>
+                          [ON-CHAIN INTELLIGENCE / NANSEN]
+                        </span>
+                        <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
+                          Target Counterparty: DataAgent-7 (0x7772...47A7)
+                        </span>
+                      </div>
+                      <button
+                        className="btn-econ"
+                        style={{
+                          padding: '2px 8px',
+                          fontSize: '10.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: '#818cf8',
+                          borderColor: 'rgba(99, 102, 241, 0.4)',
+                        }}
+                        onClick={() =>
+                          setSelectedIntelTarget({
+                            address: '0x777286A645c110E663B514571A15C198547A7',
+                            name: 'DataAgent-7',
+                            role: 'RECOVERY_TARGET',
+                          })
+                        }
+                      >
+                        <Eye size={10} />
+                        <span>Inspect Profile</span>
+                      </button>
+                    </div>
+                    <p style={{ margin: '6px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                      Nansen profiling informs ECON Policy Engine before capital sweep. Nansen is read-only and does not execute transactions.
+                    </p>
+                  </div>
+
                   <div className="modal-action-row">
                     <button
                       className="econ-btn econ-btn-secondary"
@@ -406,6 +519,16 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {selectedIntelTarget && (
+        <CounterpartyIntelligenceModal
+          address={selectedIntelTarget.address}
+          title={selectedIntelTarget.name}
+          role={selectedIntelTarget.role}
+          chain="monad"
+          onClose={() => setSelectedIntelTarget(null)}
+        />
       )}
     </div>
   );

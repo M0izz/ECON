@@ -7,6 +7,7 @@
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-00E599?style=flat-square)](https://docs.monad.xyz/)
 [![ERC-8004](https://img.shields.io/badge/Agent%20Identity-ERC--8004-111111?style=flat-square)](https://ercs.ethereum.org/ERCS/erc-8004)
 [![Envio](https://img.shields.io/badge/Envio-HyperIndex-836EF9?style=flat-square)](https://envio.dev)
+[![Nansen](https://img.shields.io/badge/Nansen-On--Chain%20Intelligence-6366F1?style=flat-square)](https://www.nansen.ai)
 [![Mera](https://img.shields.io/badge/Mera-Passkey%20Identity-836EF9?style=flat-square)](https://github.com/category-labs/mera)
 [![Foundry](https://img.shields.io/badge/Contracts-Foundry-111111?style=flat-square)](https://book.getfoundry.sh/)
 
@@ -81,6 +82,54 @@ Audit Ledger, Agent Dossier, Asset Provenance & Recovery Chronicle
 - **Economic Garbage Collector**: Auditable on-chain records of stranded yield recoveries and capacity reclamations.
 
 For complete architectural details, schema specifications, and deployment recipes, see [Envio Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/envio.md).
+
+---
+
+### Nansen Integration — On-Chain Counterparty & Wallet Intelligence Layer
+
+ECON integrates **Nansen** as a dedicated, read-only on-chain intelligence layer. While Envio indexes what happened inside ECON's smart contracts, Nansen answers:
+> *"Who are we dealing with, what is their on-chain behavior, and what relevant economic intelligence exists around this address on Monad?"*
+
+```
+MONAD / EXTERNAL ON-CHAIN DATA
+             ↓
+       NANSEN API
+  (Profiler: Labels, Balances, Tx, Counterparties)
+             ↓
+  ECON BACKEND / PROXY SERVICE
+  (Server-Side NANSEN_API_KEY, 5-min TTL Cache)
+             ↓
+   ECON INTELLIGENCE LAYER
+   (Normalized EconomicIntelligence Model)
+             ↓
+  ┌───────────────────────┬────────────────────────┐
+  ↓                       ↓                        ↓
+Marketplace Evaluation   Recovery Engine Context   Agent Dossier
+(Seller Intelligence)    (Recipient Profiling)     (Treasury Profiling)
+  └───────────────────────┬────────────────────────┘
+                          ↓
+                 ECON POLICY ENGINE
+             (Deterministic Spend & Risk Rules)
+                          ↓
+                  MONAD SETTLEMENT
+             (Mera / Dynamic / Viem Execution)
+```
+
+#### Core Invariants & Separation of Responsibilities:
+- **Envio answers**: *"What happened on ECON?"* (Historic protocol events, escrows, marketplace trades, GC sweeps).
+- **Nansen answers**: *"What do we know about this on-chain entity?"* (Labels, token holdings, transaction cadence, related wallets).
+- **ECON answers**: *"What should the economic system do?"* (Resource matching, pricing, Expected Value optimization).
+- **Policy answers**: *"Is it allowed?"* (Enforces reserve floors, max transaction caps, velocity limits, and counterparty flag checks).
+- **Monad answers**: *"Did it settle?"* (Cryptographic execution on Monad Parallel EVM).
+
+#### Key Integration Capabilities:
+1. **API Key Security**: `NANSEN_API_KEY` is maintained strictly server-side. It is never exposed in browser bundles, localStorage, or client logs. Both the Express backend (`/nansen/*`) and Vite dev server (`/api/nansen/*`) act as authenticated proxies.
+2. **Credit Cost Control & Caching**: 5-minute in-memory TTL caching prevents repeated API hits. Initial queries fetch only essential labels and balances; full transactions and counterparty graphs expand lazily on operator demand.
+3. **Marketplace Counterparty Intelligence**: When agents evaluate service listings (e.g., GeoVision, ComputeAgent-3), operators can click `[View Intelligence]` to inspect verified entity labels, Monad token balances, and behavioral flags.
+4. **Recovery Engine Counterparty Context**: In the Economic Garbage Collector, proposed recovery recipients (e.g. `DataAgent-7`) are profiled with Nansen intelligence before the Policy Engine authorizes asset transfer.
+5. **Read-Only Non-Execution Invariant**: Nansen **never** executes transactions. An exploit label escalates transactions to mandatory manual review; clean data still requires compliance with all ECON policy spending invariants.
+
+For complete architectural details, endpoint mappings, and security guarantees, see [Nansen Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/nansen.md).
 
 ---
 

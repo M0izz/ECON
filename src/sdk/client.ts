@@ -72,7 +72,7 @@ export class ECON {
     metadataURI?: string;
     policy?: Partial<AgentPolicy>;
     capabilities?: Partial<AgentCapabilities>;
-    controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA';
+    controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA' | 'DYNAMIC';
     passkeyCredentialId?: string;
     passkeyAccounts?: {
       operating: `0x${string}`;
@@ -152,6 +152,41 @@ export class ECON {
       passkeyCredentialId: config.credentialId,
       passkeyAccounts: config.accounts,
     });
+  }
+
+  public createDynamicAgent(config: {
+    id: string;
+    name: string;
+    purpose?: string;
+    modelProvider?: ModelProvider;
+    initialBalanceMon?: number;
+    walletAddress: `0x${string}`;
+    connector?: string;
+    isEmbedded?: boolean;
+    networkChainId?: number;
+    policy?: Partial<AgentPolicy>;
+    capabilities?: Partial<AgentCapabilities>;
+    onChainAgentId?: string;
+    onChainTxHash?: string;
+    metadataURI?: string;
+  }): Agent {
+    const dynamicWallet = {
+      address: config.walletAddress,
+      connector: config.connector || 'Dynamic EVM',
+      isEmbedded: !!config.isEmbedded,
+      networkChainId: config.networkChainId || 10143,
+    };
+
+    const agent = this.createNativeAgent({
+      ...config,
+      controllerType: 'DYNAMIC',
+      controller: config.walletAddress,
+      walletAddress: config.walletAddress,
+    });
+
+    agent.dynamicWallet = dynamicWallet;
+    this.store.setAgent(agent);
+    return agent;
   }
 
   public getRuntime(agentId: string): AgentRuntime {

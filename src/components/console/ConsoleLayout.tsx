@@ -18,6 +18,8 @@ export type ConsoleTab =
   | 'AGENT_BUILDER';
 
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
+import { DynamicWalletDetails } from '../../integrations/dynamic';
+import { DynamicAuthButton } from '../dynamic/DynamicAuthButton';
 
 interface ConsoleLayoutProps {
   store: EconomicStore;
@@ -33,6 +35,8 @@ interface ConsoleLayoutProps {
   onConnectWallet: () => void;
   onOpenPasskeyModal?: (mode?: 'CREATE' | 'SIGNIN') => void;
   passkeyMetadata?: ECONPasskeyPublicMetadata | null;
+  dynamicWallet?: DynamicWalletDetails | null;
+  onSwitchControl?: () => void;
   children: React.ReactNode;
 }
 
@@ -50,6 +54,8 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
   onConnectWallet,
   onOpenPasskeyModal,
   passkeyMetadata,
+  dynamicWallet,
+  onSwitchControl,
   children,
 }) => {
   const derived = store.getDerivedState();
@@ -100,7 +106,30 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
         {/* Real Monad vs Local Simulation State Indicator */}
         <div className="c-header-right">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
-            {passkeyMetadata ? (
+            {dynamicWallet ? (
+              <button
+                className="settlement-btn active"
+                onClick={onSwitchControl}
+                title={`Dynamic Controller: ${dynamicWallet.address}. Click to manage control.`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(59, 130, 246, 0.15)',
+                  border: '1px solid #3B82F6',
+                }}
+              >
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#60A5FA', display: 'inline-block' }}></span>
+                <span style={{ fontFamily: 'monospace', color: '#93C5FD' }}>
+                  DYNAMIC: {dynamicWallet.address.slice(0, 6)}...{dynamicWallet.address.slice(-4)}
+                </span>
+                {dynamicWallet.isEmbedded && (
+                  <span style={{ background: 'rgba(147, 51, 234, 0.25)', color: '#C084FC', padding: '1px 5px', borderRadius: '4px', fontSize: '9px' }}>
+                    EMBEDDED
+                  </span>
+                )}
+              </button>
+            ) : passkeyMetadata ? (
               <button
                 className="settlement-btn active"
                 onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
@@ -135,7 +164,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
                 )}
               </button>
             ) : (
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 <button
                   className="settlement-btn"
                   onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
@@ -144,6 +173,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
                 >
                   PASSKEY
                 </button>
+                <DynamicAuthButton variant="compact" />
                 <button
                   className="settlement-btn"
                   onClick={onConnectWallet}

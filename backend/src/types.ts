@@ -17,6 +17,7 @@ export interface AgentConfig {
   capabilities: string[];
   port: number;
   nodeEnv: string;
+  nansenApiKey?: string;
 }
 
 export const MONAD_TESTNET_NETWORK_ID = "eip155:10143";

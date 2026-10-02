@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Agent, EconomicObject } from '../sdk/types';
-import { User, Cpu, Shield, ExternalLink, History } from 'lucide-react';
+import { User, Cpu, Shield, ExternalLink, History, Eye } from 'lucide-react';
 import { AgentEconomicHistory } from './envio/AgentEconomicHistory';
 import { EconomicObjectHistory } from './envio/EconomicObjectHistory';
 import { MONAD_EXPLORER_BASE } from '../contracts/addresses';
+import { CounterpartyIntelligenceModal } from './nansen/CounterpartyIntelligenceModal';
 
 interface EntitiesViewProps {
   agents: Agent[];
@@ -14,6 +15,11 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
   const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>('AGENTS');
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  const [selectedIntelTarget, setSelectedIntelTarget] = useState<{
+    address: string;
+    name: string;
+    role: 'SELLER' | 'BUYER' | 'AGENT' | 'RECOVERY_TARGET' | 'GENERAL';
+  } | null>(null);
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -60,6 +66,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                 <th>Min Reserve</th>
                 <th>Auto-GC</th>
                 <th>Envio History</th>
+                <th>On-Chain Intel</th>
               </tr>
             </thead>
             <tbody>
@@ -124,6 +131,31 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                     >
                       <History size={10} />
                       History
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="btn-econ"
+                      style={{
+                        padding: '2px 8px',
+                        fontSize: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        color: '#818cf8',
+                        borderColor: 'rgba(99, 102, 241, 0.4)',
+                        background: 'rgba(99, 102, 241, 0.08)',
+                      }}
+                      onClick={() =>
+                        setSelectedIntelTarget({
+                          address: a.controller || a.walletAddress,
+                          name: a.name,
+                          role: 'AGENT',
+                        })
+                      }
+                    >
+                      <Eye size={10} />
+                      Nansen
                     </button>
                   </td>
                 </tr>
@@ -290,6 +322,16 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
             </div>
           </div>
         </div>
+      )}
+
+      {selectedIntelTarget && (
+        <CounterpartyIntelligenceModal
+          address={selectedIntelTarget.address}
+          title={selectedIntelTarget.name}
+          role={selectedIntelTarget.role}
+          chain="monad"
+          onClose={() => setSelectedIntelTarget(null)}
+        />
       )}
     </div>
   );

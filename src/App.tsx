@@ -20,6 +20,7 @@ import { MONAD_TESTNET_ADDRESSES, MONAD_EXPLORER_BASE } from './contracts/addres
 import { PasskeyModal } from './components/mera/PasskeyModal';
 import { globalMeraSession } from './integrations/mera/meraSession';
 import { ECONPasskeyPublicMetadata } from './integrations/mera/meraTypes';
+import { globalDynamicWallet, DynamicWalletDetails } from './integrations/dynamic';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -75,6 +76,28 @@ export const App: React.FC = () => {
       setRenderTrigger((p) => p + 1);
     });
     return () => unsubSession();
+  }, [econ]);
+
+  // Dynamic Wallet State & Lifecycle
+  const [dynamicWallet, setDynamicWallet] = useState<DynamicWalletDetails | null>(
+    () => globalDynamicWallet.getConnectedWallet()
+  );
+
+  useEffect(() => {
+    const unsubDynamic = globalDynamicWallet.subscribe((details) => {
+      setDynamicWallet(details);
+      if (details) {
+        econ.store.setSettlementMode('MONAD_TESTNET');
+        globalDynamicWallet.getWalletClient().then((client) => {
+          const currentAdapter = econ.getSettlementAdapter();
+          if (client && currentAdapter instanceof MonadSettlementAdapter) {
+            currentAdapter.setWalletClient(client);
+          }
+        });
+      }
+      setRenderTrigger((p) => p + 1);
+    });
+    return () => unsubDynamic();
   }, [econ]);
 
   // Automatically activate Monad Testnet settlement mode when controller wallet connects
@@ -150,6 +173,25 @@ export const App: React.FC = () => {
     setRenderTrigger((p) => p + 1);
   };
 
+  const handleDisconnectDynamic = () => {
+    globalDynamicWallet.disconnect();
+    setDynamicWallet(null);
+    setRenderTrigger((p) => p + 1);
+  };
+
+  const handleSwitchControl = () => {
+    const choice = window.confirm(
+      'Switch Economic Control Authority?\n\n' +
+      'Click OK to switch to Biometric Passkey (Mera), or CANCEL to stay on Dynamic.'
+    );
+    if (choice) {
+      if (dynamicWallet) {
+        handleDisconnectDynamic();
+      }
+      handleOpenPasskeyModal('CREATE');
+    }
+  };
+
   const handleSwitchToMonad = () => {
     if (switchChain) {
       switchChain({ chainId: monadTestnet.id });
@@ -198,6 +240,8 @@ export const App: React.FC = () => {
       onConnectWallet={() => open()}
       onOpenPasskeyModal={handleOpenPasskeyModal}
       passkeyMetadata={passkeyMetadata}
+      dynamicWallet={dynamicWallet}
+      onSwitchControl={handleSwitchControl}
     >
       {consoleTab === 'OVERVIEW' && (
         <ConsoleOverview
@@ -214,6 +258,9 @@ export const App: React.FC = () => {
           onOpenPasskeyModal={handleOpenPasskeyModal}
           passkeyMetadata={passkeyMetadata}
           onDisconnectPasskey={handleDisconnectPasskey}
+          dynamicWallet={dynamicWallet}
+          onDisconnectDynamic={handleDisconnectDynamic}
+          onSwitchControl={handleSwitchControl}
         />
       )}
 
@@ -233,7 +280,7 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'MARKETPLACE' && (
-        <DiscoveryView services={services} />
+        <DiscoveryView services={services} agents={agents} />
       )}
 
       {consoleTab === 'TRANSACTIONS' && (

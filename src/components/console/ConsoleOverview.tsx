@@ -4,6 +4,9 @@ import { Key, Shield, LogOut } from 'lucide-react';
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
 import { OnePasskeyManyKeysVisual } from '../mera/OnePasskeyManyKeysVisual';
 import { EnvioProvenanceBadge } from '../envio/EnvioProvenanceBadge';
+import { DynamicWalletDetails } from '../../integrations/dynamic';
+import { DynamicControlCard } from '../dynamic/DynamicControlCard';
+import { DynamicAuthButton } from '../dynamic/DynamicAuthButton';
 
 interface ConsoleOverviewProps {
   store: EconomicStore;
@@ -19,6 +22,9 @@ interface ConsoleOverviewProps {
   onOpenPasskeyModal?: (mode?: 'CREATE' | 'SIGNIN') => void;
   passkeyMetadata?: ECONPasskeyPublicMetadata | null;
   onDisconnectPasskey?: () => void;
+  dynamicWallet?: DynamicWalletDetails | null;
+  onDisconnectDynamic?: () => void;
+  onSwitchControl?: () => void;
 }
 
 export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
@@ -35,6 +41,9 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
   onOpenPasskeyModal,
   passkeyMetadata,
   onDisconnectPasskey,
+  dynamicWallet,
+  onDisconnectDynamic,
+  onSwitchControl,
 }) => {
   const derived = store.getDerivedState();
   const agents = store.getAllAgents();
@@ -87,6 +96,31 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Economic Control Section (when Dynamic is active/connected) */}
+      {dynamicWallet && (
+        <DynamicControlCard
+          walletAddress={dynamicWallet.address}
+          networkChainId={dynamicWallet.networkChainId}
+          connectionStatus={dynamicWallet.networkChainId === 10143 ? 'Connected' : 'Wrong Network'}
+          economicIdentityName={
+            agents.find((a) => a.controllerType === 'DYNAMIC')?.name ||
+            (agents[0]?.name ?? 'ResearchAgent-42')
+          }
+          isEmbedded={dynamicWallet.isEmbedded}
+          connectorName={dynamicWallet.connectorName}
+          maxPerTransaction={
+            agents.find((a) => a.controllerType === 'DYNAMIC')?.policy?.maxPerTransaction || 20
+          }
+          dailySpendingLimit={
+            agents.find((a) => a.controllerType === 'DYNAMIC')?.policy?.dailySpendingLimit || 60
+          }
+          onViewEconomicIdentity={() => onNavigate('AGENTS')}
+          onSwitchControl={onSwitchControl}
+          onDisconnect={onDisconnectDynamic}
+          onSwitchNetwork={onSwitchNetwork}
+        />
+      )}
 
       {/* Economic Controller Credential & Treasury Card */}
       <div
@@ -249,6 +283,8 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
                 >
                   Sign In (Passkey)
                 </button>
+
+                <DynamicAuthButton variant="secondary" />
 
                 <button
                   onClick={onConnectWallet}

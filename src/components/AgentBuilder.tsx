@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ECON } from '../sdk/client';
 import { AGENT_TEMPLATES, AgentTemplate } from '../sdk/agent/templates';
 import { ModelProvider, AgentCapabilities, Agent } from '../sdk/types';
@@ -24,6 +24,8 @@ import { globalMeraSession } from '../integrations/mera/meraSession';
 import { ECONPasskeyIdentity } from '../integrations/mera/meraTypes';
 import { OnePasskeyManyKeysVisual } from './mera/OnePasskeyManyKeysVisual';
 import { MonadSettlementAdapter } from '../settlement/MonadSettlementAdapter';
+import { globalDynamicWallet } from '../integrations/dynamic';
+import { DynamicAuthButton } from './dynamic/DynamicAuthButton';
 
 interface AgentBuilderProps {
   econ: ECON;
@@ -58,13 +60,23 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
   const [extLanguageTab, setExtLanguageTab] = useState<'PYTHON' | 'TYPESCRIPT'>('PYTHON');
   const [extInitialFunding, setExtInitialFunding] = useState<number>(50);
 
-  // Economic Control State: Passkey (Mera PRF) vs Existing Wallet
-  const [controlMethod, setControlMethod] = useState<'PASSKEY' | 'EXTERNAL_WALLET'>('PASSKEY');
+  // Economic Control State: Passkey (Mera PRF) vs Dynamic vs Existing Wallet
+  const [controlMethod, setControlMethod] = useState<'PASSKEY' | 'DYNAMIC' | 'EXTERNAL_WALLET'>('PASSKEY');
   const [passkeyIdentity, setPasskeyIdentity] = useState<ECONPasskeyIdentity | null>(
     () => globalMeraSession.getActiveIdentity()
   );
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
+
+  // Dynamic Controller state
+  const [dynamicWalletState, setDynamicWalletState] = useState(() => globalDynamicWallet.getConnectedWallet());
+
+  useEffect(() => {
+    const unsub = globalDynamicWallet.subscribe((details) => {
+      setDynamicWalletState(details);
+    });
+    return () => unsub();
+  }, []);
 
   // Status message
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -133,7 +145,41 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
 
     let agent: Agent;
 
-    if (controlMethod === 'PASSKEY' && activePasskey) {
+    if (controlMethod === 'DYNAMIC') {
+      const connectedDynamic = dynamicWalletState || globalDynamicWallet.getConnectedWallet();
+      const dynamicAddress = (connectedDynamic?.address || '0x0000000000000000000000000000000000000000') as `0x${string}`;
+      const uniqueId = `econ_dynamic_${agentName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Math.random().toString(36).substring(2, 6)}`;
+
+      agent = econ.createDynamicAgent({
+        id: uniqueId,
+        name: agentName,
+        purpose: agentPurpose,
+        modelProvider: selectedModel,
+        initialBalanceMon: initialFundingMon,
+        walletAddress: dynamicAddress,
+        connector: connectedDynamic?.connectorName || 'Dynamic EVM',
+        isEmbedded: !!connectedDynamic?.isEmbedded,
+        networkChainId: connectedDynamic?.networkChainId || 10143,
+        policy: {
+          maxPerTransaction: maxPerTx,
+          dailySpendingLimit: dailyLimit,
+          minRetainedBalance: minReserve,
+          requireApprovalAbove: requireApprovalAbove,
+          autoRecoveryEnabled: autoRecovery,
+          autoTransferEnabled: autoRecovery,
+        },
+        capabilities,
+      });
+
+      globalDynamicWallet.getWalletClient().then((dynamicClient) => {
+        const currentAdapter = econ.getSettlementAdapter();
+        if (dynamicClient && currentAdapter instanceof MonadSettlementAdapter) {
+          currentAdapter.setWalletClient(dynamicClient);
+        }
+      });
+
+      setSuccessMessage(`Dynamic Economic Identity deployed: ${agent.name} (Controller: ${dynamicAddress}) on Monad Testnet`);
+    } else if (controlMethod === 'PASSKEY' && activePasskey) {
       agent = econ.createPasskeyAgent({
         id: uniqueId,
         name: agentName,
@@ -546,7 +592,7 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                 </div>
               </div>
               <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   <div
                     onClick={() => setControlMethod('PASSKEY')}
                     style={{
@@ -559,10 +605,29 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px', color: '#FFF' }}>
                       <Key size={14} style={{ color: '#00E599' }} />
-                      <span>Biometric Passkey (Mera)</span>
+                      <span>Biometric Passkey</span>
                     </div>
-                    <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
-                      1 Passkey derives 4 purpose-specific accounts (Operating, Treasury, Escrow, Recovery). Seedless.
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
+                      Mera PRF derives 4 purpose-specific accounts. Seedless.
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setControlMethod('DYNAMIC')}
+                    style={{
+                      padding: '12px',
+                      background: controlMethod === 'DYNAMIC' ? 'rgba(59, 130, 246, 0.12)' : 'var(--bg-app)',
+                      border: `1px solid ${controlMethod === 'DYNAMIC' ? '#3B82F6' : 'var(--border-color)'}`,
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px', color: '#FFF' }}>
+                      <Sparkles size={14} style={{ color: '#60A5FA' }} />
+                      <span>Dynamic Onboarding</span>
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
+                      Embedded EVM or social/email login on Monad Testnet.
                     </div>
                   </div>
 
@@ -578,10 +643,10 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px', color: '#FFF' }}>
                       <Shield size={14} style={{ color: 'var(--accent-blue)' }} />
-                      <span>Existing External Wallet</span>
+                      <span>External Wallet</span>
                     </div>
-                    <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
-                      MetaMask, Rabby, Coinbase Wallet, or WalletConnect via Reown AppKit.
+                    <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.3 }}>
+                      MetaMask, Rabby, Coinbase via Reown AppKit.
                     </div>
                   </div>
                 </div>
@@ -653,6 +718,66 @@ export const AgentBuilder: React.FC<AgentBuilderProps> = ({ econ, onAgentCreated
                             {passkeyError}
                           </div>
                         )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {controlMethod === 'DYNAMIC' && (
+                  <div style={{ marginTop: '4px' }}>
+                    {dynamicWalletState ? (
+                      <div
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.08)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '12px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#60A5FA', fontWeight: 700, fontFamily: 'monospace' }}>
+                            ✓ DYNAMIC CONTROLLER CONNECTED ({dynamicWalletState.connectorName})
+                          </span>
+                          {dynamicWalletState.isEmbedded && (
+                            <span
+                              style={{
+                                fontSize: '9px',
+                                fontWeight: 700,
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                background: 'rgba(147, 51, 234, 0.2)',
+                                color: '#C084FC',
+                                border: '1px solid rgba(147, 51, 234, 0.4)',
+                              }}
+                            >
+                              EMBEDDED EVM
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#FFF' }}>
+                          Controller Address: <span style={{ color: '#93C5FD' }}>{dynamicWalletState.address}</span>
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                          Network: Monad Testnet (Chain ID {dynamicWalletState.networkChainId}) • All economic spending is authorized by the ECON Policy Engine prior to Monad signing.
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.04)',
+                          border: '1px dashed rgba(59, 130, 246, 0.3)',
+                          borderRadius: '6px',
+                          padding: '14px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#FFF', marginBottom: '4px' }}>
+                          Dynamic Wallet Not Connected
+                        </div>
+                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '0 0 12px 0' }}>
+                          Connect an embedded EVM wallet or sign in via email/social through Dynamic on Monad Testnet.
+                        </p>
+                        <DynamicAuthButton variant="primary" />
                       </div>
                     )}
                   </div>

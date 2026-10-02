@@ -1,12 +1,20 @@
 import { Agent, AgentId, ObjectType, RecoveryPlan } from './types';
 import { EconomicStore } from './store';
 import { EventBus } from './events';
+import type { CounterpartyIntelligenceContext } from '../integrations/nansen/nansenTypes';
 
 export interface PolicyCheckResult {
   allowed: boolean;
   reason?: string;
   violatesRule?: string;
   requiresManualApproval?: boolean;
+  intelligenceContext?: {
+    verifiedSource: 'nansen';
+    address: string;
+    labelsCount: number;
+    flags: string[];
+    note: string;
+  };
 }
 
 export class PolicyEngine {
@@ -19,12 +27,14 @@ export class PolicyEngine {
   }
 
   /**
-   * Validate a proposed transaction against an agent's configured policy
+   * Validate a proposed transaction against an agent's configured policy,
+   * incorporating optional Nansen counterparty on-chain intelligence.
    */
   public validateTransaction(
     agentId: AgentId,
     amountMon: number,
-    category?: ObjectType
+    category?: ObjectType,
+    counterpartyContext?: CounterpartyIntelligenceContext
   ): PolicyCheckResult {
     const agent = this.store.getAgent(agentId);
     if (!agent) {
@@ -68,11 +78,55 @@ export class PolicyEngine {
     }
 
     // Rule 5: Explicit Approval Threshold
-    const requiresManualApproval = amountMon > policy.requireApprovalAbove;
+    const baseRequiresManualApproval = amountMon > policy.requireApprovalAbove;
+
+    // Rule 6: Counterparty On-Chain Intelligence Context (Nansen)
+    if (counterpartyContext && counterpartyContext.intelligence) {
+      const intel = counterpartyContext.intelligence;
+      const flags: string[] = [];
+
+      // Transparent ECON rule: check for malicious/flagged entity labels
+      const hasExploitLabel = intel.labels?.some((l) =>
+        /phish|hack|exploit|scam|drainer|sanction/i.test(l.label)
+      );
+
+      if (hasExploitLabel) {
+        flags.push('SUSPICIOUS_COUNTERPARTY');
+        const reason = `Flagged counterparty detected via Nansen intelligence for ${counterpartyContext.targetAddress}. Transaction escalated to mandatory manual approval.`;
+        this.recordViolation(agentId, 'COUNTERPARTY_FLAGGED', reason, amountMon);
+        return {
+          allowed: true,
+          requiresManualApproval: true,
+          reason,
+          violatesRule: 'COUNTERPARTY_FLAGGED',
+          intelligenceContext: {
+            verifiedSource: 'nansen',
+            address: counterpartyContext.targetAddress,
+            labelsCount: intel.labels.length,
+            flags,
+            note: 'High-risk label detected via Nansen: escalated to manual approval by ECON Policy',
+          },
+        };
+      }
+
+      return {
+        allowed: true,
+        requiresManualApproval: baseRequiresManualApproval,
+        intelligenceContext: {
+          verifiedSource: 'nansen',
+          address: counterpartyContext.targetAddress,
+          labelsCount: intel.labels ? intel.labels.length : 0,
+          flags,
+          note: intel.available
+            ? `Verified counterparty context with ${intel.labels?.length || 0} labels and ${intel.counterparties?.length || 0} active counterparties.`
+            : 'Counterparty intelligence unavailable from Nansen; evaluated with standard policy constraints.',
+        },
+      };
+    }
 
     return {
       allowed: true,
-      requiresManualApproval,
+      requiresManualApproval: baseRequiresManualApproval,
     };
   }
 

@@ -106,14 +106,20 @@ export interface Agent {
   onChainTxHash?: string;
   metadataURI?: string;
 
-  // Mera Passkey Economic Identity Layer
-  controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA';
+  // Controller Authority: Mera Passkey, Dynamic Wallet, or External Wallet
+  controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA' | 'DYNAMIC';
   passkeyCredentialId?: string;
   passkeyAccounts?: {
     operating: `0x${string}`;
     treasury: `0x${string}`;
     escrow: `0x${string}`;
     recovery: `0x${string}`;
+  };
+  dynamicWallet?: {
+    address: `0x${string}`;
+    connector: string;
+    isEmbedded: boolean;
+    networkChainId: number;
   };
 }
 

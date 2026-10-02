@@ -50,6 +50,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AgentConfig {
     priceCredits: parseIntEnv("AGENT_PRICE_CREDITS", 5),
     capabilities: parseListEnv("AGENT_CAPABILITIES", ["data-analysis", "document-processing"]),
     port: parseIntEnv("PORT", 3000),
-    nodeEnv: env.NODE_ENV ?? "development"
+    nodeEnv: env.NODE_ENV ?? "development",
+    nansenApiKey: process.env.NANSEN_API_KEY
   };
 }
