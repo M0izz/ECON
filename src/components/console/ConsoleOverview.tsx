@@ -3,6 +3,7 @@ import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS
 import { Key, Shield, LogOut } from 'lucide-react';
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
 import { OnePasskeyManyKeysVisual } from '../mera/OnePasskeyManyKeysVisual';
+import { EnvioProvenanceBadge } from '../envio/EnvioProvenanceBadge';
 
 interface ConsoleOverviewProps {
   store: EconomicStore;
@@ -331,7 +332,10 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
             <span className="econ-eyebrow">// REAL-TIME CHRONICLE</span>
             <h3 className="econ-title-md">AUTONOMOUS ECONOMIC ACTIVITY TIMELINE</h3>
           </div>
-          <span className="econ-badge econ-badge-lime">LIVE LEDGER</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <EnvioProvenanceBadge compact />
+            <span className="econ-badge econ-badge-lime">LIVE LEDGER</span>
+          </div>
         </div>
         {events.length === 0 ? (
           <div className="text-muted font-mono" style={{ padding: '28px', textAlign: 'center' }}>

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Agent, EconomicObject } from '../sdk/types';
-import { User, Cpu, Shield, ExternalLink } from 'lucide-react';
+import { User, Cpu, Shield, ExternalLink, History } from 'lucide-react';
+import { AgentEconomicHistory } from './envio/AgentEconomicHistory';
+import { EconomicObjectHistory } from './envio/EconomicObjectHistory';
+import { MONAD_EXPLORER_BASE } from '../contracts/addresses';
 
 interface EntitiesViewProps {
   agents: Agent[];
@@ -9,6 +12,8 @@ interface EntitiesViewProps {
 
 export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) => {
   const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>('AGENTS');
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -40,7 +45,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
               <span>Economic Agent Registry</span>
             </div>
             <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
-              Persistent Economic Identities with Spending Policies
+              Persistent Economic Identities with Spending Policies & Envio Audit
             </span>
           </div>
           <table className="econ-table">
@@ -54,6 +59,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                 <th>Daily Limit</th>
                 <th>Min Reserve</th>
                 <th>Auto-GC</th>
+                <th>Envio History</th>
               </tr>
             </thead>
             <tbody>
@@ -70,7 +76,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                     {a.onChainTxHash && (
                       <a
                         className="font-mono"
-                        href={`https://testnet.monadscan.com/tx/${a.onChainTxHash}`}
+                        href={`${MONAD_EXPLORER_BASE}/tx/${a.onChainTxHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ fontSize: '10px', color: 'var(--accent-blue)' }}
@@ -110,6 +116,16 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                       {a.policy.autoRecoveryEnabled ? 'ENABLED' : 'MANUAL'}
                     </span>
                   </td>
+                  <td>
+                    <button
+                      className="btn-econ"
+                      style={{ padding: '2px 8px', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '3px' }}
+                      onClick={() => setSelectedAgentId(a.id)}
+                    >
+                      <History size={10} />
+                      History
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -139,6 +155,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                 <th>Time To Expiry</th>
                 <th>Transferable</th>
                 <th>Status</th>
+                <th>Envio Audit</th>
               </tr>
             </thead>
             <tbody>
@@ -195,11 +212,83 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects }) =
                     <td>
                       <span className={`badge ${statusBadge}`}>{o.status}</span>
                     </td>
+                    <td>
+                      <button
+                        className="btn-econ"
+                        style={{ padding: '2px 8px', fontSize: '10px', display: 'flex', alignItems: 'center', gap: '3px' }}
+                        onClick={() => setSelectedObjectId(o.id)}
+                      >
+                        <History size={10} />
+                        Audit
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Agent Economic History Modal */}
+      {selectedAgentId && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+          }}
+          onClick={() => setSelectedAgentId(null)}
+        >
+          <div
+            className="panel"
+            style={{ width: '720px', maxHeight: '85vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="panel-title">Agent Envio Audit Dossier</span>
+              <button className="btn-econ" onClick={() => setSelectedAgentId(null)}>Close</button>
+            </div>
+            <div style={{ padding: '16px' }}>
+              <AgentEconomicHistory agentId={selectedAgentId} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Economic Object History Modal */}
+      {selectedObjectId && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+          }}
+          onClick={() => setSelectedObjectId(null)}
+        >
+          <div
+            className="panel"
+            style={{ width: '720px', maxHeight: '85vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="panel-title">Object Envio Lifecycle Provenance</span>
+              <button className="btn-econ" onClick={() => setSelectedObjectId(null)}>Close</button>
+            </div>
+            <div style={{ padding: '16px' }}>
+              <EconomicObjectHistory objectId={selectedObjectId} onClose={() => setSelectedObjectId(null)} />
+            </div>
+          </div>
         </div>
       )}
     </div>

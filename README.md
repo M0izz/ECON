@@ -6,6 +6,7 @@
 
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-00E599?style=flat-square)](https://docs.monad.xyz/)
 [![ERC-8004](https://img.shields.io/badge/Agent%20Identity-ERC--8004-111111?style=flat-square)](https://ercs.ethereum.org/ERCS/erc-8004)
+[![Envio](https://img.shields.io/badge/Envio-HyperIndex-836EF9?style=flat-square)](https://envio.dev)
 [![Mera](https://img.shields.io/badge/Mera-Passkey%20Identity-836EF9?style=flat-square)](https://github.com/category-labs/mera)
 [![Foundry](https://img.shields.io/badge/Contracts-Foundry-111111?style=flat-square)](https://book.getfoundry.sh/)
 
@@ -46,6 +47,40 @@ Using Mera's WebAuthn Pseudo-Random Function (PRF) extension root, ECON determin
 - **Recovery Account**: Economic Garbage Collector (GC) salvage sweeps for stranded assets.
 
 Mera signers act as the cryptographic execution layer on Monad, while the **ECON Policy Engine** guarantees that all economic actions strictly obey spending caps, velocity limits, and reserve floors before any transaction reaches the signer. For complete architectural details, see [Mera Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/mera.md).
+
+---
+
+### Envio Integration — Indexed Economic History Layer
+
+ECON uses Envio HyperIndex to index Monad economic events into a queryable economic history layer powering transaction, marketplace, escrow, object and recovery history.
+
+```
+Monad Testnet (Chain ID 10143)
+  ↓
+ECON Smart Contracts (Identity, Objects, Escrow, Market, Credit Vault)
+  ↓
+On-Chain Events (AgentRegistered, ObjectTransferred, EscrowReleased, etc.)
+  ↓
+Envio HyperIndex (indexer/config.yaml, schema.graphql, EventHandlers.ts)
+  ↓
+Structured Indexed Economic Read Model (PostgreSQL / Hypersync)
+  ↓
+GraphQL API
+  ↓
+ECON Indexer Client (src/integrations/envio/)
+  ↓
+Audit Ledger, Agent Dossier, Asset Provenance & Recovery Chronicle
+```
+
+#### What Envio Indexes in ECON:
+- **Economic Identity**: Sovereign agent passport registrations, controller mappings, and status transitions on `ECONIdentityRegistry.sol`.
+- **Economic Objects**: Programmable asset minting, ownership transfers, and lifecycle progression on `ECONEconomicObject.sol`.
+- **Secondary Marketplace**: Spot listings, purchases, and 1.0% protocol fee splits on `ECONMarketplace.sol`.
+- **Escrow Contracts**: Conditional locks, delivery submissions, milestone releases, and refunds on `ECONEscrow.sol`.
+- **Credit Vaults**: Prepayment allocations, task consumption settlements, and common pool recycling on `ECONCreditVault.sol`.
+- **Economic Garbage Collector**: Auditable on-chain records of stranded yield recoveries and capacity reclamations.
+
+For complete architectural details, schema specifications, and deployment recipes, see [Envio Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/envio.md).
 
 ---
 

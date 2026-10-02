@@ -1,0 +1,61 @@
+name: econ-indexer
+description: Envio HyperIndex for ECON Autonomous Economic Operating Layer on Monad Testnet
+
+field_selection:
+  transaction_fields:
+    - hash
+    - from
+
+networks:
+  - id: 10143
+    start_block: 0
+    contracts:
+      - name: ECONIdentityRegistry
+        abi_file_path: abis/ECONIdentityRegistry.json
+        address:
+          - "0x8004A818b43A4F469612C57cEC58c9735D1e1234"
+        handler: src/EventHandlers.ts
+        events:
+          - event: AgentRegistered(bytes32 indexed agentId, address indexed controller, bytes32 metadataHash, string agentURI)
+          - event: AgentStatusChanged(bytes32 indexed agentId, bool active)
+          - event: MetadataUpdated(bytes32 indexed agentId, bytes32 newMetadataHash, string newURI)
+      - name: ECONEconomicObject
+        abi_file_path: abis/ECONEconomicObject.json
+        address:
+          - "0x39F494E03d3f9b2A4C2a01D7aB4BFe5aDe71C802"
+        handler: src/EventHandlers.ts
+        events:
+          - event: ObjectCreated(bytes32 indexed id, address indexed owner, uint8 objectType, uint256 value)
+          - event: ObjectTransferred(bytes32 indexed id, address indexed previousOwner, address indexed newOwner)
+          - event: ObjectStatusUpdated(bytes32 indexed id, uint8 status)
+      - name: ECONEscrow
+        abi_file_path: abis/ECONEscrow.json
+        address:
+          - "0x62B9D90e964C108779951664c39832B6F9A27F03"
+        handler: src/EventHandlers.ts
+        events:
+          - event: EscrowLocked(bytes32 indexed id, address indexed buyer, address indexed seller, uint256 amount, bytes32 conditionHash, uint256 deadline, bytes32 linkedObjectId)
+          - event: DeliverySubmitted(bytes32 indexed id, bytes32 deliveryProof)
+          - event: EscrowReleased(bytes32 indexed id, address indexed seller, uint256 amount, bytes32 linkedObjectId)
+          - event: EscrowRefunded(bytes32 indexed id, address indexed buyer, uint256 amount)
+      - name: ECONMarketplace
+        abi_file_path: abis/ECONMarketplace.json
+        address:
+          - "0x49B3C8e7456dE1279A818D5D5d78F49F1823d041"
+        handler: src/EventHandlers.ts
+        events:
+          - event: ObjectListed(bytes32 indexed listingId, bytes32 indexed objectId, address indexed seller, uint256 price, uint256 listedAt)
+          - event: ListingCancelled(bytes32 indexed listingId, bytes32 indexed objectId, address indexed seller)
+          - event: ObjectPurchased(bytes32 indexed listingId, bytes32 indexed objectId, address indexed buyer, address seller, uint256 price, uint256 fee)
+      - name: ECONCreditVault
+        abi_file_path: abis/ECONCreditVault.json
+        address:
+          - "0x7E3a8451D879F439fDa744747B0593B6Eda30022"
+        handler: src/EventHandlers.ts
+        events:
+          - event: CreditsDeposited(address indexed account, uint256 amount, uint256 newBalance)
+          - event: CreditsWithdrawn(address indexed account, uint256 amount, uint256 newBalance)
+          - event: CreditsReserved(bytes32 indexed reservationId, string indexed agentId, address indexed requester, uint256 amount, uint256 expiresAt)
+          - event: ReservationSettled(bytes32 indexed reservationId, string indexed agentId, address indexed requester, uint256 consumedAmount, uint256 refundedAmount)
+          - event: ReservationReleased(bytes32 indexed reservationId, string indexed agentId, address indexed requester, uint256 refundedAmount)
+          - event: ReservationRecycled(bytes32 indexed reservationId, string indexed agentId, uint256 recycledAmount)

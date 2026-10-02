@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ServiceOffering } from '../sdk/types';
-import { Compass, Search, Filter, CheckCircle2, Zap } from 'lucide-react';
+import { Compass, Search, Filter, CheckCircle2, Zap, ShoppingCart } from 'lucide-react';
+import { MarketplaceHistory } from './envio/MarketplaceHistory';
 
 interface DiscoveryViewProps {
   services: ServiceOffering[];
@@ -8,6 +9,7 @@ interface DiscoveryViewProps {
 }
 
 export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services }) => {
+  const [activeTab, setActiveTab] = useState<'SERVICES' | 'INDEXED_MARKET'>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
   const [capabilityFilter, setCapabilityFilter] = useState('ALL');
 
@@ -25,17 +27,39 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services }) => {
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Header and Filter Controls */}
-      <div className="panel" style={{ padding: '14px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div className="panel-title">
-            <Compass size={14} className="text-mint" />
-            <span>ECON Discovery Network Registry</span>
-          </div>
-          <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
-            Machine-queryable service discovery for autonomous agents
-          </span>
-        </div>
+      {/* Navigation Sub-Tabs */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          className={`btn-econ ${activeTab === 'SERVICES' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('SERVICES')}
+        >
+          <Compass size={13} />
+          <span>Services Registry ({services.length})</span>
+        </button>
+        <button
+          className={`btn-econ ${activeTab === 'INDEXED_MARKET' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('INDEXED_MARKET')}
+        >
+          <ShoppingCart size={13} />
+          <span>Indexed Marketplace Activity (Envio)</span>
+        </button>
+      </div>
+
+      {activeTab === 'INDEXED_MARKET' ? (
+        <MarketplaceHistory />
+      ) : (
+        <>
+          {/* Header and Filter Controls */}
+          <div className="panel" style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div className="panel-title">
+                <Compass size={14} className="text-mint" />
+                <span>ECON Discovery Network Registry</span>
+              </div>
+              <span className="font-mono text-muted" style={{ fontSize: '11px' }}>
+                Machine-queryable service discovery for autonomous agents
+              </span>
+            </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1 }}>
@@ -150,6 +174,8 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services }) => {
           </tbody>
         </table>
       </div>
+    </>
+  )}
     </div>
   );
 };

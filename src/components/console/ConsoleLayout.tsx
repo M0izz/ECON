@@ -166,6 +166,9 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
             {isMonad && (
               <div className="monad-contract-preview">
                 <span className="font-mono">ERC-8004: 0x8004A818...</span>
+                <span className="font-mono" style={{ color: '#A78BFA', fontSize: '10px' }}>
+                  • Envio Indexer
+                </span>
                 <a
                   href="https://testnet.monadexplorer.com"
                   target="_blank"

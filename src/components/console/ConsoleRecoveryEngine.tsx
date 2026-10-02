@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ECON } from '../../sdk/client';
 import { EconomicObject, RecoveryPlan } from '../../sdk/types';
+import { RecoveryHistory } from '../envio/RecoveryHistory';
+import { Recycle, Database } from 'lucide-react';
 
 interface ConsoleRecoveryEngineProps {
   econ: ECON;
@@ -17,6 +19,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
   onTriggerScan,
   onRefresh,
 }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'SCANNER' | 'ENVIO_HISTORY'>('SCANNER');
   const derived = econ.store.getDerivedState();
   const stranded = objects.filter((o) => o.status === 'STRANDED');
 
@@ -118,8 +121,30 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
         </div>
       </div>
 
-      {/* Signature Showcase Card: API Credits (Requested by user) */}
-      <div className="econ-card signature-recovery-showcase">
+      {/* Navigation Sub-Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <button
+          className={`btn-econ ${activeSubTab === 'SCANNER' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveSubTab('SCANNER')}
+        >
+          <Recycle size={13} />
+          <span>Active GC Residual Scanner</span>
+        </button>
+        <button
+          className={`btn-econ ${activeSubTab === 'ENVIO_HISTORY' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveSubTab('ENVIO_HISTORY')}
+        >
+          <Database size={13} />
+          <span>Indexed Recovery Chronicle (Envio)</span>
+        </button>
+      </div>
+
+      {activeSubTab === 'ENVIO_HISTORY' ? (
+        <RecoveryHistory />
+      ) : (
+        <>
+          {/* Signature Showcase Card: API Credits (Requested by user) */}
+          <div className="econ-card signature-recovery-showcase">
         <div className="sig-badge-row">
           <span className="econ-badge econ-badge-pink">HIGH YIELD CANDIDATE</span>
           <span className="econ-badge econ-badge-monad">MONAD TESTNET VERIFIED</span>
@@ -229,6 +254,8 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
           ))}
         </div>
       </div>
+    </>
+  )}
 
       {/* Policy-Gated Recovery Modal Flow */}
       {selectedCandidate && (

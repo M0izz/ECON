@@ -1,0 +1,20 @@
+{
+  "name": "econ-indexer",
+  "version": "1.0.0",
+  "description": "Envio HyperIndex for ECON Autonomous Economic Operating Layer on Monad Testnet",
+  "private": true,
+  "scripts": {
+    "codegen": "envio codegen",
+    "dev": "envio dev",
+    "start": "envio start",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "envio": "3.0.0-alpha.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { EscrowRecord, Agent } from '../sdk/types';
 import { ECON } from '../sdk/client';
-import { Lock, CheckCircle2, RefreshCw, Send, ShieldCheck, ExternalLink, Plus, Clock } from 'lucide-react';
+import { Lock, CheckCircle2, RefreshCw, Send, ShieldCheck, ExternalLink, Plus, Clock, Database } from 'lucide-react';
+import { EscrowHistory } from './envio/EscrowHistory';
 
 interface EscrowContractsViewProps {
   econ: ECON;
@@ -16,6 +17,7 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
   escrows,
   onRefresh,
 }) => {
+  const [activeTab, setActiveTab] = useState<'MANAGEMENT' | 'ENVIO_TIMELINE'>('MANAGEMENT');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [isCreating, setIsCreating] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -84,18 +86,40 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Overview Metric Banner */}
-      <div className="panel" style={{ padding: '16px 20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div className="panel-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Lock size={16} className="text-mint" />
-              <span style={{ fontSize: '15px', fontWeight: 700 }}>Autonomous Escrow Settlement Contracts</span>
-            </div>
-            <p className="text-secondary" style={{ fontSize: '11.5px', marginTop: '4px' }}>
-              Deterministic conditional value locks for agent-to-agent commitments on Monad Parallel EVM.
-            </p>
-          </div>
+      {/* Sub-Tabs */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          className={`btn-econ ${activeTab === 'MANAGEMENT' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('MANAGEMENT')}
+        >
+          <Lock size={13} />
+          <span>Escrow Management ({escrows.length})</span>
+        </button>
+        <button
+          className={`btn-econ ${activeTab === 'ENVIO_TIMELINE' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('ENVIO_TIMELINE')}
+        >
+          <Database size={13} />
+          <span>Indexed Escrow Timeline (Envio)</span>
+        </button>
+      </div>
+
+      {activeTab === 'ENVIO_TIMELINE' ? (
+        <EscrowHistory />
+      ) : (
+        <>
+          {/* Overview Metric Banner */}
+          <div className="panel" style={{ padding: '16px 20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="panel-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Lock size={16} className="text-mint" />
+                  <span style={{ fontSize: '15px', fontWeight: 700 }}>Autonomous Escrow Settlement Contracts</span>
+                </div>
+                <p className="text-secondary" style={{ fontSize: '11.5px', marginTop: '4px' }}>
+                  Deterministic conditional value locks for agent-to-agent commitments on Monad Parallel EVM.
+                </p>
+              </div>
 
           <button
             className="btn-econ btn-econ-primary"
@@ -359,6 +383,8 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
           </tbody>
         </table>
       </div>
+    </>
+  )}
     </div>
   );
 };

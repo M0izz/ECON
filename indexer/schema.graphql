@@ -1,0 +1,110 @@
+type Agent @entity {
+  id: ID!
+  controller: String!
+  metadataHash: String!
+  agentURI: String!
+  active: Boolean!
+  registeredAt: BigInt!
+  registeredBlock: BigInt!
+  transactionCount: BigInt!
+  totalVolumeMon: BigInt!
+  txHash: String!
+}
+
+type EconomicObject @entity {
+  id: ID!
+  owner: String!
+  objectType: Int!
+  value: BigInt!
+  expiry: BigInt!
+  transferable: Boolean!
+  status: String!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+  txHash: String!
+  blockNumber: BigInt!
+}
+
+type MarketplaceListing @entity {
+  id: ID!
+  objectId: String!
+  seller: String!
+  buyer: String
+  price: BigInt!
+  fee: BigInt
+  active: Boolean!
+  listedAt: BigInt!
+  purchasedAt: BigInt
+  cancelledAt: BigInt
+  txHash: String!
+}
+
+type EscrowRecord @entity {
+  id: ID!
+  buyer: String!
+  seller: String!
+  amount: BigInt!
+  conditionHash: String!
+  deadline: BigInt!
+  status: String!
+  linkedObjectId: String
+  deliveryProof: String
+  createdAt: BigInt!
+  releasedAt: BigInt
+  refundedAt: BigInt
+  txHash: String!
+  blockNumber: BigInt!
+}
+
+type CreditReservation @entity {
+  id: ID!
+  agentId: String!
+  requester: String!
+  amount: BigInt!
+  consumedAmount: BigInt
+  refundedAmount: BigInt
+  recycledAmount: BigInt
+  status: String!
+  createdAt: BigInt!
+  settledAt: BigInt
+  txHash: String!
+}
+
+type RecoveryRecord @entity {
+  id: ID!
+  objectId: String!
+  agent: String!
+  recoveryType: String!
+  recoveredValue: BigInt!
+  status: String!
+  txHash: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type EconomicEvent @entity {
+  id: ID!
+  type: String!
+  actor: String!
+  counterparty: String
+  amount: BigInt
+  summary: String!
+  contractAddress: String!
+  txHash: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  relatedObjectId: String
+  relatedEscrowId: String
+}
+
+type DailyEconomicMetric @entity {
+  id: ID!
+  date: String!
+  totalTransactions: BigInt!
+  totalVolumeMon: BigInt!
+  marketplaceVolumeMon: BigInt!
+  escrowVolumeMon: BigInt!
+  recoveredValueMon: BigInt!
+  objectsCreated: BigInt!
+  activeAgents: BigInt!
+}
