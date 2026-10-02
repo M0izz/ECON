@@ -16,6 +16,7 @@ import { EscrowContractsView } from './components/EscrowContractsView';
 import { useAppKit } from '@reown/appkit/react';
 import { useAccount, useBalance, useSwitchChain } from 'wagmi';
 import { monadTestnet } from './config/wagmi';
+import { MONAD_TESTNET_ADDRESSES, MONAD_EXPLORER_BASE } from './contracts/addresses';
 
 export type AppViewMode = 'LANDING' | 'CONSOLE';
 
@@ -278,26 +279,81 @@ Body:
 
           {/* Smart Contract Reference */}
           <div className="panel" style={{ padding: '16px' }}>
-            <span className="font-mono text-muted" style={{ fontSize: '11px', fontWeight: 700 }}>
-              VERIFIED MONAD TESTNET SMART CONTRACTS
-            </span>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span className="font-mono text-muted" style={{ fontSize: '11px', fontWeight: 700 }}>
+                VERIFIED MONAD TESTNET SMART CONTRACTS (CHAIN ID: 10143)
+              </span>
+              <span className="badge badge-mint font-mono" style={{ fontSize: '10px' }}>EVM VERIFIED</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONIdentityRegistry.sol</div>
+                <a
+                  href={`${MONAD_EXPLORER_BASE}/address/${MONAD_TESTNET_ADDRESSES.identityRegistry}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-mint"
+                  style={{ fontSize: '11px', marginTop: '4px', display: 'block', textDecoration: 'none' }}
+                >
+                  {MONAD_TESTNET_ADDRESSES.identityRegistry.slice(0, 10)}...{MONAD_TESTNET_ADDRESSES.identityRegistry.slice(-6)} ↗
+                </a>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>ERC-8004 agent passport registry</div>
+              </div>
+
+              <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONEconomicObject.sol</div>
+                <a
+                  href={`${MONAD_EXPLORER_BASE}/address/${MONAD_TESTNET_ADDRESSES.economicObject}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-mint"
+                  style={{ fontSize: '11px', marginTop: '4px', display: 'block', textDecoration: 'none' }}
+                >
+                  {MONAD_TESTNET_ADDRESSES.economicObject.slice(0, 10)}...{MONAD_TESTNET_ADDRESSES.economicObject.slice(-6)} ↗
+                </a>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Stateful economic assets & compute credits</div>
+              </div>
+
               <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONEscrow.sol</div>
-                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x62B9D90e964C108779951664c39832B6F9A27F03</div>
+                <a
+                  href={`${MONAD_EXPLORER_BASE}/address/${MONAD_TESTNET_ADDRESSES.escrow}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-mint"
+                  style={{ fontSize: '11px', marginTop: '4px', display: 'block', textDecoration: 'none' }}
+                >
+                  {MONAD_TESTNET_ADDRESSES.escrow.slice(0, 10)}...{MONAD_TESTNET_ADDRESSES.escrow.slice(-6)} ↗
+                </a>
                 <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Conditional value locks & releases</div>
               </div>
 
               <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONCreditVault.sol</div>
-                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x7E3a8451D879F439fDa744747B0593B6Eda30022</div>
-                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Recyclable credit reserves & allocations</div>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONMarketplace.sol</div>
+                <a
+                  href={`${MONAD_EXPLORER_BASE}/address/${MONAD_TESTNET_ADDRESSES.marketplace}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-mint"
+                  style={{ fontSize: '11px', marginTop: '4px', display: 'block', textDecoration: 'none' }}
+                >
+                  {MONAD_TESTNET_ADDRESSES.marketplace.slice(0, 10)}...{MONAD_TESTNET_ADDRESSES.marketplace.slice(-6)} ↗
+                </a>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Autonomous agent spot trades (1% fee)</div>
               </div>
 
               <div style={{ background: 'var(--bg-app)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONIdentity (ERC-8004)</div>
-                <div className="font-mono text-mint" style={{ fontSize: '11px', marginTop: '4px' }}>0x8004A818b43A4F469612C57cEC58c9735D1e1234</div>
-                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Cryptographic agent passport registry</div>
+                <div style={{ fontWeight: 600, fontSize: '12px', color: '#FFF' }}>ECONCreditVault.sol</div>
+                <a
+                  href={`${MONAD_EXPLORER_BASE}/address/${MONAD_TESTNET_ADDRESSES.creditVault}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-mint"
+                  style={{ fontSize: '11px', marginTop: '4px', display: 'block', textDecoration: 'none' }}
+                >
+                  {MONAD_TESTNET_ADDRESSES.creditVault.slice(0, 10)}...{MONAD_TESTNET_ADDRESSES.creditVault.slice(-6)} ↗
+                </a>
+                <div className="font-mono text-muted" style={{ fontSize: '10px', marginTop: '2px' }}>Recyclable credit reservations & peer pools</div>
               </div>
             </div>
           </div>

@@ -880,9 +880,11 @@ Agent URI: TBD
 
 | Contract | Verified Testnet Address | Description |
 | :--- | :--- | :--- |
+| **ECONIdentityRegistry** | [`0x8004A818b43A4F469612C57cEC58c9735D1e1234`](https://testnet.monadexplorer.com/address/0x8004A818b43A4F469612C57cEC58c9735D1e1234) | On-chain autonomous agent passport registry |
+| **ECONEconomicObject** | [`0x39F494E03d3f9b2A4C2a01D7aB4BFe5aDe71C802`](https://testnet.monadexplorer.com/address/0x39F494E03d3f9b2A4C2a01D7aB4BFe5aDe71C802) | Stateful economic assets, compute credits & claims |
 | **ECONEscrow** | [`0x62B9D90e964C108779951664c39832B6F9A27F03`](https://testnet.monadexplorer.com/address/0x62B9D90e964C108779951664c39832B6F9A27F03) | Autonomous multi-party value locks, delivery verification & releases |
+| **ECONMarketplace** | [`0x49B3C8e7456dE1279A818D5D5d78F49F1823d041`](https://testnet.monadexplorer.com/address/0x49B3C8e7456dE1279A818D5D5d78F49F1823d041) | Autonomous agent spot trades with 1.0% protocol fee |
 | **ECONCreditVault** | [`0x7E3a8451D879F439fDa744747B0593B6Eda30022`](https://testnet.monadexplorer.com/address/0x7E3a8451D879F439fDa744747B0593B6Eda30022) | Recyclable credit reservations, allocations, and peer pools |
-| **ECONIdentity (ERC-8004)** | [`0x8004A818b43A4F469612C57cEC58c9735D1e1234`](https://testnet.monadexplorer.com/address/0x8004A818b43A4F469612C57cEC58c9735D1e1234) | On-chain autonomous agent passport registry |
 
 ### Explorer
 

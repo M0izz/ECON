@@ -92,8 +92,7 @@ export class EconomicEngine {
     });
 
     // Step 3: Execute Financial Settlement via Adapter
-    // Net amount settles to seller; ECON retains feeMon as protocol revenue
-    const settlementResult = await this.settlement.transfer(buyerId, sellerId, fee.netMon, memo);
+    const settlementResult = await this.settlement.transfer(buyerId, sellerId, amountMon, memo);
     if (!settlementResult.success) {
       tx.status = 'FAILED';
       tx.memo = `Settlement failure: ${settlementResult.error}`;
