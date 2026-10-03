@@ -1,0 +1,33 @@
+{
+  "workflowId": "cre-econ-gc-recovery-v1",
+  "workflowName": "ECON Autonomous Economic GC Recovery Scanner",
+  "version": "1.0.0",
+  "network": {
+    "name": "monad-testnet",
+    "chainId": 10143,
+    "rpcUrl": "https://testnet-rpc.monad.xyz"
+  },
+  "contracts": {
+    "economicObject": "0x3216c52a0a22b7a956d4825d18c0677a342410a1",
+    "identityRegistry": "0x1214b6792a645c110e663b514571a15c198547a0",
+    "marketplace": "0x6542d99c4b182e0e47a9821415c1842099a810b3"
+  },
+  "triggers": {
+    "cronSchedule": "0 */5 * * * *",
+    "evmLog": {
+      "eventName": "ObjectStatusUpdated(bytes32,uint8)",
+      "targetStatus": 2
+    }
+  },
+  "endpoints": {
+    "econApiBase": "http://localhost:3001/api",
+    "qwenReasoning": "http://localhost:3001/api/qwen/reason",
+    "nansenProfiler": "http://localhost:3001/api/nansen",
+    "envioIndexer": "https://indexer.bigdevenergy.com/v1/graphql"
+  },
+  "policyInvariants": {
+    "enforceReserveFloors": true,
+    "allowSoulboundMovement": false,
+    "maxAutonomousCapMon": 50.0
+  }
+}

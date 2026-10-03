@@ -1,0 +1,16 @@
+{
+  "name": "econ-cre-workflow",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "simulate": "tsx src/simulate.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@chainlink/cre-sdk": "^1.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  }
+}

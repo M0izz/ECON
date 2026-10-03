@@ -36,7 +36,7 @@ describe('NansenClient Caching, Error Handling & Security', () => {
     expect(intel.labels[0].label).toBe('Monad Whale');
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    const [url, options] = fetchSpy.mock.calls[0];
+    const [url, options] = (fetchSpy.mock.calls[0] as unknown as [string, RequestInit]);
     expect(url).toBe('/api/nansen/profile');
     const parsedBody = JSON.parse(options?.body as string);
     expect(parsedBody.address).toBe(sampleAddress);

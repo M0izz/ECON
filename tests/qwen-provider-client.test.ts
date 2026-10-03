@@ -70,7 +70,7 @@ describe('Qwen 3.8 Max — Provider & Proxy Client Test Suite', () => {
       rawResponse: '{"action":"BUY","target":"GeoVision","amountMon":12.0,"confidence":0.91,"reason":"Optimal pricing"}',
     };
 
-    global.fetch = vi.fn().mockResolvedValue({
+    (globalThis as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => mockApiResponse,
@@ -93,7 +93,7 @@ describe('Qwen 3.8 Max — Provider & Proxy Client Test Suite', () => {
       rawResponse: '{"action":"BUY","target":"GeoVision","amountMon":12.0,"confidence":0.91,"reason":"Cached recommendation"}',
     };
 
-    global.fetch = vi.fn().mockResolvedValue({
+    (globalThis as any).fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => mockApiResponse,
@@ -113,7 +113,7 @@ describe('Qwen 3.8 Max — Provider & Proxy Client Test Suite', () => {
   it('handles 401 Unauthorized / missing API credentials gracefully', async () => {
     const client = new QwenClient();
 
-    global.fetch = vi.fn().mockResolvedValue({
+    (globalThis as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
       json: async () => ({
@@ -131,7 +131,7 @@ describe('Qwen 3.8 Max — Provider & Proxy Client Test Suite', () => {
   it('handles 404 Model Not Found without crashing or silently substituting fake data', async () => {
     const client = new QwenClient();
 
-    global.fetch = vi.fn().mockResolvedValue({
+    (globalThis as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => ({
@@ -149,7 +149,7 @@ describe('Qwen 3.8 Max — Provider & Proxy Client Test Suite', () => {
   it('handles 429 Rate Limit cleanly', async () => {
     const client = new QwenClient();
 
-    global.fetch = vi.fn().mockResolvedValue({
+    (globalThis as any).fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 429,
       json: async () => ({

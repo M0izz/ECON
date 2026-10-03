@@ -7,6 +7,7 @@
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-00E599?style=flat-square)](https://docs.monad.xyz/)
 [![ERC-8004](https://img.shields.io/badge/Agent%20Identity-ERC--8004-111111?style=flat-square)](https://ercs.ethereum.org/ERCS/erc-8004)
 [![Qwen 3.8 Max](https://img.shields.io/badge/AI%20Reasoning-Qwen%203.8%20Max-D946EF?style=flat-square)](https://www.alibabacloud.com/en/solutions/model-studio)
+[![Chainlink CRE](https://img.shields.io/badge/Chainlink-Runtime%20Environment-375BD2?style=flat-square)](https://docs.chain.link/chainlink-runtime-environment)
 [![Envio](https://img.shields.io/badge/Envio-HyperIndex-836EF9?style=flat-square)](https://envio.dev)
 [![Nansen](https://img.shields.io/badge/Nansen-On--Chain%20Intelligence-6366F1?style=flat-square)](https://www.nansen.ai)
 [![Mera](https://img.shields.io/badge/Mera-Passkey%20Identity-836EF9?style=flat-square)](https://github.com/category-labs/mera)
@@ -171,6 +172,67 @@ Monad Settlement (Mera Passkey / Dynamic / Viem)
 6. **Graceful Fallback & Zero Fake AI**: If the model is unconfigured or unavailable, ECON clearly surfaces an unavailable state with manual operational fallbacks. No fake AI reasoning is ever fabricated.
 
 For complete architectural details, prompt schemas, and security specifications, see [Qwen Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/qwen.md).
+
+---
+
+### Chainlink Runtime Environment (CRE) — Automation & Verifiable Workflows
+
+ECON integrates the **Chainlink Runtime Environment (CRE)** as the protocol's **Automation and Verifiable Workflow Layer**, coordinating autonomous maintenance routines like the **Automated Economic Garbage Collector (GC) Recovery Scan**.
+
+```
+           ECON Economic State
+                    ↓
+        Chainlink CRE Orchestrator
+        (Cron Trigger / EVM Log)
+                    ↓
+       Bounded Economic Context
+     (Envio history + Nansen intel)
+                    ↓
+            Qwen 3.8 Max
+     (Economic Reasoning Engine)
+                    ↓
+          ECON Policy Engine
+       [AUTHORITATIVE BOUNDARY]
+                    ↓
+       ┌────────────┼────────────┐
+    [ALLOW]     [REVIEW]     [BLOCK]
+       │            │            │
+       │       Escrow for   Safe Halt
+       │       Operator     (No Tx)
+       │       Sign-off
+       ↓
+  ECON Contract
+(ECONEconomicObject)
+       ↓
+ Monad Parallel EVM
+   (Chain 10143)
+       ↓
+ Envio HyperIndex
+(Real-time chronicle)
+```
+
+#### Core Rule & Invariant Hierarchy:
+```
+CRE orchestrates.
+Qwen reasons.
+ECON Policy decides.
+Smart contracts enforce.
+Monad settles.
+```
+
+- **CRE Orchestrates**: Schedules decentralized cron triggers (`CronCapability`), monitors on-chain status (`EVMClient`), and drives verified multi-step recovery pipelines without centralized infrastructure.
+- **Qwen Reasons**: Evaluates multi-dimensional trade-offs (`KEEP`, `SELL`, `TRANSFER`, `REFUND`) under quantitative Expected Value ($EV$).
+- **ECON Policy Decides**: The authoritative gatekeeper validating spending caps, velocity limits, and asset transferability. **CRE and Qwen never bypass the Policy Engine.**
+- **Smart Contracts Enforce**: `ECONEconomicObject.sol` verifies ownership, state transitions, and transferability invariants.
+- **Monad Settles**: High-throughput parallel EVM transaction settlement with cryptographic auditability on Monad Testnet (Chain ID `10143`).
+- **Envio Indexes**: Automatically synchronizes and indexes resulting economic state into the verifiable recovery chronicle.
+
+#### Deterministic Bounty Demo (OBJ-GPU-82):
+- **Asset**: `OBJ-GPU-82` (82 GPU compute credits, 17 projected requirement, transferable: `YES`).
+- **Flow**: CRE detects 65 idle excess units → fetches Nansen counterparty intel on `DataAgent-7` → Qwen proposes `SELL` (+12.8 MON EV) → ECON Policy Engine validates spend caps → **`APPROVED (ALLOWED)`** → Monad settles → Envio indexes chronicle.
+- **Interactive UI**: Fully accessible in the ECON Console under **Economic GC → Chainlink CRE Orchestrator** tab.
+
+For complete architectural details, workflow specifications, and local simulation instructions, see [Chainlink CRE Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/chainlink-cre.md).
 
 ---
 

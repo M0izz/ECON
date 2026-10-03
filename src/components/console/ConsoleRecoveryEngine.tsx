@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { ECON } from '../../sdk/client';
 import { EconomicObject, RecoveryPlan } from '../../sdk/types';
 import { RecoveryHistory } from '../envio/RecoveryHistory';
-import { Recycle, Database, Eye, Sparkles } from 'lucide-react';
+import { Recycle, Database, Eye, Sparkles, Cpu } from 'lucide-react';
 import { CounterpartyIntelligenceModal } from '../nansen/CounterpartyIntelligenceModal';
 import { QwenReasoningModal } from '../qwen/QwenReasoningModal';
 import { EconomicContextBuilder } from '../../integrations/qwen/qwenContext';
 import { EconomicIntent } from '../../integrations/qwen/qwenTypes';
+import { CREWorkflowCard } from '../cre/CREWorkflowCard';
 
 interface ConsoleRecoveryEngineProps {
   econ: ECON;
@@ -23,7 +24,7 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
   onTriggerScan,
   onRefresh,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'SCANNER' | 'ENVIO_HISTORY'>('SCANNER');
+  const [activeSubTab, setActiveSubTab] = useState<'SCANNER' | 'CRE_WORKFLOW' | 'ENVIO_HISTORY'>('SCANNER');
   const derived = econ.store.getDerivedState();
   const stranded = objects.filter((o) => o.status === 'STRANDED');
 
@@ -146,6 +147,13 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
           <span>Active GC Residual Scanner</span>
         </button>
         <button
+          className={`btn-econ ${activeSubTab === 'CRE_WORKFLOW' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveSubTab('CRE_WORKFLOW')}
+        >
+          <Cpu size={13} />
+          <span>Chainlink CRE Orchestrator</span>
+        </button>
+        <button
           className={`btn-econ ${activeSubTab === 'ENVIO_HISTORY' ? 'btn-econ-primary' : ''}`}
           onClick={() => setActiveSubTab('ENVIO_HISTORY')}
         >
@@ -156,8 +164,13 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
 
       {activeSubTab === 'ENVIO_HISTORY' ? (
         <RecoveryHistory />
+      ) : activeSubTab === 'CRE_WORKFLOW' ? (
+        <CREWorkflowCard econ={econ} onRefresh={onRefresh} />
       ) : (
         <>
+          {/* Chainlink CRE Autonomous Recovery Scanner Banner & Control */}
+          <CREWorkflowCard econ={econ} onRefresh={onRefresh} />
+
           {/* Signature Showcase Card: API Credits (Requested by user) */}
           <div className="econ-card signature-recovery-showcase">
         <div className="sig-badge-row">
