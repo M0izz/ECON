@@ -7,10 +7,20 @@ import {
   GET_RECOVERY_HISTORY,
   GET_DAILY_ECONOMIC_METRICS,
   GET_INDEXER_STATUS,
+  GET_ECONOMIC_IDENTITY,
+  GET_ECONOMIC_OBJECTS_BY_OWNER,
+  GET_ALL_ECONOMIC_OBJECTS,
+  GET_ACTIVE_ESCROWS_BY_OWNER,
+  GET_ALL_ESCROWS,
+  GET_TRANSACTIONS_BY_OWNER,
+  GET_ALL_TRANSACTIONS,
+  GET_RECOVERY_HISTORY_BY_OWNER,
+  GET_ECONOMIC_OBJECT_BY_ID,
 } from './queries';
 import {
   IndexedEconomicEvent,
   IndexedAgent,
+  IndexedEconomicIdentity,
   IndexedEconomicObject,
   IndexedMarketplaceListing,
   IndexedEscrowRecord,
@@ -287,14 +297,124 @@ export class EnvioIndexerClient {
   }
 
   /**
+   * Section 4: getEconomicIdentity(id)
+   * Fetches persistent sovereign agent economic identity by agent ID or address
+   */
+  public async getEconomicIdentity(id: string): Promise<IndexedEconomicIdentity | null> {
+    const data = await this.executeQuery<{ Agent_by_pk: IndexedEconomicIdentity | null }>(
+      GET_ECONOMIC_IDENTITY,
+      { id }
+    );
+    return data?.Agent_by_pk || null;
+  }
+
+  /**
+   * Section 4: getEconomicObjects(owner)
+   * Fetches economic objects owned by a specific agent or controller, or all if unspecified
+   */
+  public async getEconomicObjects(owner?: string): Promise<IndexedEconomicObject[]> {
+    if (owner) {
+      const data = await this.executeQuery<{ EconomicObject: IndexedEconomicObject[] }>(
+        GET_ECONOMIC_OBJECTS_BY_OWNER,
+        { owner: `%${owner}%` }
+      );
+      return data?.EconomicObject || [];
+    }
+    const data = await this.executeQuery<{ EconomicObject: IndexedEconomicObject[] }>(
+      GET_ALL_ECONOMIC_OBJECTS,
+      { limit: 100 }
+    );
+    return data?.EconomicObject || [];
+  }
+
+  /**
+   * Section 4: getEconomicObject(id)
+   * Fetches a single economic object by its ID
+   */
+  public async getEconomicObject(id: string): Promise<IndexedEconomicObject | null> {
+    const data = await this.executeQuery<{ EconomicObject_by_pk: IndexedEconomicObject | null }>(
+      GET_ECONOMIC_OBJECT_BY_ID,
+      { id }
+    );
+    return data?.EconomicObject_by_pk || null;
+  }
+
+  /**
+   * Section 4: getActiveEscrows(owner)
+   * Fetches escrows where the entity is buyer or seller, or all escrows if unspecified
+   */
+  public async getActiveEscrows(owner?: string): Promise<IndexedEscrowRecord[]> {
+    if (owner) {
+      const data = await this.executeQuery<{ EscrowRecord: IndexedEscrowRecord[] }>(
+        GET_ACTIVE_ESCROWS_BY_OWNER,
+        { owner: `%${owner}%` }
+      );
+      return data?.EscrowRecord || [];
+    }
+    const data = await this.executeQuery<{ EscrowRecord: IndexedEscrowRecord[] }>(
+      GET_ALL_ESCROWS,
+      { limit: 100 }
+    );
+    return data?.EscrowRecord || [];
+  }
+
+  /**
+   * Section 4: getTransactions(owner)
+   * Fetches transactions involving the owner or all recent transactions
+   */
+  public async getTransactions(owner?: string, limit: number = 50): Promise<FormattedEconomicEvent[]> {
+    if (owner) {
+      const data = await this.executeQuery<{ EconomicEvent: IndexedEconomicEvent[] }>(
+        GET_TRANSACTIONS_BY_OWNER,
+        { owner: `%${owner}%`, limit }
+      );
+      return (data?.EconomicEvent || []).map(mapIndexedEventToFormatted);
+    }
+    const data = await this.executeQuery<{ EconomicEvent: IndexedEconomicEvent[] }>(
+      GET_ALL_TRANSACTIONS,
+      { limit }
+    );
+    return (data?.EconomicEvent || []).map(mapIndexedEventToFormatted);
+  }
+
+  /**
+   * Section 4: getRecoveryHistory(owner, limit) or getRecoveryHistory(limit)
    * Retrieves indexed recovery events executed by the Economic Garbage Collector.
    */
-  public async getRecoveryHistory(limit: number = 25): Promise<{
+  public async getRecoveryHistory(ownerOrLimit?: string | number, maybeLimit?: number): Promise<{
     recoveries: IndexedRecoveryRecord[];
     events: FormattedEconomicEvent[];
     totalRecoveredMon: number;
     isLive: boolean;
   }> {
+    let owner: string | undefined;
+    let limit = 25;
+
+    if (typeof ownerOrLimit === 'string') {
+      owner = ownerOrLimit;
+      if (typeof maybeLimit === 'number') limit = maybeLimit;
+    } else if (typeof ownerOrLimit === 'number') {
+      limit = ownerOrLimit;
+    }
+
+    if (owner) {
+      const data = await this.executeQuery<{ RecoveryRecord: IndexedRecoveryRecord[] }>(
+        GET_RECOVERY_HISTORY_BY_OWNER,
+        { owner: `%${owner}%`, limit }
+      );
+      const recoveries = data?.RecoveryRecord || [];
+      const totalRecoveredMon = recoveries.reduce(
+        (acc, r) => acc + formatWeiToMon(r.recoveredValue),
+        0
+      );
+      return {
+        recoveries,
+        events: [],
+        totalRecoveredMon,
+        isLive: !!data,
+      };
+    }
+
     const data = await this.executeQuery<{
       RecoveryRecord: IndexedRecoveryRecord[];
       events: IndexedEconomicEvent[];
@@ -316,6 +436,83 @@ export class EnvioIndexerClient {
       totalRecoveredMon,
       isLive: true,
     };
+  }
+
+  /**
+   * Section 4: getEconomicHistory(owner)
+   * Aggregates complete economic history for an agent/owner across all subsystems
+   */
+  public async getEconomicHistory(owner: string): Promise<{
+    identity: IndexedEconomicIdentity | null;
+    objects: IndexedEconomicObject[];
+    escrows: IndexedEscrowRecord[];
+    transactions: FormattedEconomicEvent[];
+    recoveries: IndexedRecoveryRecord[];
+    isLive: boolean;
+  }> {
+    const [identity, objects, escrows, transactions, recData] = await Promise.all([
+      this.getEconomicIdentity(owner),
+      this.getEconomicObjects(owner),
+      this.getActiveEscrows(owner),
+      this.getTransactions(owner, 50),
+      this.getRecoveryHistory(owner, 50),
+    ]);
+
+    return {
+      identity,
+      objects,
+      escrows,
+      transactions,
+      recoveries: recData.recoveries,
+      isLive: this.lastKnownStatus.isConnected,
+    };
+  }
+
+  // --- Real-time Subscriptions (Section 6) ---
+  private eventSubscribers: Set<(event: FormattedEconomicEvent) => void> = new Set();
+  private entitySubscribers: Map<string, Set<(data: any) => void>> = new Map();
+
+  /**
+   * Section 6: Real-time subscription to protocol economic events
+   */
+  public subscribeToEconomicEvents(listener: (event: FormattedEconomicEvent) => void): () => void {
+    this.eventSubscribers.add(listener);
+    return () => {
+      this.eventSubscribers.delete(listener);
+    };
+  }
+
+  /**
+   * Section 6: Real-time subscription to entity updates
+   */
+  public subscribeToEntity(entityId: string, listener: (data: any) => void): () => void {
+    if (!this.entitySubscribers.has(entityId)) {
+      this.entitySubscribers.set(entityId, new Set());
+    }
+    this.entitySubscribers.get(entityId)!.add(listener);
+    return () => {
+      this.entitySubscribers.get(entityId)?.delete(listener);
+    };
+  }
+
+  /**
+   * Dispatches real-time events to active subscribers
+   */
+  public emitRealtimeEvent(event: FormattedEconomicEvent): void {
+    this.eventSubscribers.forEach((fn) => {
+      try {
+        fn(event);
+      } catch (err) {
+        console.error('[Envio Subscription] Error notifying subscriber:', err);
+      }
+    });
+
+    if (event.actor && this.entitySubscribers.has(event.actor)) {
+      this.entitySubscribers.get(event.actor)!.forEach((fn) => fn(event));
+    }
+    if (event.counterparty && this.entitySubscribers.has(event.counterparty)) {
+      this.entitySubscribers.get(event.counterparty)!.forEach((fn) => fn(event));
+    }
   }
 
   /**
@@ -373,6 +570,14 @@ export class EnvioIndexerClient {
 
   public getStatus(): EnvioSyncStatus {
     return this.lastKnownStatus;
+  }
+
+  /**
+   * Convenience: check if the Envio endpoint is reachable (returns true if connected)
+   */
+  public async checkHealth(): Promise<boolean> {
+    const status = await this.checkSyncStatus();
+    return status.isConnected;
   }
 }
 

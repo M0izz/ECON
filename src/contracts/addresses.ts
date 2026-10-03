@@ -16,4 +16,12 @@ export const MONAD_TESTNET_ADDRESSES: ContractAddressConfig = {
   creditVault: '0x7E3a8451D879F439fDa744747B0593B6Eda30022',
 };
 
+export const CONTRACT_ADDRESSES = {
+  ECONIdentityRegistry: MONAD_TESTNET_ADDRESSES.identityRegistry,
+  ECONEconomicObject: MONAD_TESTNET_ADDRESSES.economicObject,
+  ECONEscrow: MONAD_TESTNET_ADDRESSES.escrow,
+  ECONMarketplace: MONAD_TESTNET_ADDRESSES.marketplace,
+  ECONCreditVault: MONAD_TESTNET_ADDRESSES.creditVault,
+};
+
 export const MONAD_EXPLORER_BASE = 'https://testnet.monadexplorer.com';

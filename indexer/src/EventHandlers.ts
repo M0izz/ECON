@@ -39,6 +39,13 @@ export const handlers = {
       txHash,
     };
     context.Agent.set(agent);
+    if (context.EconomicIdentity) {
+      context.EconomicIdentity.set({
+        ...agent,
+        owner: controller,
+        agentAddress: controller,
+      });
+    }
 
     const eventId = `${txHash}_${event.logIndex ?? 0}`;
     context.EconomicEvent.set({
@@ -109,6 +116,21 @@ export const handlers = {
     };
     context.EconomicObject.set(object);
 
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: owner,
+        recipient: event.srcAddress,
+        amount: BigInt(value),
+        transactionType: 'OBJECT_MINT',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: id,
+        relatedEscrowId: null,
+      });
+    }
+
     context.EconomicEvent.set({
       id: `${txHash}_${event.logIndex ?? 0}`,
       type: 'ECONOMIC_OBJECT_CREATED',
@@ -137,6 +159,21 @@ export const handlers = {
         ...existing,
         owner: newOwner,
         updatedAt: timestamp,
+      });
+    }
+
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: previousOwner,
+        recipient: newOwner,
+        amount: existing?.value || 0n,
+        transactionType: 'OBJECT_TRANSFER',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: id,
+        relatedEscrowId: null,
       });
     }
 
@@ -173,19 +210,84 @@ export const handlers = {
       });
     }
 
-    // If status transitioned to RECOVERED (3), record in RecoveryRecord
+    // If status transitioned to STRANDED (2), record RecoveryOpportunity
+    if (statusCode === 2 && context.RecoveryOpportunity) {
+      context.RecoveryOpportunity.set({
+        id: `OPP_${id}`,
+        objectId: id,
+        owner: existing?.owner || 'unknown',
+        detectedValue: existing?.value || 0n,
+        remainingUnits: 1n,
+        projectedRequirement: 0n,
+        transferable: existing?.transferable ?? true,
+        expiryTimestamp: existing?.expiry || 0n,
+        status: 'STRANDED',
+        detectedAt: timestamp,
+        txHash,
+      });
+    }
+
+    // If status transitioned to RECOVERED (3), record in RecoveryRecord & RecoveryAction
     if (statusCode === 3) {
       context.RecoveryRecord.set({
         id: `REC_${id}_${blockNumber}`,
         objectId: id,
         agent: existing?.owner || 'unknown',
         recoveryType: 'STRANDED_YIELD_RECLAMATION',
+        detectedValue: existing?.value || 0n,
+        strategy: 'EXPECTED_VALUE_RECOVERY',
+        policyResult: 'ALLOWED',
         recoveredValue: existing?.value || 0n,
         status: 'EXECUTED',
+        executionStatus: 'SETTLED',
         txHash,
         blockNumber,
         timestamp,
       });
+
+      if (context.RecoveryAction) {
+        context.RecoveryAction.set({
+          id: `ACT_${id}_${blockNumber}`,
+          objectId: id,
+          agent: existing?.owner || 'unknown',
+          detectedValue: existing?.value || 0n,
+          strategy: 'EXPECTED_VALUE_RECOVERY',
+          policyResult: 'ALLOWED',
+          recoveredValue: existing?.value || 0n,
+          executionStatus: 'SETTLED',
+          txHash,
+          blockNumber,
+          timestamp,
+        });
+      }
+
+      if (context.PolicyDecision) {
+        context.PolicyDecision.set({
+          id: `POL_${id}_${timestamp}`,
+          actor: existing?.owner || 'unknown',
+          target: id,
+          policyStatus: 'ALLOWED',
+          ruleViolated: null,
+          reason: 'Autonomous spend & recovery thresholds approved by ECON Policy Engine.',
+          timestamp,
+          txHash,
+        });
+      }
+
+      if (context.Transaction) {
+        context.Transaction.set({
+          id: `tx_${txHash}_${event.logIndex ?? 0}`,
+          sender: event.srcAddress,
+          recipient: existing?.owner || 'unknown',
+          amount: existing?.value || 0n,
+          transactionType: 'RECOVERY_SETTLEMENT',
+          timestamp,
+          txHash,
+          blockNumber,
+          relatedObjectId: id,
+          relatedEscrowId: null,
+        });
+      }
     }
 
     context.EconomicEvent.set({
@@ -232,6 +334,21 @@ export const handlers = {
       blockNumber,
     };
     context.EscrowRecord.set(escrow);
+
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: buyer,
+        recipient: event.srcAddress,
+        amount: BigInt(amount),
+        transactionType: 'ESCROW_DEPOSIT',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: linkedObjectId || null,
+        relatedEscrowId: id,
+      });
+    }
 
     context.EconomicEvent.set({
       id: `${txHash}_${event.logIndex ?? 0}`,
@@ -295,6 +412,21 @@ export const handlers = {
       });
     }
 
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: event.srcAddress,
+        recipient: seller,
+        amount: BigInt(amount),
+        transactionType: 'ESCROW_PAYOUT',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: linkedObjectId || existing?.linkedObjectId || null,
+        relatedEscrowId: id,
+      });
+    }
+
     context.EconomicEvent.set({
       id: `${txHash}_${event.logIndex ?? 0}`,
       type: 'ESCROW_RELEASED',
@@ -323,6 +455,21 @@ export const handlers = {
         ...existing,
         status: 'REFUNDED',
         refundedAt: timestamp,
+      });
+    }
+
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: event.srcAddress,
+        recipient: buyer,
+        amount: BigInt(amount),
+        transactionType: 'ESCROW_REFUND',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: existing?.linkedObjectId || null,
+        relatedEscrowId: id,
       });
     }
 
@@ -425,6 +572,21 @@ export const handlers = {
         buyer,
         fee: BigInt(fee),
         purchasedAt: timestamp,
+      });
+    }
+
+    if (context.Transaction) {
+      context.Transaction.set({
+        id: `tx_${txHash}_${event.logIndex ?? 0}`,
+        sender: buyer,
+        recipient: seller,
+        amount: BigInt(price),
+        transactionType: 'MARKETPLACE_PURCHASE',
+        timestamp,
+        txHash,
+        blockNumber,
+        relatedObjectId: objectId,
+        relatedEscrowId: null,
       });
     }
 

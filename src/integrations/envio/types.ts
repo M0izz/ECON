@@ -15,6 +15,74 @@ export interface IndexedAgent {
   txHash: string;
 }
 
+export interface IndexedEconomicIdentity {
+  id: string;
+  owner: string;
+  agentAddress: string;
+  metadataHash: string;
+  agentURI: string;
+  active: boolean;
+  registeredAt: string;
+  registeredBlock: string;
+  transactionCount: string;
+  totalVolumeMon: string;
+  txHash: string;
+}
+
+export interface IndexedTransaction {
+  id: string;
+  sender: string;
+  recipient: string;
+  amount: string; // in wei
+  transactionType: string;
+  timestamp: string;
+  txHash: string;
+  blockNumber: string;
+  relatedObjectId?: string | null;
+  relatedEscrowId?: string | null;
+}
+
+export interface IndexedRecoveryOpportunity {
+  id: string;
+  objectId: string;
+  owner: string;
+  detectedValue: string; // in wei
+  remainingUnits: string;
+  projectedRequirement: string;
+  transferable: boolean;
+  expiryTimestamp: string;
+  status: string;
+  detectedAt: string;
+  txHash?: string | null;
+}
+
+export interface IndexedRecoveryAction {
+  id: string;
+  objectId: string;
+  agent: string;
+  detectedValue: string;
+  strategy: string;
+  policyResult: string;
+  recoveredValue: string; // in wei
+  executionStatus: string;
+  txHash: string;
+  blockNumber: string;
+  timestamp: string;
+}
+
+export interface IndexedPolicyDecision {
+  id: string;
+  actor: string;
+  target?: string | null;
+  policyStatus: 'ALLOWED' | 'REVIEW_REQUIRED' | 'BLOCKED';
+  ruleViolated?: string | null;
+  reason: string;
+  timestamp: string;
+  txHash?: string | null;
+}
+
+export type EnvioDataSourceStatus = 'LIVE' | 'INDEXING' | 'SIMULATION' | 'NO_DATA';
+
 export interface IndexedEconomicObject {
   id: string;
   owner: string;
@@ -79,8 +147,12 @@ export interface IndexedRecoveryRecord {
   objectId: string;
   agent: string;
   recoveryType: string;
+  detectedValue?: string | null;
+  strategy?: string | null;
+  policyResult?: string | null;
   recoveredValue: string; // in wei
   status: string;
+  executionStatus?: string | null;
   txHash: string;
   blockNumber: string;
   timestamp: string;

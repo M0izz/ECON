@@ -2,6 +2,212 @@
  * GraphQL Query definitions for Envio HyperIndex
  */
 
+export const GET_ECONOMIC_IDENTITY = `
+  query GetEconomicIdentity($id: String!) {
+    Agent_by_pk(id: $id) {
+      id
+      controller
+      metadataHash
+      agentURI
+      active
+      registeredAt
+      registeredBlock
+      transactionCount
+      totalVolumeMon
+      txHash
+    }
+  }
+`;
+
+export const GET_ECONOMIC_OBJECTS_BY_OWNER = `
+  query GetEconomicObjectsByOwner($owner: String!, $limit: Int = 100) {
+    EconomicObject(
+      where: { owner: { _ilike: $owner } }
+      order_by: { createdAt: desc }
+      limit: $limit
+    ) {
+      id
+      owner
+      objectType
+      value
+      expiry
+      transferable
+      status
+      createdAt
+      updatedAt
+      txHash
+      blockNumber
+    }
+  }
+`;
+
+export const GET_ALL_ECONOMIC_OBJECTS = `
+  query GetAllEconomicObjects($limit: Int = 100) {
+    EconomicObject(
+      order_by: { createdAt: desc }
+      limit: $limit
+    ) {
+      id
+      owner
+      objectType
+      value
+      expiry
+      transferable
+      status
+      createdAt
+      updatedAt
+      txHash
+      blockNumber
+    }
+  }
+`;
+
+export const GET_ACTIVE_ESCROWS_BY_OWNER = `
+  query GetActiveEscrowsByOwner($owner: String!, $limit: Int = 50) {
+    EscrowRecord(
+      where: {
+        _or: [
+          { buyer: { _ilike: $owner } }
+          { seller: { _ilike: $owner } }
+        ]
+      }
+      order_by: { createdAt: desc }
+      limit: $limit
+    ) {
+      id
+      buyer
+      seller
+      amount
+      conditionHash
+      deadline
+      status
+      linkedObjectId
+      deliveryProof
+      createdAt
+      releasedAt
+      refundedAt
+      txHash
+      blockNumber
+    }
+  }
+`;
+
+export const GET_TRANSACTIONS_BY_OWNER = `
+  query GetTransactionsByOwner($owner: String!, $limit: Int = 50) {
+    EconomicEvent(
+      where: {
+        _or: [
+          { actor: { _ilike: $owner } }
+          { counterparty: { _ilike: $owner } }
+        ]
+      }
+      order_by: { timestamp: desc }
+      limit: $limit
+    ) {
+      id
+      type
+      actor
+      counterparty
+      amount
+      summary
+      contractAddress
+      txHash
+      blockNumber
+      timestamp
+      relatedObjectId
+      relatedEscrowId
+    }
+  }
+`;
+
+export const GET_ALL_TRANSACTIONS = `
+  query GetAllTransactions($limit: Int = 50) {
+    EconomicEvent(
+      order_by: { timestamp: desc }
+      limit: $limit
+    ) {
+      id
+      type
+      actor
+      counterparty
+      amount
+      summary
+      contractAddress
+      txHash
+      blockNumber
+      timestamp
+      relatedObjectId
+      relatedEscrowId
+    }
+  }
+`;
+
+export const GET_RECOVERY_HISTORY_BY_OWNER = `
+  query GetRecoveryHistoryByOwner($owner: String!, $limit: Int = 50) {
+    RecoveryRecord(
+      where: { agent: { _ilike: $owner } }
+      order_by: { timestamp: desc }
+      limit: $limit
+    ) {
+      id
+      objectId
+      agent
+      recoveryType
+      detectedValue
+      strategy
+      policyResult
+      recoveredValue
+      status
+      executionStatus
+      txHash
+      blockNumber
+      timestamp
+    }
+  }
+`;
+
+export const GET_ECONOMIC_OBJECT_BY_ID = `
+  query GetEconomicObjectById($id: String!) {
+    EconomicObject_by_pk(id: $id) {
+      id
+      owner
+      objectType
+      value
+      expiry
+      transferable
+      status
+      createdAt
+      updatedAt
+      txHash
+      blockNumber
+    }
+  }
+`;
+
+export const GET_ALL_ESCROWS = `
+  query GetAllEscrows($limit: Int = 100) {
+    EscrowRecord(
+      order_by: { createdAt: desc }
+      limit: $limit
+    ) {
+      id
+      buyer
+      seller
+      amount
+      conditionHash
+      deadline
+      status
+      linkedObjectId
+      deliveryProof
+      createdAt
+      releasedAt
+      refundedAt
+      txHash
+      blockNumber
+    }
+  }
+`;
+
 export const GET_RECENT_ECONOMIC_EVENTS = `
   query GetRecentEconomicEvents($limit: Int!, $offset: Int, $type: String, $actor: String) {
     EconomicEvent(

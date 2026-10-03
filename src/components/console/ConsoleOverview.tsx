@@ -1,12 +1,16 @@
+import React, { useState, useEffect } from 'react';
 import { EconomicStore } from '../../sdk/store';
 import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS } from '../../sdk/fee';
-import { Key, Shield, LogOut } from 'lucide-react';
+import { Key, Shield, LogOut, Database, Layers, ExternalLink, RefreshCw } from 'lucide-react';
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
 import { OnePasskeyManyKeysVisual } from '../mera/OnePasskeyManyKeysVisual';
 import { EnvioProvenanceBadge } from '../envio/EnvioProvenanceBadge';
 import { DynamicWalletDetails } from '../../integrations/dynamic';
 import { DynamicControlCard } from '../dynamic/DynamicControlCard';
 import { DynamicAuthButton } from '../dynamic/DynamicAuthButton';
+import { globalEnvioClient } from '../../integrations/envio/client';
+import { FormattedEconomicEvent, EnvioDataSourceStatus } from '../../integrations/envio/types';
+import { getExplorerTxUrl, formatHash } from '../../integrations/envio/mappers';
 
 interface ConsoleOverviewProps {
   store: EconomicStore;
@@ -45,6 +49,40 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
   onDisconnectDynamic,
   onSwitchControl,
 }) => {
+  const [timelineSource, setTimelineSource] = useState<'ENVIO_INDEXED' | 'LOCAL_STREAM'>('ENVIO_INDEXED');
+  const [envioEvents, setEnvioEvents] = useState<FormattedEconomicEvent[]>([]);
+  const [envioStatus, setEnvioStatus] = useState<EnvioDataSourceStatus>('INDEXING');
+  const [loadingEnvio, setLoadingEnvio] = useState(false);
+
+  const fetchEnvioData = async () => {
+    setLoadingEnvio(true);
+    try {
+      const res = await globalEnvioClient.getRecentEconomicEvents({ limit: 12 });
+      if (res && res.events.length > 0) {
+        setEnvioEvents(res.events);
+        setEnvioStatus(res.isLive ? 'LIVE' : 'SIMULATION');
+      } else {
+        setEnvioEvents([]);
+        setEnvioStatus('NO_DATA');
+      }
+    } catch {
+      setEnvioStatus('NO_DATA');
+    } finally {
+      setLoadingEnvio(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEnvioData();
+
+    const unsub = globalEnvioClient.subscribeToEconomicEvents((newEvent) => {
+      setEnvioEvents((prev) => [newEvent, ...prev.filter((e) => e.id !== newEvent.id)].slice(0, 12));
+      setEnvioStatus(newEvent.isEnvioIndexed ? 'LIVE' : 'SIMULATION');
+    });
+
+    return () => unsub();
+  }, []);
+
   const derived = store.getDerivedState();
   const agents = store.getAllAgents();
   const objects = store.getAllObjects();
@@ -363,17 +401,140 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
       {/* Main Economic Activity Timeline */}
       <div className="econ-card console-timeline-card">
-        <div className="timeline-header">
+        <div className="timeline-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <span className="econ-eyebrow">// REAL-TIME CHRONICLE</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="econ-eyebrow">// REAL-TIME CHRONICLE</span>
+              {envioStatus === 'LIVE' ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE (ENVIO HYPERINDEX)
+                </span>
+              ) : envioStatus === 'INDEXING' ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-spin" />
+                  INDEXING
+                </span>
+              ) : envioStatus === 'SIMULATION' ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  SIMULATION
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                  NO DATA
+                </span>
+              )}
+            </div>
             <h3 className="econ-title-md">AUTONOMOUS ECONOMIC ACTIVITY TIMELINE</h3>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Source Mode Toggle */}
+            <div
+              style={{
+                display: 'flex',
+                background: 'rgba(0,0,0,0.3)',
+                borderRadius: '6px',
+                padding: '2px',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <button
+                onClick={() => setTimelineSource('ENVIO_INDEXED')}
+                style={{
+                  background: timelineSource === 'ENVIO_INDEXED' ? '#836EF9' : 'transparent',
+                  color: timelineSource === 'ENVIO_INDEXED' ? '#FFF' : 'rgba(255,255,255,0.6)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '3px 8px',
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <Database size={10} />
+                ENVIO INDEXED
+              </button>
+              <button
+                onClick={() => setTimelineSource('LOCAL_STREAM')}
+                style={{
+                  background: timelineSource === 'LOCAL_STREAM' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                  color: timelineSource === 'LOCAL_STREAM' ? '#FFF' : 'rgba(255,255,255,0.6)',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '3px 8px',
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <Layers size={10} />
+                STREAM
+              </button>
+            </div>
+
+            {timelineSource === 'ENVIO_INDEXED' && (
+              <button
+                onClick={fetchEnvioData}
+                disabled={loadingEnvio}
+                className="btn-econ"
+                style={{ padding: '3px 6px', fontSize: '10px' }}
+                title="Sync from Envio"
+              >
+                <RefreshCw size={10} className={loadingEnvio ? 'animate-spin' : ''} />
+              </button>
+            )}
+
             <EnvioProvenanceBadge compact />
-            <span className="econ-badge econ-badge-lime">LIVE LEDGER</span>
           </div>
         </div>
-        {events.length === 0 ? (
+
+        {timelineSource === 'ENVIO_INDEXED' ? (
+          envioEvents.length === 0 ? (
+            <div className="text-muted font-mono" style={{ padding: '32px', textAlign: 'center' }}>
+              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>
+                NO INDEXED ECONOMIC EVENTS FOUND ON MONAD TESTNET
+              </p>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '4px', display: 'block' }}>
+                Events will appear here in real-time as transactions settle on Monad (Chain ID 10143).
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px' }}>
+              {envioEvents.slice(0, 8).map((event) => (
+                <div key={event.id} className="branch-line" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="branch-meta font-mono" style={{ color: '#00E599' }}>
+                      {event.exactTime}
+                    </span>
+                    <strong className="branch-target">{event.type.replace(/_/g, ' ')}</strong>
+                    <span className="branch-meta font-mono">{event.summary}</span>
+                  </div>
+
+                  <a
+                    href={getExplorerTxUrl(event.txHash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-muted"
+                    style={{ fontSize: '10px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', color: '#836EF9' }}
+                    title={event.txHash}
+                  >
+                    <span>Tx: {formatHash(event.txHash, 6, 4)}</span>
+                    <ExternalLink size={9} />
+                  </a>
+                </div>
+              ))}
+            </div>
+          )
+        ) : events.length === 0 ? (
           <div className="text-muted font-mono" style={{ padding: '28px', textAlign: 'center' }}>
             No activity yet. Connect a wallet and publish an agent to begin.
           </div>

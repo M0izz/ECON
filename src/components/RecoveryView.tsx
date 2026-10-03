@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { EconomicObject, RecoveryPlan, Agent } from '../sdk/types';
 import { ECON } from '../sdk/client';
-import { Repeat, ShieldAlert, ArrowRight, CheckCircle2, TrendingUp, Cpu } from 'lucide-react';
+import { Repeat, ShieldAlert, ArrowRight, CheckCircle2, TrendingUp, Cpu, Database } from 'lucide-react';
+import { RecoveryHistory } from './envio/RecoveryHistory';
 
 interface RecoveryViewProps {
   econ: ECON;
@@ -19,6 +20,7 @@ export const RecoveryView: React.FC<RecoveryViewProps> = ({
   onTriggerScan,
   onRefresh,
 }) => {
+  const [activeTab, setActiveTab] = useState<'PIPELINE' | 'ENVIO_LEDGER'>('PIPELINE');
   const [selectedObjectId, setSelectedObjectId] = useState<string>('OBJ-COMP-0042');
   const [activePlan, setActivePlan] = useState<RecoveryPlan | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -58,17 +60,39 @@ export const RecoveryView: React.FC<RecoveryViewProps> = ({
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Banner: Pipeline Explanation */}
-      <div className="panel" style={{ padding: '14px 18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div className="panel-title">
-            <Repeat size={14} className="text-mint" />
-            <span>Economic Garbage Collection Pipeline</span>
-          </div>
-          <button className="btn-econ btn-econ-primary" onClick={onTriggerScan}>
-            Trigger Network Scan
-          </button>
-        </div>
+      {/* Sub-Tabs */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          className={`btn-econ ${activeTab === 'PIPELINE' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('PIPELINE')}
+        >
+          <Repeat size={13} />
+          <span>Garbage Collection Pipeline</span>
+        </button>
+        <button
+          className={`btn-econ ${activeTab === 'ENVIO_LEDGER' ? 'btn-econ-primary' : ''}`}
+          onClick={() => setActiveTab('ENVIO_LEDGER')}
+        >
+          <Database size={13} />
+          <span>Envio Recovery Ledger</span>
+        </button>
+      </div>
+
+      {activeTab === 'ENVIO_LEDGER' ? (
+        <RecoveryHistory />
+      ) : (
+        <>
+          {/* Top Banner: Pipeline Explanation */}
+          <div className="panel" style={{ padding: '14px 18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div className="panel-title">
+                <Repeat size={14} className="text-mint" />
+                <span>Economic Garbage Collection Pipeline</span>
+              </div>
+              <button className="btn-econ btn-econ-primary" onClick={onTriggerScan}>
+                Trigger Network Scan
+              </button>
+            </div>
 
         {/* Pipeline Diagram */}
         <div
@@ -348,6 +372,8 @@ export const RecoveryView: React.FC<RecoveryViewProps> = ({
           </div>
         ) : null}
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 };

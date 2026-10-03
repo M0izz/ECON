@@ -11,11 +11,21 @@ class MockContext {
     RecoveryRecord: new Map(),
     EconomicEvent: new Map(),
     DailyEconomicMetric: new Map(),
+    EconomicIdentity: new Map(),
+    Transaction: new Map(),
+    RecoveryOpportunity: new Map(),
+    RecoveryAction: new Map(),
+    PolicyDecision: new Map(),
   };
 
   public Agent = {
     get: async (id: string) => this.store.Agent.get(id),
     set: (entity: any) => this.store.Agent.set(entity.id, entity),
+  };
+
+  public EconomicIdentity = {
+    get: async (id: string) => this.store.EconomicIdentity.get(id),
+    set: (entity: any) => this.store.EconomicIdentity.set(entity.id, entity),
   };
 
   public EconomicObject = {
@@ -41,6 +51,26 @@ class MockContext {
   public RecoveryRecord = {
     get: async (id: string) => this.store.RecoveryRecord.get(id),
     set: (entity: any) => this.store.RecoveryRecord.set(entity.id, entity),
+  };
+
+  public RecoveryOpportunity = {
+    get: async (id: string) => this.store.RecoveryOpportunity.get(id),
+    set: (entity: any) => this.store.RecoveryOpportunity.set(entity.id, entity),
+  };
+
+  public RecoveryAction = {
+    get: async (id: string) => this.store.RecoveryAction.get(id),
+    set: (entity: any) => this.store.RecoveryAction.set(entity.id, entity),
+  };
+
+  public PolicyDecision = {
+    get: async (id: string) => this.store.PolicyDecision.get(id),
+    set: (entity: any) => this.store.PolicyDecision.set(entity.id, entity),
+  };
+
+  public Transaction = {
+    get: async (id: string) => this.store.Transaction.get(id),
+    set: (entity: any) => this.store.Transaction.set(entity.id, entity),
   };
 
   public EconomicEvent = {

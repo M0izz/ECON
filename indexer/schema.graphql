@@ -11,6 +11,20 @@ type Agent @entity {
   txHash: String!
 }
 
+type EconomicIdentity @entity {
+  id: ID!
+  owner: String!
+  agentAddress: String!
+  metadataHash: String!
+  agentURI: String!
+  active: Boolean!
+  registeredAt: BigInt!
+  registeredBlock: BigInt!
+  transactionCount: BigInt!
+  totalVolumeMon: BigInt!
+  txHash: String!
+}
+
 type EconomicObject @entity {
   id: ID!
   owner: String!
@@ -75,11 +89,67 @@ type RecoveryRecord @entity {
   objectId: String!
   agent: String!
   recoveryType: String!
+  detectedValue: BigInt
+  strategy: String
+  policyResult: String
   recoveredValue: BigInt!
   status: String!
+  executionStatus: String
   txHash: String!
   blockNumber: BigInt!
   timestamp: BigInt!
+}
+
+type RecoveryOpportunity @entity {
+  id: ID!
+  objectId: String!
+  owner: String!
+  detectedValue: BigInt!
+  remainingUnits: BigInt!
+  projectedRequirement: BigInt!
+  transferable: Boolean!
+  expiryTimestamp: BigInt!
+  status: String!
+  detectedAt: BigInt!
+  txHash: String
+}
+
+type RecoveryAction @entity {
+  id: ID!
+  objectId: String!
+  agent: String!
+  detectedValue: BigInt!
+  strategy: String!
+  policyResult: String!
+  recoveredValue: BigInt!
+  executionStatus: String!
+  txHash: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type PolicyDecision @entity {
+  id: ID!
+  actor: String!
+  target: String
+  policyStatus: String!
+  ruleViolated: String
+  reason: String!
+  timestamp: BigInt!
+  txHash: String
+}
+
+type Transaction @entity {
+  id: ID!
+  sender: String!
+  recipient: String!
+  amount: BigInt!
+  transactionType: String!
+  timestamp: BigInt!
+  txHash: String!
+  blockNumber: BigInt!
+  relatedObjectId: String
+  relatedEscrowId: String
 }
 
 type EconomicEvent @entity {
