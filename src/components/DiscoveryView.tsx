@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import { Agent, ServiceOffering } from '../sdk/types';
-import { Compass, Search, Filter, CheckCircle2, Zap, ShoppingCart, Eye } from 'lucide-react';
+import { PolicyEngine } from '../sdk/policy';
+import { ECON } from '../sdk/client';
+import { Compass, Search, Filter, CheckCircle2, Zap, ShoppingCart, Eye, Sparkles } from 'lucide-react';
 import { MarketplaceHistory } from './envio/MarketplaceHistory';
 import { CounterpartyIntelligenceModal } from './nansen/CounterpartyIntelligenceModal';
+import { QwenReasoningModal } from './qwen/QwenReasoningModal';
+import { EconomicContextBuilder } from '../integrations/qwen/qwenContext';
+import { EconomicIntent } from '../integrations/qwen/qwenTypes';
 
 interface DiscoveryViewProps {
   services: ServiceOffering[];
   agents?: Agent[];
+  policyEngine?: PolicyEngine;
+  econ?: ECON;
   onInitiateService?: (service: ServiceOffering) => void;
 }
 
-export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }) => {
+export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
+  services,
+  agents,
+  policyEngine,
+  econ,
+}) => {
   const [activeTab, setActiveTab] = useState<'SERVICES' | 'INDEXED_MARKET'>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
   const [capabilityFilter, setCapabilityFilter] = useState('ALL');
@@ -19,6 +31,34 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }
     name: string;
     role: 'SELLER' | 'BUYER' | 'AGENT' | 'RECOVERY_TARGET' | 'GENERAL';
   } | null>(null);
+
+  // Qwen Economic Reasoning state
+  const [showQwenModal, setShowQwenModal] = useState(false);
+  const [qwenServiceTarget, setQwenServiceTarget] = useState<ServiceOffering | null>(null);
+  const [stagedIntentNotice, setStagedIntentNotice] = useState<string | null>(null);
+
+  const defaultPolicy = agents?.[0]?.policy || econ?.store?.getAllAgents()?.[0]?.policy || {
+    maxPerTransaction: 20,
+    dailySpendingLimit: 100,
+    allowedCategories: ['DATA_SUBSCRIPTION' as const, 'API_LICENSE' as const],
+    requireApprovalAbove: 20,
+    autoRecoveryEnabled: true,
+    autoTransferEnabled: true,
+    minRetainedBalance: 10,
+  };
+
+  const activeAgent: Agent = agents?.[0] || {
+    id: 'ResearchAgent-42',
+    name: 'ResearchAgent-42',
+    controller: '0x1842B6792A645c110E663B514571A15C198547A1',
+    walletAddress: '0x1842B6792A645c110E663B514571A15C198547A1',
+    balanceMon: 184,
+    reputationScore: 98,
+    active: true,
+    registeredAt: Date.now(),
+    policy: defaultPolicy,
+    activeObligations: 0,
+  };
 
   const getProviderAddress = (providerId: string): string => {
     const agent = agents?.find((a) => a.id === providerId);
@@ -122,8 +162,60 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }
             <option value="satellite-imagery">Satellite Imagery</option>
             <option value="gpu-cluster">GPU Cluster</option>
           </select>
+
+          <button
+            className="btn-econ"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(217, 70, 239, 0.12)',
+              color: '#f472b6',
+              borderColor: 'rgba(217, 70, 239, 0.45)',
+              fontWeight: 600,
+              fontSize: '11.5px',
+              padding: '7px 14px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+            onClick={() => {
+              setQwenServiceTarget(null);
+              setShowQwenModal(true);
+            }}
+          >
+            <Sparkles size={13} />
+            <span>AI Advisor (Qwen 3.8 Max)</span>
+          </button>
         </div>
       </div>
+
+      {stagedIntentNotice && (
+        <div
+          style={{
+            padding: '10px 14px',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '4px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 size={14} className="text-mint" />
+            <span className="font-mono text-mint" style={{ fontSize: '12px' }}>
+              {stagedIntentNotice}
+            </span>
+          </div>
+          <button
+            className="btn-econ"
+            style={{ fontSize: '11px', padding: '2px 8px' }}
+            onClick={() => setStagedIntentNotice(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Provider Offerings Table */}
       <div className="panel">
@@ -146,6 +238,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }
               <th>Reputation Score</th>
               <th>Counterparty Intelligence</th>
               <th>Availability</th>
+              <th>Reasoning / Action</th>
             </tr>
           </thead>
           <tbody>
@@ -220,6 +313,29 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }
                       ONLINE
                     </span>
                   </td>
+                  <td>
+                    <button
+                      className="btn-econ"
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        borderColor: 'rgba(217, 70, 239, 0.4)',
+                        color: '#f472b6',
+                        background: 'rgba(217, 70, 239, 0.08)',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        setQwenServiceTarget(s);
+                        setShowQwenModal(true);
+                      }}
+                    >
+                      <Sparkles size={11} />
+                      <span>Evaluate (Qwen)</span>
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -236,6 +352,37 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ services, agents }
           role={selectedIntelTarget.role}
           chain="monad"
           onClose={() => setSelectedIntelTarget(null)}
+        />
+      )}
+
+      {showQwenModal && (
+        <QwenReasoningModal
+          isOpen={showQwenModal}
+          context={
+            qwenServiceTarget
+              ? EconomicContextBuilder.forMarketplace({
+                  agent: activeAgent,
+                  objective: `Evaluate service acquisition: ${qwenServiceTarget.providerName} (${qwenServiceTarget.capability}) for ${qwenServiceTarget.priceMon} MON`,
+                  services: [qwenServiceTarget, ...services.filter((s) => s.id !== qwenServiceTarget.id).slice(0, 2)],
+                })
+              : EconomicContextBuilder.forMarketplace({
+                  agent: activeAgent,
+                  objective: 'Find optimal verified network service under 25 MON budget with high reputation SLA',
+                  services,
+                })
+          }
+          policyEngine={policyEngine}
+          onClose={() => {
+            setShowQwenModal(false);
+            setQwenServiceTarget(null);
+          }}
+          onAcceptRecommendation={(intent: EconomicIntent) => {
+            setStagedIntentNotice(
+              `Staged Qwen Recommendation: ${intent.action} ${intent.target || ''} for ${intent.amountMon ?? '0'} MON — Ready for Policy Verification`
+            );
+            setShowQwenModal(false);
+            setQwenServiceTarget(null);
+          }}
         />
       )}
     </div>

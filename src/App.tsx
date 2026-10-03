@@ -280,7 +280,12 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'MARKETPLACE' && (
-        <DiscoveryView services={services} agents={agents} />
+        <DiscoveryView
+          services={services}
+          agents={agents}
+          policyEngine={econ.policy}
+          econ={econ}
+        />
       )}
 
       {consoleTab === 'TRANSACTIONS' && (

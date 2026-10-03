@@ -7,6 +7,8 @@ import { EconomicGarbageCollector } from '../garbageCollector';
 import { RecoveryEngine } from '../recovery';
 import { EventBus } from '../events';
 import { checkAgentCapability } from './capabilities';
+import { QwenProvider, defaultQwenProvider } from '../../integrations/qwen/qwenProvider';
+import { EconomicContext, ReasoningResult } from '../../integrations/qwen/qwenTypes';
 
 export interface ProposedAction {
   type: 'PURCHASE' | 'CREATE_ESCROW' | 'RECOVER_OBJECT';
@@ -32,6 +34,7 @@ export class AgentRuntime {
   private gc: EconomicGarbageCollector;
   private recovery: RecoveryEngine;
   private events: EventBus;
+  private qwen: QwenProvider;
 
   constructor(
     agentId: AgentId,
@@ -41,7 +44,8 @@ export class AgentRuntime {
     escrow: EscrowManager,
     gc: EconomicGarbageCollector,
     recovery: RecoveryEngine,
-    events: EventBus
+    events: EventBus,
+    qwen: QwenProvider = defaultQwenProvider
   ) {
     this.agentId = agentId;
     this.store = store;
@@ -51,12 +55,34 @@ export class AgentRuntime {
     this.gc = gc;
     this.recovery = recovery;
     this.events = events;
+    this.qwen = qwen;
   }
 
   public getAgent(): Agent {
     const agent = this.store.getAgent(this.agentId);
     if (!agent) throw new Error(`Agent ${this.agentId} not found in store`);
     return agent;
+  }
+
+  /**
+   * Invokes Qwen 3.8 Max autonomous economic reasoning over bounded context.
+   * Crucial invariant: Qwen only recommends; it NEVER directly authorizes or executes transactions.
+   */
+  public async reasonEconomicAction(context: EconomicContext): Promise<ReasoningResult> {
+    const result = await this.qwen.reason(context);
+
+    this.events.emit({
+      type: 'QWEN_REASONING_PRODUCED',
+      actor: this.agentId,
+      summary: `Qwen 3.8 Max advised ${result.intent.action}${result.intent.target ? ` for ${result.intent.target}` : ''} (Confidence: ${(result.intent.confidence * 100).toFixed(0)}%)`,
+      details: {
+        intent: result.intent,
+        modelUsed: result.modelUsed,
+        available: result.available,
+      },
+    });
+
+    return result;
   }
 
   /**

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { ECON } from '../../sdk/client';
 import { EconomicObject, RecoveryPlan } from '../../sdk/types';
 import { RecoveryHistory } from '../envio/RecoveryHistory';
-import { Recycle, Database, Eye } from 'lucide-react';
+import { Recycle, Database, Eye, Sparkles } from 'lucide-react';
 import { CounterpartyIntelligenceModal } from '../nansen/CounterpartyIntelligenceModal';
+import { QwenReasoningModal } from '../qwen/QwenReasoningModal';
+import { EconomicContextBuilder } from '../../integrations/qwen/qwenContext';
+import { EconomicIntent } from '../../integrations/qwen/qwenTypes';
 
 interface ConsoleRecoveryEngineProps {
   econ: ECON;
@@ -23,6 +26,10 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'SCANNER' | 'ENVIO_HISTORY'>('SCANNER');
   const derived = econ.store.getDerivedState();
   const stranded = objects.filter((o) => o.status === 'STRANDED');
+
+  // Qwen Economic Reasoning modal state
+  const [showQwenModal, setShowQwenModal] = useState(false);
+  const [qwenTargetObject, setQwenTargetObject] = useState<EconomicObject | null>(null);
 
   // Policy validation modal state
   const [selectedCandidate, setSelectedCandidate] = useState<{
@@ -246,10 +253,32 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
               </div>
             </div>
 
-            <div className="showcase-action-footer">
+            <div className="showcase-action-footer" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <div className="safety-badge">
                 <span className="font-mono text-[11px] text-[#CFFF3D]">✓ Policy Validation Mandatory</span>
               </div>
+              <button
+                className="econ-btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(217, 70, 239, 0.15)',
+                  color: '#f472b6',
+                  borderColor: 'rgba(217, 70, 239, 0.45)',
+                  fontWeight: 600,
+                  padding: '10px 14px',
+                  cursor: 'pointer',
+                  fontSize: '11.5px',
+                }}
+                onClick={() => {
+                  setQwenTargetObject(stranded[0] || objects[0] || null);
+                  setShowQwenModal(true);
+                }}
+              >
+                <Sparkles size={13} />
+                <span>AI Recovery Strategy (Qwen 3.8 Max)</span>
+              </button>
               <button
                 className="econ-btn econ-btn-primary econ-btn-lg"
                 onClick={() =>
@@ -300,7 +329,47 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
                 <span className="yield-gas font-mono text-muted">Conf: {(plan.confidenceScore * 100).toFixed(0)}%</span>
               </div>
 
-              <div className="plan-item-action">
+              <div className="plan-item-action" style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  className="econ-btn"
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'rgba(217, 70, 239, 0.12)',
+                    color: '#f472b6',
+                    borderColor: 'rgba(217, 70, 239, 0.4)',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    const matchObj = objects.find((o) => o.id === plan.objectId);
+                    setQwenTargetObject(
+                      matchObj || {
+                        id: plan.objectId,
+                        owner: plan.ownerId,
+                        type: 'API_LICENSE',
+                        denomination: 'units',
+                        quantity: plan.strandedQuantity,
+                        valueMon: plan.expectedRecoveryMon,
+                        expiryTimestamp: Date.now() + 36000000,
+                        transferable: true,
+                        status: 'STRANDED',
+                        metadataHash: '0x' + plan.id,
+                        createdAt: Date.now(),
+                        allocationQuantity: plan.strandedQuantity,
+                        consumedQuantity: 0,
+                        utilizationRatePerHour: 0.1,
+                        projectedRequirement: 0,
+                      }
+                    );
+                    setShowQwenModal(true);
+                  }}
+                >
+                  <Sparkles size={11} />
+                  <span>AI Strategy</span>
+                </button>
                 <button
                   className="econ-btn econ-btn-secondary econ-btn-sm"
                   onClick={() =>
@@ -530,6 +599,96 @@ export const ConsoleRecoveryEngine: React.FC<ConsoleRecoveryEngineProps> = ({
           onClose={() => setSelectedIntelTarget(null)}
         />
       )}
+
+      {showQwenModal && (() => {
+        const targetObj: EconomicObject = qwenTargetObject || stranded[0] || objects[0] || {
+          id: 'OBJ-API-002',
+          owner: 'ResearchAgent-42',
+          type: 'API_LICENSE',
+          denomination: 'units',
+          quantity: 37,
+          valueMon: 7.29,
+          expiryTimestamp: Date.now() + 32400000,
+          transferable: true,
+          status: 'STRANDED',
+          metadataHash: '0x992',
+          createdAt: Date.now() - 64800000,
+          allocationQuantity: 37,
+          consumedQuantity: 0,
+          utilizationRatePerHour: 0.18,
+          projectedRequirement: 0,
+        };
+
+        const targetPlan: RecoveryPlan = plans.find((p) => p.objectId === targetObj.id) || plans[0] || {
+          id: 'PLAN-001',
+          objectId: targetObj.id,
+          ownerId: targetObj.owner || 'ResearchAgent-42',
+          strandedQuantity: targetObj.quantity || 37,
+          recommendedStrategy: 'TRANSFER',
+          confidenceScore: 0.91,
+          reason: 'Stranded API credit units with high secondary recovery potential on Monad',
+          expectedRecoveryMon: 4.60,
+          calculations: {
+            keepValue: 1.80,
+            sellValue: 4.20,
+            transferValue: 4.60,
+            refundValue: 3.70,
+          },
+          timestamp: Date.now(),
+        };
+
+        const defaultAgent = econ.store.getAllAgents()[0] || {
+          id: targetObj.owner || 'ResearchAgent-42',
+          name: 'ResearchAgent-42',
+          controller: '0x1842B6792A645c110E663B514571A15C198547A1',
+          walletAddress: '0x1842B6792A645c110E663B514571A15C198547A1',
+          balanceMon: 184,
+          reputationScore: 98,
+          active: true,
+          registeredAt: Date.now(),
+          policy: {
+            maxPerTransaction: 20,
+            dailySpendingLimit: 100,
+            allowedCategories: ['DATA_SUBSCRIPTION' as const, 'API_LICENSE' as const],
+            requireApprovalAbove: 20,
+            autoRecoveryEnabled: true,
+            autoTransferEnabled: true,
+            minRetainedBalance: 10,
+          },
+          activeObligations: 0,
+        };
+
+        return (
+          <QwenReasoningModal
+            isOpen={showQwenModal}
+            context={EconomicContextBuilder.forRecovery({
+              agent: defaultAgent,
+              object: targetObj,
+              plan: targetPlan,
+            })}
+            policyEngine={econ.policy}
+            onClose={() => {
+              setShowQwenModal(false);
+              setQwenTargetObject(null);
+            }}
+            onAcceptRecommendation={(intent: EconomicIntent) => {
+              setShowQwenModal(false);
+              handleOpenReview({
+                id: targetObj.id,
+                title: `${targetObj.id} (${targetObj.quantity} units) [AI Strategy: ${intent.strategy || intent.action}]`,
+                units: targetObj.quantity,
+                decayProbability: 0.82,
+                options: [
+                  { label: 'Transfer to Sentinel Agent', yieldMon: 4.6, action: 'TRANSFER' },
+                  { label: 'Sell on Secondary Marketplace', yieldMon: 4.2, action: 'SELL' },
+                  { label: 'Retain Minimum Reserve', yieldMon: 1.8, action: 'RESERVE' },
+                ],
+              });
+              setQwenTargetObject(null);
+            }}
+          />
+        );
+      })()}
     </div>
   );
 };

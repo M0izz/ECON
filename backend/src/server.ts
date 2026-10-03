@@ -6,6 +6,7 @@ import { buildHealthRouter } from "./routes/health";
 import { buildMetadataRouter } from "./routes/metadata";
 import { buildRunRouter, RunRouteDeps } from "./routes/run";
 import { buildNansenRouter } from "./routes/nansen";
+import { buildQwenRouter } from "./routes/qwen";
 import { buildCorsMiddleware } from "./middleware/cors";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { timeoutMiddleware } from "./middleware/timeout";
@@ -48,6 +49,8 @@ export function createApp({ config, publicEndpoint, runDeps }: CreateAppOptions)
   app.use(buildRunRouter(runDeps));
   app.use("/nansen", buildNansenRouter(config));
   app.use("/api/nansen", buildNansenRouter(config));
+  app.use("/qwen", buildQwenRouter(config));
+  app.use("/api/qwen", buildQwenRouter(config));
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Not found." });

@@ -273,7 +273,8 @@ export type ECONEventType =
   | 'CREDIT_RELEASED'
   | 'CREDIT_RECYCLED'
   | 'CREDIT_REQUESTED'
-  | 'CREDIT_ALLOCATED';
+  | 'CREDIT_ALLOCATED'
+  | 'QWEN_REASONING_PRODUCED';
 
 export interface ECONEvent {
   id: string;

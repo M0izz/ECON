@@ -51,6 +51,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AgentConfig {
     capabilities: parseListEnv("AGENT_CAPABILITIES", ["data-analysis", "document-processing"]),
     port: parseIntEnv("PORT", 3000),
     nodeEnv: env.NODE_ENV ?? "development",
-    nansenApiKey: process.env.NANSEN_API_KEY
+    nansenApiKey: process.env.NANSEN_API_KEY,
+    qwenApiKey: process.env.QWEN_API_KEY,
+    qwenModel: process.env.QWEN_MODEL || "qwen3.8-max",
+    qwenBaseUrl: process.env.QWEN_BASE_URL
   };
 }

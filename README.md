@@ -6,6 +6,7 @@
 
 [![Monad Testnet](https://img.shields.io/badge/Network-Monad%20Testnet-00E599?style=flat-square)](https://docs.monad.xyz/)
 [![ERC-8004](https://img.shields.io/badge/Agent%20Identity-ERC--8004-111111?style=flat-square)](https://ercs.ethereum.org/ERCS/erc-8004)
+[![Qwen 3.8 Max](https://img.shields.io/badge/AI%20Reasoning-Qwen%203.8%20Max-D946EF?style=flat-square)](https://www.alibabacloud.com/en/solutions/model-studio)
 [![Envio](https://img.shields.io/badge/Envio-HyperIndex-836EF9?style=flat-square)](https://envio.dev)
 [![Nansen](https://img.shields.io/badge/Nansen-On--Chain%20Intelligence-6366F1?style=flat-square)](https://www.nansen.ai)
 [![Mera](https://img.shields.io/badge/Mera-Passkey%20Identity-836EF9?style=flat-square)](https://github.com/category-labs/mera)
@@ -130,6 +131,46 @@ Marketplace Evaluation   Recovery Engine Context   Agent Dossier
 5. **Read-Only Non-Execution Invariant**: Nansen **never** executes transactions. An exploit label escalates transactions to mandatory manual review; clean data still requires compliance with all ECON policy spending invariants.
 
 For complete architectural details, endpoint mappings, and security guarantees, see [Nansen Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/nansen.md).
+
+---
+
+### Qwen 3.8 Max — Autonomous Economic Reasoning Engine
+
+ECON integrates **Alibaba Cloud Model Studio's flagship Qwen 3.8 Max** (`qwen3.8-max`) as the protocol's **Autonomous Economic Reasoning Engine**.
+
+> **"Qwen thinks. ECON Policy decides. Smart contracts enforce. Monad settles."**
+
+Qwen is strictly an advisory decision-support layer. It evaluates multi-attribute tradeoffs over structured economic state, but **never** holds private keys, signs payloads, or executes transactions.
+
+```
+Economic State
+     ↓
+Envio (History) + Nansen (Intelligence) + ECON State
+     ↓
+Economic Context Builder (Bounded Context & Untrusted Isolation)
+     ↓
+Qwen 3.8 Max (Alibaba Cloud Model Studio / DashScope Proxy)
+     ↓
+Structured Economic Intent (Validated JSON schema)
+     ↓
+ECON Policy Engine (Reserve Floors, Spending Caps, Risk Rules)
+     ↓
+ALLOW / REVIEW / BLOCK
+     ↓
+Human Operator Review or Automated Flow
+     ↓
+Monad Settlement (Mera Passkey / Dynamic / Viem)
+```
+
+#### Core Capabilities:
+1. **Marketplace Discovery Optimization**: Evaluates candidate service offerings against agent objectives, price, latency SLA, historical performance (Envio), and counterparty reputation (Nansen) to formulate quantitative recommendations.
+2. **Economic Garbage Collector Strategy Analysis**: Analyzes stranded economic objects (idle compute credits, expiring subscriptions) to calculate Expected Value ($EV$) across available strategies (`TRANSFER`, `SELL`, `KEEP`, `REFUND`).
+3. **Prompt Injection Defense**: External text from marketplace listings, agent metadata, and object descriptions is enclosed inside `<untrusted_economic_data>` tags. System prompts treat this data strictly as inert strings.
+4. **Server-Side API Security**: `QWEN_API_KEY` is maintained exclusively on the backend (`/api/qwen/reason` or Express proxy). It is never exposed in client bundles or browser storage.
+5. **Deterministic Policy Boundary**: An AI confidence score (e.g. 98%) is purely an advisory reasoning signal. If an AI proposal violates policy spending caps or minimum treasury reserves, the Policy Engine **deterministically blocks** the transaction.
+6. **Graceful Fallback & Zero Fake AI**: If the model is unconfigured or unavailable, ECON clearly surfaces an unavailable state with manual operational fallbacks. No fake AI reasoning is ever fabricated.
+
+For complete architectural details, prompt schemas, and security specifications, see [Qwen Integration Specification](file:///c:/Users/Moiz/Desktop/ECON/docs/integrations/qwen.md).
 
 ---
 
