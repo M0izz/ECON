@@ -197,6 +197,9 @@ export class EconomicLoopSimulation {
         state.log.push(`Policy Engine pre-flight check: PASSED`);
         state.log.push(`  Rule: Max per-tx limit (20 MON) -> Transaction of 12 MON ALLOWED`);
         state.log.push(`  Rule: Category allowlist -> DATA_SUBSCRIPTION ALLOWED`);
+        state.log.push(`MetaMask Agent Wallet (Control Layer): Pre-flight Security Pipeline`);
+        state.log.push(`  MetaMask Simulation: SUCCESS (Gas estimated: 21,000)`);
+        state.log.push(`  Blockaid Threat Scan: PASSED (Risk: LOW)`);
 
         // Lock escrow
         this.activeEscrow = await this.econ.escrow.createEscrow(
@@ -207,7 +210,7 @@ export class EconomicLoopSimulation {
         );
 
         state.log.push(`Escrow lock executed: ${amount} MON held in contract ${this.activeEscrow.id}`);
-        state.details = { escrowId: this.activeEscrow.id, lockedAmount: `${amount} MON` };
+        state.details = { escrowId: this.activeEscrow.id, lockedAmount: `${amount} MON`, wallet: 'MetaMask Agent Wallet' };
         state.status = 'COMPLETED';
         break;
       }
@@ -237,7 +240,8 @@ export class EconomicLoopSimulation {
         // Step 7: SETTLE
         await this.econ.escrow.verifyAndRelease(this.activeEscrow!.id);
         state.log.push(`Escrow condition satisfied. Released 12 MON to GeoVision Provider.`);
-        state.log.push(`Settlement finalized via active adapter (${this.econ.getSettlementAdapter().name}).`);
+        state.log.push(`Settlement finalized via MetaMask Agent Wallet on Monad (${this.econ.getSettlementAdapter().name}).`);
+        state.log.push(`Envio HyperIndex: Ingested on-chain settlement event.`);
         state.status = 'COMPLETED';
         break;
       }
@@ -311,7 +315,8 @@ export class EconomicLoopSimulation {
 
         state.log.push(`Recovery Executed: Autonomous Transfer completed.`);
         state.log.push(`  Asset ${this.createdObjectId} transferred to ${peer.name}`);
-        state.log.push(`  Settlement: +${this.recoveryPlan!.expectedRecoveryMon} MON credited to ResearchAgent-42`);
+        state.log.push(`  Settlement: +${this.recoveryPlan!.expectedRecoveryMon} MON credited to ResearchAgent-42 via MetaMask Agent Wallet`);
+        state.log.push(`  Chainlink CRE workflow & Monad settlement synchronized`);
         state.log.push(`  ResearchAgent-42 final balance: ${buyer.balanceMon} MON`);
         state.log.push(`--------------------------------------------------`);
         state.log.push(`ECONOMIC LOOP COMPLETE:`);

@@ -106,8 +106,8 @@ export interface Agent {
   onChainTxHash?: string;
   metadataURI?: string;
 
-  // Controller Authority: Mera Passkey, Dynamic Wallet, or External Wallet
-  controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA' | 'DYNAMIC';
+  // Controller Authority: Mera Passkey, Dynamic Wallet, MetaMask Agent Wallet, or External Wallet
+  controllerType?: 'EXTERNAL_WALLET' | 'PASSKEY_MERA' | 'DYNAMIC' | 'METAMASK_AGENT_WALLET';
   passkeyCredentialId?: string;
   passkeyAccounts?: {
     operating: `0x${string}`;
@@ -120,6 +120,15 @@ export interface Agent {
     connector: string;
     isEmbedded: boolean;
     networkChainId: number;
+  };
+  metaMaskAgentWallet?: {
+    address: `0x${string}`;
+    mode: 'server-wallet' | 'byok';
+    tradingMode?: 'guard' | 'beast';
+    status: 'CONNECTED' | 'NOT_CONFIGURED' | 'SIMULATION';
+    networkChainId: number;
+    lastSimulationStatus?: 'VALID' | 'SIMULATION_FAILED';
+    threatScanStatus?: 'PASSED' | 'FLAGGED';
   };
 }
 

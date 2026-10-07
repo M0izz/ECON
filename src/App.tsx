@@ -265,7 +265,7 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'AGENTS' && (
-        <EntitiesView agents={agents} objects={objects} />
+        <EntitiesView agents={agents} objects={objects} econ={econ} />
       )}
 
       {consoleTab === 'AGENT_BUILDER' && (
@@ -276,7 +276,7 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'ASSETS' && (
-        <EntitiesView agents={agents} objects={objects} />
+        <EntitiesView agents={agents} objects={objects} econ={econ} />
       )}
 
       {consoleTab === 'MARKETPLACE' && (

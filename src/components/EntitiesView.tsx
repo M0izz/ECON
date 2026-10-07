@@ -9,13 +9,15 @@ import { CounterpartyIntelligenceModal } from './nansen/CounterpartyIntelligence
 import { globalEnvioClient } from '../integrations/envio/client';
 import { IndexedEconomicObject, EnvioDataSourceStatus } from '../integrations/envio/types';
 import { formatWeiToMon } from '../integrations/envio/mappers';
+import { MetaMaskAgentWalletCard } from './metamask/MetaMaskAgentWalletCard';
 
 interface EntitiesViewProps {
   agents: Agent[];
   objects: EconomicObject[];
+  econ?: any;
 }
 
-export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: localObjects }) => {
+export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: localObjects, econ }) => {
   const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>('AGENTS');
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentModalTab, setAgentModalTab] = useState<'DOSSIER' | 'TIMELINE'>('TIMELINE');
@@ -153,8 +155,15 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: loc
       </div>
 
       {activeTab === 'AGENTS' && (
-        <div className="panel">
-          <div className="panel-header">
+        <>
+          {agents.length > 0 && (
+            <MetaMaskAgentWalletCard
+              agent={agents.find((a) => a.id === 'ResearchAgent-42') || agents[0]}
+              econ={econ}
+            />
+          )}
+          <div className="panel">
+            <div className="panel-header">
             <div className="panel-title">
               <User size={14} className="text-mint" />
               <span>Economic Agent Registry</span>
@@ -272,6 +281,7 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: loc
             </tbody>
           </table>
         </div>
+      </>
       )}
 
       {activeTab === 'OBJECTS' && (
@@ -340,7 +350,17 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: loc
                 {(objectSource === 'ENVIO_INDEXED'
                   ? envioObjects.map((eo) => ({
                       id: eo.id,
-                      metadataHash: eo.txHash || eo.id,\r\n                      type: String(eo.objectType),\r\n                      owner: eo.owner,\r\n                      quantity: 100,\r\n                      consumedQuantity: 0,\r\n                      denomination: 'UNITS',\r\n                      valueMon: formatWeiToMon(eo.value),\r\n                      expiryTimestamp: Number(eo.expiry) * 1000,\r\n                      transferable: eo.transferable,\r\n                      status: eo.status,\r\n                      txHash: eo.txHash,
+                      metadataHash: eo.txHash || eo.id,
+                      type: String(eo.objectType),
+                      owner: eo.owner,
+                      quantity: 100,
+                      consumedQuantity: 0,
+                      denomination: 'UNITS',
+                      valueMon: formatWeiToMon(eo.value),
+                      expiryTimestamp: Number(eo.expiry) * 1000,
+                      transferable: eo.transferable,
+                      status: eo.status,
+                      txHash: eo.txHash,
                     }))
                   : localObjects
                 ).map((o: any) => {

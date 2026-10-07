@@ -33,8 +33,11 @@ export interface IndexedTransaction {
   id: string;
   sender: string;
   recipient: string;
-  amount: string; // in wei
-  transactionType: string;
+  amount?: string; // in wei
+  amountMon?: string;
+  status?: string;
+  txType?: string;
+  transactionType?: string;
   timestamp: string;
   txHash: string;
   blockNumber: string;
@@ -86,16 +89,24 @@ export type EnvioDataSourceStatus = 'LIVE' | 'INDEXING' | 'SIMULATION' | 'NO_DAT
 export interface IndexedEconomicObject {
   id: string;
   owner: string;
-  objectType: number;
-  value: string; // in wei
-  expiry: string;
+  objectType: number | string;
+  value?: string; // in wei
+  valuationMon?: number | string;
+  unitsRemaining?: string;
+  unitDenomination?: string;
+  expiry?: string;
+  expiryTimestamp?: string;
   transferable: boolean;
   status: 'ACTIVE' | 'IN_ESCROW' | 'STRANDED' | 'RECOVERED' | 'EXPIRED' | 'LIQUIDATED';
-  createdAt: string;
-  updatedAt: string;
-  txHash: string;
-  blockNumber: string;
+  createdAt?: string;
+  updatedAt?: string;
+  txHash?: string;
+  blockNumber?: string;
+  lastUpdatedTx?: string;
+  lastUpdatedBlock?: string;
 }
+
+export type IndexedEscrow = IndexedEscrowRecord;
 
 export interface IndexedMarketplaceListing {
   id: string;
@@ -115,17 +126,22 @@ export interface IndexedEscrowRecord {
   id: string;
   buyer: string;
   seller: string;
-  amount: string; // in wei
-  conditionHash: string;
-  deadline: string;
-  status: 'LOCKED' | 'DELIVERED' | 'RELEASED' | 'REFUNDED';
+  amount?: string; // in wei
+  amountMon?: string;
+  state?: string;
+  conditionHash?: string;
+  deadline?: string;
+  status?: 'LOCKED' | 'DELIVERED' | 'RELEASED' | 'REFUNDED';
   linkedObjectId?: string | null;
   deliveryProof?: string | null;
-  createdAt: string;
+  createdAt?: string;
   releasedAt?: string | null;
   refundedAt?: string | null;
-  txHash: string;
-  blockNumber: string;
+  txHash?: string;
+  blockNumber?: string;
+  settledAt?: string | null;
+  settledTx?: string | null;
+  createdTx?: string;
 }
 
 export interface IndexedCreditReservation {

@@ -136,18 +136,18 @@ export const EscrowHistory: React.FC<EscrowHistoryProps> = ({
                     </a>
                   </td>
                   <td className="font-mono" style={{ color: '#00E599', fontWeight: 700 }}>
-                    {formatWeiToMon(esc.amount).toFixed(2)} MON
+                    {formatWeiToMon(esc.amount || '0').toFixed(2)} MON
                   </td>
                   <td className="font-mono text-muted">#{esc.blockNumber}</td>
                   <td>
                     <a
-                      href={getExplorerTxUrl(esc.txHash)}
+                      href={getExplorerTxUrl(esc.txHash || '')}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono"
                       style={{ color: '#836EF9', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
                     >
-                      {formatHash(esc.txHash, 8, 6)}
+                      {formatHash(esc.txHash || '', 8, 6)}
                       <ExternalLink size={9} />
                     </a>
                   </td>

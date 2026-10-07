@@ -9,9 +9,15 @@ import { EventBus } from '../events';
 import { checkAgentCapability } from './capabilities';
 import { QwenProvider, defaultQwenProvider } from '../../integrations/qwen/qwenProvider';
 import { EconomicContext, ReasoningResult } from '../../integrations/qwen/qwenTypes';
+import {
+  MetaMaskAgentWalletAdapter,
+  globalMetaMaskAgentWallet,
+} from '../../integrations/metamask-agent-wallet/metaMaskAgentWalletAdapter';
+import { executeMetaMaskGatedTransaction } from '../../integrations/metamask-agent-wallet/policyGatedExecutor';
+import { MetaMaskTransactionIntent } from '../../integrations/metamask-agent-wallet/types';
 
 export interface ProposedAction {
-  type: 'PURCHASE' | 'CREATE_ESCROW' | 'RECOVER_OBJECT';
+  type: 'PURCHASE' | 'CREATE_ESCROW' | 'RECOVER_OBJECT' | 'ECONOMIC_TRANSACTION';
   params: Record<string, any>;
   reasoning: string;
 }
@@ -20,7 +26,7 @@ export interface ActionResult {
   success: boolean;
   actionType: string;
   txOrRecord?: any;
-  blockedBy?: 'CAPABILITIES' | 'POLICY' | 'SETTLEMENT';
+  blockedBy?: 'CAPABILITIES' | 'POLICY' | 'SETTLEMENT' | 'SIMULATION' | 'REVIEW';
   error?: string;
   auditSummary: string;
 }
@@ -35,6 +41,7 @@ export class AgentRuntime {
   private recovery: RecoveryEngine;
   private events: EventBus;
   private qwen: QwenProvider;
+  private metaMaskWallet: MetaMaskAgentWalletAdapter;
 
   constructor(
     agentId: AgentId,
@@ -45,7 +52,8 @@ export class AgentRuntime {
     gc: EconomicGarbageCollector,
     recovery: RecoveryEngine,
     events: EventBus,
-    qwen: QwenProvider = defaultQwenProvider
+    qwen: QwenProvider = defaultQwenProvider,
+    metaMaskWallet: MetaMaskAgentWalletAdapter = globalMetaMaskAgentWallet
   ) {
     this.agentId = agentId;
     this.store = store;
@@ -56,6 +64,7 @@ export class AgentRuntime {
     this.recovery = recovery;
     this.events = events;
     this.qwen = qwen;
+    this.metaMaskWallet = metaMaskWallet;
   }
 
   public getAgent(): Agent {
@@ -206,6 +215,18 @@ export class AgentRuntime {
         }
       }
 
+      case 'ECONOMIC_TRANSACTION': {
+        const { recipient, amountMon, memo, category, type } = proposal.params;
+        return await this.executeEconomicTransaction({
+          type: type || 'BUY',
+          recipient,
+          amountMon,
+          memo: memo || proposal.reasoning,
+          category,
+          economicIdentity: this.agentId,
+        });
+      }
+
       default:
         return {
           success: false,
@@ -213,6 +234,89 @@ export class AgentRuntime {
           error: `Unknown action type: ${proposal.type}`,
           auditSummary: 'Unrecognized action',
         };
+    }
+  }
+
+  /**
+   * Controlled Agent Runtime Tool: executeEconomicTransaction
+   *
+   * Responsibilities:
+   * 1. receive structured transaction intent
+   * 2. validate schema
+   * 3. identify Economic Identity
+   * 4. load current policy
+   * 5. validate recipient/contract/action
+   * 6. run Policy Engine
+   * 7. request MetaMask Agent Wallet execution
+   * 8. return transaction hash/status
+   * 9. emit ECON activity event
+   *
+   * Invariant: The LLM model is never given arbitrary wallet execution.
+   */
+  public async executeEconomicTransaction(intent: MetaMaskTransactionIntent): Promise<ActionResult> {
+    const agent = this.getAgent();
+
+    // 1. Capability Permission Check
+    const capCheck = checkAgentCapability(agent, 'canPurchaseServices');
+    if (!capCheck.allowed) {
+      return {
+        success: false,
+        actionType: intent.type || 'ECONOMIC_TRANSACTION',
+        blockedBy: 'CAPABILITIES',
+        error: capCheck.reason,
+        auditSummary: `Blocked by capabilities: ${capCheck.reason}`,
+      };
+    }
+
+    try {
+      const result = await executeMetaMaskGatedTransaction({
+        agentId: this.agentId,
+        intent: {
+          ...intent,
+          economicIdentity: this.agentId,
+        },
+        policyEngine: this.policy,
+        walletAdapter: this.metaMaskWallet,
+        store: this.store,
+        eventBus: this.events,
+        category: (intent.category || 'API_LICENSE') as any,
+        description: intent.memo,
+      });
+
+      if (!result.success) {
+        const blockedBy =
+          result.status === 'BLOCKED_BY_POLICY'
+            ? 'POLICY'
+            : result.status === 'REQUIRES_REVIEW'
+            ? 'REVIEW'
+            : result.status === 'SIMULATION_FAILED'
+            ? 'SIMULATION'
+            : 'SETTLEMENT';
+
+        return {
+          success: false,
+          actionType: intent.type || 'ECONOMIC_TRANSACTION',
+          txOrRecord: result,
+          blockedBy,
+          error: result.error || result.policyReason || 'Transaction rejected',
+          auditSummary: `MetaMask Agent Wallet operation rejected: ${result.error || result.policyReason}`,
+        };
+      }
+
+      return {
+        success: true,
+        actionType: intent.type || 'ECONOMIC_TRANSACTION',
+        txOrRecord: result,
+        auditSummary: `Successfully executed ${intent.type} of ${intent.amountMon} MON via MetaMask Agent Wallet on Monad (tx: ${typeof result.hash === 'string' ? result.hash.slice(0, 10) : ''}...)`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        actionType: intent.type || 'ECONOMIC_TRANSACTION',
+        blockedBy: 'POLICY',
+        error: err.message,
+        auditSummary: `Execution error: ${err.message}`,
+      };
     }
   }
 }

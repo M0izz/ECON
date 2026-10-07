@@ -7,6 +7,7 @@ import { buildMetadataRouter } from "./routes/metadata";
 import { buildRunRouter, RunRouteDeps } from "./routes/run";
 import { buildNansenRouter } from "./routes/nansen";
 import { buildQwenRouter } from "./routes/qwen";
+import { buildMetaMaskAgentWalletRouter } from "./routes/metamaskAgentWallet";
 import { buildCorsMiddleware } from "./middleware/cors";
 import { requestIdMiddleware } from "./middleware/requestId";
 import { timeoutMiddleware } from "./middleware/timeout";
@@ -51,6 +52,8 @@ export function createApp({ config, publicEndpoint, runDeps }: CreateAppOptions)
   app.use("/api/nansen", buildNansenRouter(config));
   app.use("/qwen", buildQwenRouter(config));
   app.use("/api/qwen", buildQwenRouter(config));
+  app.use("/metamask-agent-wallet", buildMetaMaskAgentWalletRouter(config));
+  app.use("/api/metamask-agent-wallet", buildMetaMaskAgentWalletRouter(config));
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Not found." });
