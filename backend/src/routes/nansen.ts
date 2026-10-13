@@ -68,18 +68,23 @@ export function buildNansenRouter(config: AgentConfig): Router {
         headers: {
           apikey: apiKey,
           "Content-Type": "application/json",
-          Accept: "application/json"
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ECON-Protocol/1.0"
         },
         body: JSON.stringify(body)
       });
 
       const status = response.status;
       if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const errorCode = (errorBody as any)?.code;
+        const errorMessage = (errorBody as any)?.message || (errorBody as any)?.error;
+
         if (status === 401) {
           return { status, data: { available: false, error: "Invalid or expired NANSEN_API_KEY", status } };
         }
-        if (status === 402) {
-          return { status, data: { available: false, error: "Nansen API credits exhausted", status } };
+        if (status === 402 || (status === 403 && errorCode === "insufficient_credits")) {
+          return { status: 200, data: { available: false, error: "Nansen API credits exhausted. Key authenticated successfully.", code: "insufficient_credits", status: 403, source: "nansen" } };
         }
         if (status === 404) {
           return { status: 200, data: { available: true, data: null, message: "No on-chain records found", status: 404 } };
@@ -87,7 +92,7 @@ export function buildNansenRouter(config: AgentConfig): Router {
         if (status === 429) {
           return { status, data: { available: false, error: "Rate limit exceeded on Nansen API", status } };
         }
-        return { status, data: { available: false, error: `Nansen service returned HTTP ${status}`, status } };
+        return { status, data: { available: false, error: errorMessage || `Nansen service returned HTTP ${status}`, status } };
       }
 
       const json = await response.json();
@@ -103,12 +108,12 @@ export function buildNansenRouter(config: AgentConfig): Router {
 
   // POST /nansen/labels
   router.post("/labels", async (req: Request, res: Response) => {
-    const { address } = req.body;
+    const { address, chain = "ethereum" } = req.body;
     if (!isValidAddress(address)) {
       res.status(400).json({ error: "Valid EVM address is required" });
       return;
     }
-    const result = await makeNansenRequest("address/labels", { address: address.toLowerCase() });
+    const result = await makeNansenRequest("address/labels", { address: address.toLowerCase(), chain });
     res.status(result.status).json(result.data);
   });
 
@@ -164,7 +169,7 @@ export function buildNansenRouter(config: AgentConfig): Router {
     }
 
     const [labelsRes, balanceRes] = await Promise.all([
-      makeNansenRequest("address/labels", { address: address.toLowerCase() }),
+      makeNansenRequest("address/labels", { address: address.toLowerCase(), chain: chain === "monad" ? "ethereum" : chain }),
       makeNansenRequest("address/current-balance", { address: address.toLowerCase(), chain, hide_spam_token: true })
     ]);
 

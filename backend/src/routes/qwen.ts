@@ -76,6 +76,8 @@ export function buildQwenRouter(config: AgentConfig): Router {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
           Accept: "application/json",
+          "HTTP-Referer": "https://github.com/M0izz/ECON",
+          "X-Title": "ECON Protocol",
         },
         body: JSON.stringify({
           model,
