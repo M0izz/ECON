@@ -95,15 +95,18 @@ function main(): void {
   const publicEndpoint = process.env.PUBLIC_ENDPOINT ?? `http://localhost:${config.port}/run`;
 
   const signerKey = process.env.AGENT_SIGNER_PRIVATE_KEY;
-  if (!signerKey) {
-    throw new Error(
-      "AGENT_SIGNER_PRIVATE_KEY is required to settle/release CreditVault reservations. " +
-        "Provision it via a secrets manager or KMS — never commit it to source control."
+  const { provider, vaultContract } = createCreditVerifierDeps(config);
+  let signer: Wallet;
+  if (signerKey) {
+    signer = new Wallet(signerKey, provider);
+    logger.info({ address: signer.address }, "Authoritative agent signer configured");
+  } else {
+    signer = new Wallet(Wallet.createRandom().privateKey, provider);
+    logger.warn(
+      { fallbackAddress: signer.address },
+      "AGENT_SIGNER_PRIVATE_KEY not set. Running in simulation/degraded mode with ephemeral signer; /health and read APIs active."
     );
   }
-
-  const { provider, vaultContract } = createCreditVerifierDeps(config);
-  const signer = new Wallet(signerKey, provider);
 
   const runDeps: RunRouteDeps = {
     config,
