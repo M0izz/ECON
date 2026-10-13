@@ -540,36 +540,108 @@ export class MonadSettlementAdapter implements SettlementAdapter {
     });
   }
 
-  public async listEconomicObject(listingId: string, objectId: string, priceMon: number): Promise<Hash> {
-    if (!this.walletClient) throw new Error('WalletClient required');
-    const listingIdBytes32 = this.toHex32(listingId);
-    const objectIdBytes32 = this.toHex32(objectId);
-    const priceWei = parseEther(priceMon.toString());
+  public async listEconomicObject(
+    listingId: string,
+    objectId: string,
+    priceMon: number
+  ): Promise<SettlementResult> {
+    if (!this.walletClient || !this.walletClient.account) {
+      return {
+        success: false,
+        txHash: '',
+        blockNumber: 0,
+        settledAt: Date.now(),
+        feeMon: 0,
+        error: 'Monad Marketplace: Wallet signer required',
+      };
+    }
+    try {
+      const listingIdBytes32 = this.toHex32(listingId);
+      const objectIdBytes32 = this.toHex32(objectId);
+      const priceWei = parseEther(priceMon.toString());
 
-    return (this.walletClient as any).writeContract({
-      address: this.config.marketplaceAddress!,
-      abi: ECONMarketplaceArtifact.abi,
-      functionName: 'listObject',
-      args: [listingIdBytes32, objectIdBytes32, priceWei],
-      chain: monadTestnetChain,
-      account: this.walletClient.account,
-    });
+      const hash = await (this.walletClient as any).writeContract({
+        address: this.config.marketplaceAddress!,
+        abi: ECONMarketplaceArtifact.abi,
+        functionName: 'listObject',
+        args: [listingIdBytes32, objectIdBytes32, priceWei],
+        chain: monadTestnetChain,
+        account: this.walletClient.account,
+      });
+
+      const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
+      return {
+        success: receipt.status === 'success',
+        txHash: hash,
+        blockNumber: Number(receipt.blockNumber),
+        settledAt: Date.now(),
+        feeMon: 0.0005,
+        feeStream: 'NONE',
+        error: receipt.status === 'success' ? undefined : `listObject reverted (${hash})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        txHash: '',
+        blockNumber: 0,
+        settledAt: Date.now(),
+        feeMon: 0,
+        error: `Monad listEconomicObject error: ${err.message}`,
+      };
+    }
   }
 
-  public async buyEconomicObject(listingId: string, priceMon: number): Promise<Hash> {
-    if (!this.walletClient) throw new Error('WalletClient required');
-    const listingIdBytes32 = this.toHex32(listingId);
-    const priceWei = parseEther(priceMon.toString());
+  public async buyEconomicObject(
+    listingId: string,
+    buyerIdOrPrice: string | number,
+    maybePrice?: number
+  ): Promise<SettlementResult> {
+    if (!this.walletClient || !this.walletClient.account) {
+      return {
+        success: false,
+        txHash: '',
+        blockNumber: 0,
+        settledAt: Date.now(),
+        feeMon: 0,
+        error: 'Monad Marketplace: Wallet signer required',
+      };
+    }
+    const priceMon = typeof buyerIdOrPrice === 'number' ? buyerIdOrPrice : (maybePrice || 0);
 
-    return (this.walletClient as any).writeContract({
-      address: this.config.marketplaceAddress!,
-      abi: ECONMarketplaceArtifact.abi,
-      functionName: 'buyObject',
-      args: [listingIdBytes32],
-      value: priceWei,
-      chain: monadTestnetChain,
-      account: this.walletClient.account,
-    });
+    try {
+      const listingIdBytes32 = this.toHex32(listingId);
+      const priceWei = parseEther(priceMon.toString());
+
+      const hash = await (this.walletClient as any).writeContract({
+        address: this.config.marketplaceAddress!,
+        abi: ECONMarketplaceArtifact.abi,
+        functionName: 'buyObject',
+        args: [listingIdBytes32],
+        value: priceWei,
+        chain: monadTestnetChain,
+        account: this.walletClient.account,
+      });
+
+      const receipt = await this.publicClient.waitForTransactionReceipt({ hash });
+      return {
+        success: receipt.status === 'success',
+        txHash: hash,
+        blockNumber: Number(receipt.blockNumber),
+        settledAt: Date.now(),
+        feeMon: 0.0005,
+        feeStream: 'MARKETPLACE',
+        error: receipt.status === 'success' ? undefined : `buyObject reverted (${hash})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        txHash: '',
+        blockNumber: 0,
+        settledAt: Date.now(),
+        feeMon: 0,
+        error: `Monad buyEconomicObject error: ${err.message}`,
+      };
+    }
   }
 
   private resolveAddress(agentIdOrAddress: string): string {

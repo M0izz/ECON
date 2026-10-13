@@ -11,4 +11,6 @@ export interface SettlementAdapter {
   refundEscrow(escrowId: string): Promise<SettlementResult>;
   transferEconomicObject(objectId: string, fromOwner: string, toOwner: string): Promise<SettlementResult>;
   getBalance(agentId: string): Promise<number>;
+  listEconomicObject?(listingId: string, objectId: string, priceMon: number): Promise<SettlementResult>;
+  buyEconomicObject?(listingId: string, buyerId: string, priceMon: number): Promise<SettlementResult>;
 }

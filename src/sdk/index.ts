@@ -12,3 +12,4 @@ export * from './creditVault';
 export * from './agent';
 export * from './client';
 export * from './fee';
+export * from './egc';

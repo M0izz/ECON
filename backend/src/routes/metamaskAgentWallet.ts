@@ -15,7 +15,7 @@ export function buildMetaMaskAgentWalletRouter(config: AgentConfig): Router {
 
   // Derive address safely on server
   let serverWalletAddress: string = '0x1842B6792A645c110E663B514571A15C198547A1';
-  let serverWallet: Wallet | null = null;
+  let serverWallet: any = null;
 
   try {
     const mnemonic = process.env.MM_MNEMONIC;
@@ -23,10 +23,14 @@ export function buildMetaMaskAgentWalletRouter(config: AgentConfig): Router {
 
     if (walletType === 'byok' && mnemonic) {
       serverWallet = Wallet.fromPhrase(mnemonic).connect(provider);
-      serverWalletAddress = serverWallet.address;
+      if (serverWallet) {
+        serverWalletAddress = serverWallet.address;
+      }
     } else if (privateKey && privateKey.startsWith('0x')) {
       serverWallet = new Wallet(privateKey, provider);
-      serverWalletAddress = serverWallet.address;
+      if (serverWallet) {
+        serverWalletAddress = serverWallet.address;
+      }
     }
   } catch (err: any) {
     logger.warn({ err: err.message }, 'MetaMask Agent Wallet server wallet initialization notice');

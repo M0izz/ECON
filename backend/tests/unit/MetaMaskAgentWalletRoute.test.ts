@@ -6,18 +6,20 @@ import { AgentConfig } from '../../src/types';
 describe('Backend MetaMask Agent Wallet Route Unit Tests', () => {
   let app: Express;
   const mockConfig: AgentConfig = {
+    agentId: '123',
+    agentName: 'Test Agent',
+    agentDescription: 'Agent for testing',
+    agentController: '0x1842B6792A645c110E663B514571A15C198547A1',
     port: 3001,
-    environment: 'development',
-    chainId: 10143,
-    rpcUrl: 'https://testnet-rpc.monad.xyz',
+    nodeEnv: 'test',
+    monadChainId: 10143,
+    monadRpcUrl: 'https://testnet-rpc.monad.xyz',
     creditVaultAddress: '0x1111111111111111111111111111111111111111',
-    agentSignerPrivateKey: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-    allowedOrigins: ['*'],
+    econFrontendOrigin: ['*'],
     requestTimeoutMs: 10000,
-    rateLimitWindowMs: 60000,
-    rateLimitMaxRequests: 100,
     maxTaskSizeBytes: 1024 * 1024,
-    minConfirmationBlocks: 1,
+    priceCredits: 5,
+    capabilities: ['data-analysis'],
   };
 
   beforeEach(() => {

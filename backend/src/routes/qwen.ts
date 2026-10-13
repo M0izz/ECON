@@ -122,7 +122,7 @@ export function buildQwenRouter(config: AgentConfig): Router {
         return;
       }
 
-      const json = await response.json();
+      const json = (await response.json()) as any;
       const content = json.choices?.[0]?.message?.content || "";
       const result = {
         available: true,

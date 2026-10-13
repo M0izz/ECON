@@ -157,6 +157,15 @@ export class PolicyEngine {
       };
     }
 
+    if (policy.requireApprovalAbove > 0 && plan.expectedRecoveryMon > policy.requireApprovalAbove) {
+      return {
+        allowed: false,
+        requiresManualApproval: true,
+        reason: `Recovery value (${plan.expectedRecoveryMon} MON) exceeds automated threshold (${policy.requireApprovalAbove} MON). Policy requires operator review.`,
+        violatesRule: 'APPROVAL_THRESHOLD_EXCEEDED',
+      };
+    }
+
     return { allowed: true };
   }
 
