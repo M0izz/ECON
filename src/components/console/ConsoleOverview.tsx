@@ -109,25 +109,55 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
         </div>
 
         <div className="welcome-summary-quad">
-          <div className="summary-pill">
+          <div
+            className="summary-pill interactive"
+            onClick={() => onNavigate('AGENTS')}
+            role="button"
+            tabIndex={0}
+            title="Inspect Agent Treasuries"
+          >
             <span className="s-val">{walletBalance || `${derived.totalTreasuryMon.toFixed(2)} MON`}</span>
-            <span className="s-lbl">ECONOMIC VALUE</span>
+            <span className="s-lbl">ECONOMIC VALUE ↗</span>
           </div>
-          <div className="summary-pill highlight-pink">
+          <div
+            className="summary-pill highlight-pink interactive"
+            onClick={() => onNavigate('RECOVERY')}
+            role="button"
+            tabIndex={0}
+            title="Inspect Stranded Value & Recovery Engine"
+          >
             <span className="s-val text-accent-pink">{derived.totalStrandedValueMon.toFixed(2)} MON</span>
-            <span className="s-lbl">STRANDED VALUE</span>
+            <span className="s-lbl">STRANDED VALUE ↗</span>
           </div>
-          <div className="summary-pill">
+          <div
+            className="summary-pill interactive"
+            onClick={() => onNavigate('ASSETS')}
+            role="button"
+            tabIndex={0}
+            title="Inspect Circulating Economic Objects"
+          >
             <span className="s-val">{objects.length}</span>
-            <span className="s-lbl">ACTIVE OBJECTS</span>
+            <span className="s-lbl">ACTIVE OBJECTS ↗</span>
           </div>
-          <div className="summary-pill">
+          <div
+            className="summary-pill interactive"
+            onClick={() => onNavigate('RECOVERY')}
+            role="button"
+            tabIndex={0}
+            title="Inspect Reclaimed Protocol Yield"
+          >
             <span className="s-val text-mint">+{derived.totalRecoveredValueMon.toFixed(2)} MON</span>
-            <span className="s-lbl">RECOVERED YIELD</span>
+            <span className="s-lbl">RECOVERED YIELD ↗</span>
           </div>
-          <div className="summary-pill">
+          <div
+            className="summary-pill interactive"
+            onClick={() => onNavigate('ASSETS')}
+            role="button"
+            tabIndex={0}
+            title="Inspect Credit Vault Liquidity"
+          >
             <span className="s-val">{circulatingCredits.toFixed(0)} UNITS</span>
-            <span className="s-lbl">CREDIT LIQUIDITY</span>
+            <span className="s-lbl">CREDIT LIQUIDITY ↗</span>
             <span className="font-mono text-muted" style={{ fontSize: '10px' }}>
               {reservedCredits.toFixed(0)} reserved / {creditPool.toFixed(0)} recyclable
             </span>
@@ -555,32 +585,53 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
       {/* Operational Quick Launcher */}
       <div className="overview-quick-grid">
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENTS')}>
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENTS')} role="button" tabIndex={0}>
           <div className="q-icon">🪪</div>
           <h4>Sovereign Agents</h4>
           <p>{agents.length} active ERC-8004 agents with verified passports and credit scores.</p>
           <span className="q-link">View Agents ➔</span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('RECOVERY')}>
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('RECOVERY')} role="button" tabIndex={0}>
           <div className="q-icon">♻️</div>
           <h4>Recovery Engine</h4>
           <p>{plans.length} reclamation opportunities scanned by quantitative EV analysis.</p>
           <span className="q-link">Open GC Engine ➔</span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('POLICIES')}>
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('POLICIES')} role="button" tabIndex={0}>
           <div className="q-icon">🛡️</div>
           <h4>Policy Guard</h4>
           <p>Deterministic spend caps, velocity limits, and counterparty whitelists.</p>
           <span className="q-link">Configure Policies ➔</span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENT_BUILDER')}>
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENT_BUILDER')} role="button" tabIndex={0}>
           <div className="q-icon">＋</div>
           <h4>Publish An Agent</h4>
           <p>Connect a wallet and publish a real ERC-8004 identity on Monad Testnet.</p>
           <span className="q-link">Open Agent Builder ➔</span>
+        </div>
+
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('ESCROW')} role="button" tabIndex={0}>
+          <div className="q-icon">🔒</div>
+          <h4>Conditional Escrow</h4>
+          <p>Trustless milestone-based value locks with automated SLA and proof validation.</p>
+          <span className="q-link">Manage Escrows ➔</span>
+        </div>
+
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('MARKETPLACE')} role="button" tabIndex={0}>
+          <div className="q-icon">🧭</div>
+          <h4>Service Marketplace</h4>
+          <p>Decentralized AI services, GPU compute, and satellite feeds evaluated by Qwen.</p>
+          <span className="q-link">Discover Services ➔</span>
+        </div>
+
+        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('SIMULATION_SLICE')} role="button" tabIndex={0}>
+          <div className="q-icon">▶️</div>
+          <h4>10-Step Simulation</h4>
+          <p>Step-by-step verification of autonomous economic loop from discovery to value reclamation.</p>
+          <span className="q-link">Run Simulation ➔</span>
         </div>
       </div>
 

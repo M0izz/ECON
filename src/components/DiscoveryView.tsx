@@ -22,6 +22,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
   agents,
   policyEngine,
   econ,
+  onInitiateService,
 }) => {
   const [activeTab, setActiveTab] = useState<'SERVICES' | 'INDEXED_MARKET'>('SERVICES');
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +37,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
   const [showQwenModal, setShowQwenModal] = useState(false);
   const [qwenServiceTarget, setQwenServiceTarget] = useState<ServiceOffering | null>(null);
   const [stagedIntentNotice, setStagedIntentNotice] = useState<string | null>(null);
+  const [lastIntent, setLastIntent] = useState<EconomicIntent | null>(null);
 
   const defaultPolicy = agents?.[0]?.policy || econ?.store?.getAllAgents()?.[0]?.policy || {
     maxPerTransaction: 20,
@@ -199,6 +201,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            gap: '12px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -207,13 +210,43 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
               {stagedIntentNotice}
             </span>
           </div>
-          <button
-            className="btn-econ"
-            style={{ fontSize: '11px', padding: '2px 8px' }}
-            onClick={() => setStagedIntentNotice(null)}
-          >
-            Dismiss
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {lastIntent && econ && (
+              <button
+                className="btn-econ btn-econ-primary"
+                style={{ fontSize: '11px', padding: '3px 10px' }}
+                onClick={async () => {
+                  try {
+                    const amount = lastIntent.amountMon || 5.0;
+                    const target = lastIntent.target || 'GeoVision-Provider';
+                    await econ.escrow.createEscrow(
+                      activeAgent.id,
+                      target,
+                      amount,
+                      `Qwen Policy-Guarded Execution: ${lastIntent.reason || 'Autonomous procurement'}`,
+                      Date.now() + 24 * 3600 * 1000
+                    );
+                    setStagedIntentNotice(`Successfully executed & locked ${amount} MON escrow for ${target}!`);
+                    setLastIntent(null);
+                  } catch (err: any) {
+                    setStagedIntentNotice(`Execution error: ${err.message}`);
+                  }
+                }}
+              >
+                Execute with Policy Guard
+              </button>
+            )}
+            <button
+              className="btn-econ"
+              style={{ fontSize: '11px', padding: '3px 8px' }}
+              onClick={() => {
+                setStagedIntentNotice(null);
+                setLastIntent(null);
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -314,27 +347,64 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
                     </span>
                   </td>
                   <td>
-                    <button
-                      className="btn-econ"
-                      style={{
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        borderColor: 'rgba(217, 70, 239, 0.4)',
-                        color: '#f472b6',
-                        background: 'rgba(217, 70, 239, 0.08)',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        setQwenServiceTarget(s);
-                        setShowQwenModal(true);
-                      }}
-                    >
-                      <Sparkles size={11} />
-                      <span>Evaluate (Qwen)</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        className="btn-econ"
+                        style={{
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          borderColor: 'rgba(217, 70, 239, 0.4)',
+                          color: '#f472b6',
+                          background: 'rgba(217, 70, 239, 0.08)',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => {
+                          setQwenServiceTarget(s);
+                          setShowQwenModal(true);
+                        }}
+                      >
+                        <Sparkles size={11} />
+                        <span>Evaluate (Qwen)</span>
+                      </button>
+
+                      <button
+                        className="btn-econ btn-econ-primary"
+                        style={{
+                          padding: '4px 10px',
+                          fontSize: '11px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          cursor: 'pointer',
+                        }}
+                        onClick={async () => {
+                          if (onInitiateService) {
+                            onInitiateService(s);
+                          } else if (econ) {
+                            try {
+                              const buyer = activeAgent.id;
+                              const seller = s.providerId;
+                              await econ.escrow.createEscrow(
+                                buyer,
+                                seller,
+                                s.priceMon,
+                                `Service SLA ${s.minSLA}% min: ${s.capability} (${s.description})`,
+                                Date.now() + 24 * 3600 * 1000
+                              );
+                              setStagedIntentNotice(`Successfully created ${s.priceMon} MON escrow lock for ${s.providerName} (${s.capability})!`);
+                            } catch (err: any) {
+                              setStagedIntentNotice(`Escrow lock failed: ${err.message}`);
+                            }
+                          }
+                        }}
+                      >
+                        <Zap size={11} />
+                        <span>Procure</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -377,6 +447,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
             setQwenServiceTarget(null);
           }}
           onAcceptRecommendation={(intent: EconomicIntent) => {
+            setLastIntent(intent);
             setStagedIntentNotice(
               `Staged Qwen Recommendation: ${intent.action} ${intent.target || ''} for ${intent.amountMon ?? '0'} MON — Ready for Policy Verification`
             );

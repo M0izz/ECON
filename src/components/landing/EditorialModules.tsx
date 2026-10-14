@@ -155,7 +155,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       </section>
 
       {/* ACT 06: SIGNATURE PRODUCT — THE CLIMAX (PINK / CREAM SECTION) */}
-      <section className="act-signature-recovery-section">
+      <section className="act-signature-recovery-section" id="recovery">
         <div className="act-inner-content">
           <span className="econ-eyebrow pink">SIGNATURE HERO FEATURE</span>
           <h2 className="econ-display-hero recovery-climax-headline">
@@ -228,7 +228,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       </section>
 
       {/* ACT 07: LIVE ECONOMY (DATA & REAL STATE) */}
-      <section className="act-live-economy-section">
+      <section className="act-live-economy-section" id="economy">
         <div className="act-inner-content">
           <span className="econ-eyebrow">VERIFIABLE ON-CHAIN STATE</span>
           <h2 className="econ-title-xl">
@@ -361,7 +361,7 @@ export const EditorialModules: React.FC<EditorialModulesProps> = ({ store, onEnt
       </section>
 
       {/* ACT 08: BUILD (DUAL-PATH SDK & FINAL CTA) */}
-      <section className="act-build-section">
+      <section className="act-build-section" id="developers">
         <div className="act-inner-content">
           <span className="econ-eyebrow lime">DEVELOPER INTEGRATION</span>
           <h2 className="econ-title-xl text-white">

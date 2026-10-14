@@ -52,20 +52,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole,
             </li>
 
             <li className="econ-nav-item">
-              <a href="#economy" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('MARKETPLACE'); }}>
+              <a
+                href="#economy"
+                className="econ-nav-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('economy')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
                 Economy
               </a>
             </li>
 
             <li className="econ-nav-item">
-              <a href="#developers" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>
-                Developers
+              <a
+                href="#recovery"
+                className="econ-nav-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('recovery')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Recovery
               </a>
             </li>
 
             <li className="econ-nav-item">
-              <a href="#resources" className="econ-nav-link" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>
-                Resources
+              <a
+                href="#developers"
+                className="econ-nav-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('developers')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Developers
               </a>
             </li>
           </ul>
@@ -183,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole,
             <a href="https://github.com/M0izz/ECON" target="_blank" rel="noopener noreferrer">GitHub Repository ↗</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('AGENT_BUILDER'); }}>Agent Builder UI</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('API_SDK'); }}>SDK Documentation</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); onEnterConsole('SIMULATION_SLICE'); }}>10-Step Simulation ↗</a>
           </div>
         </div>
 

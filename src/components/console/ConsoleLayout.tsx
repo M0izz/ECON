@@ -10,6 +10,7 @@ export type ConsoleTab =
   | 'TRANSACTIONS'
   | 'CONTRACTS'
   | 'ESCROW'
+  | 'SIMULATION_SLICE'
   | 'RECOVERY'
   | 'RECOVERY_HISTORY'
   | 'POLICIES'
@@ -293,6 +294,13 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
             >
               <span className="s-icon">🔒</span>
               <span>Escrow Contracts</span>
+            </button>
+            <button
+              className={`sidebar-link ${currentTab === 'SIMULATION_SLICE' ? 'active' : ''}`}
+              onClick={() => onSelectTab('SIMULATION_SLICE')}
+            >
+              <span className="s-icon">▶️</span>
+              <span>10-Step Simulation</span>
             </button>
           </div>
 

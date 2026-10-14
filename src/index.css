@@ -2814,6 +2814,29 @@ html {
   min-width: 140px;
 }
 
+.summary-pill.interactive {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.summary-pill.interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 229, 153, 0.45);
+  background-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.summary-pill.interactive.highlight-pink:hover {
+  border-color: rgba(255, 143, 163, 0.7);
+  background-color: rgba(255, 143, 163, 0.16);
+  box-shadow: 0 6px 18px rgba(255, 143, 163, 0.15);
+}
+
+.summary-pill.interactive:active {
+  transform: translateY(0);
+}
+
 .summary-pill.highlight-pink {
   border-color: rgba(255, 143, 163, 0.4);
   background-color: rgba(255, 143, 163, 0.1);

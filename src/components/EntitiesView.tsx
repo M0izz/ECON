@@ -15,10 +15,22 @@ interface EntitiesViewProps {
   agents: Agent[];
   objects: EconomicObject[];
   econ?: any;
+  initialTab?: 'AGENTS' | 'OBJECTS';
 }
 
-export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: localObjects, econ }) => {
-  const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>('AGENTS');
+export const EntitiesView: React.FC<EntitiesViewProps> = ({
+  agents,
+  objects: localObjects,
+  econ,
+  initialTab = 'AGENTS',
+}) => {
+  const [activeTab, setActiveTab] = useState<'AGENTS' | 'OBJECTS'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentModalTab, setAgentModalTab] = useState<'DOSSIER' | 'TIMELINE'>('TIMELINE');
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
@@ -326,9 +338,19 @@ export const EntitiesView: React.FC<EntitiesViewProps> = ({ agents, objects: loc
                 </a>
                 . No fake fallback numbers are fabricated.
               </p>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-                <span className="badge badge-muted font-mono">{envioStatus}</span>
-                <span>Switch to SIMULATION to inspect mock economic state.</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
+                  <span className="badge badge-muted font-mono">{envioStatus}</span>
+                  <span>No live events yet on Monad HyperIndex</span>
+                </div>
+                <button
+                  className="btn-econ btn-econ-primary"
+                  onClick={() => setObjectSource('SIMULATION')}
+                  style={{ fontSize: '11px', padding: '6px 14px' }}
+                >
+                  <Cpu size={12} />
+                  <span>Inspect Simulation Objects</span>
+                </button>
               </div>
             </div>
           ) : (

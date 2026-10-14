@@ -13,6 +13,9 @@ import { PolicyControlView } from './components/PolicyControlView';
 import { AgentBuilder } from './components/AgentBuilder';
 import { AuditLedger } from './components/AuditLedger';
 import { EscrowContractsView } from './components/EscrowContractsView';
+import { SimulationSlice } from './components/SimulationSlice';
+import { EconomicLoopSimulation } from './demo/scenarios';
+import { initializeDemoSeed } from './demo/seed';
 import { useAppKit } from '@reown/appkit/react';
 import { useAccount, useBalance, useSwitchChain } from 'wagmi';
 import { monadTestnet } from './config/wagmi';
@@ -45,7 +48,13 @@ export const App: React.FC = () => {
     ? `${Number(balanceData.formatted).toFixed(2)} ${balanceData.symbol}`
     : undefined;
 
-  const [econ] = useState(() => new ECON());
+  const [econ] = useState(() => {
+    const instance = new ECON();
+    initializeDemoSeed(instance);
+    return instance;
+  });
+
+  const [simulation] = useState(() => new EconomicLoopSimulation(econ));
 
   // Mera Passkey State
   const [isPasskeyModalOpen, setIsPasskeyModalOpen] = useState(false);
@@ -180,15 +189,28 @@ export const App: React.FC = () => {
   };
 
   const handleSwitchControl = () => {
-    const choice = window.confirm(
-      'Switch Economic Control Authority?\n\n' +
-      'Click OK to switch to Biometric Passkey (Mera), or CANCEL to stay on Dynamic.'
-    );
-    if (choice) {
-      if (dynamicWallet) {
-        handleDisconnectDynamic();
+    if (passkeyMetadata) {
+      const choice = window.confirm(
+        'Switch Economic Control Authority?\n\n' +
+        'Currently active: Mera Biometric Passkey (Dual-Key Architecture).\n\n' +
+        'Click OK to switch to Dynamic / Controller Wallet (MetaMask / Web3 Connect), or CANCEL to stay on Passkey.'
+      );
+      if (choice) {
+        handleDisconnectPasskey();
+        open();
       }
-      handleOpenPasskeyModal('CREATE');
+    } else {
+      const choice = window.confirm(
+        'Switch Economic Control Authority?\n\n' +
+        'Currently active: Dynamic / Web3 Controller Wallet.\n\n' +
+        'Click OK to switch to Biometric Passkey (Mera Dual-Key Architecture), or CANCEL to stay on Dynamic.'
+      );
+      if (choice) {
+        if (dynamicWallet) {
+          handleDisconnectDynamic();
+        }
+        handleOpenPasskeyModal('CREATE');
+      }
     }
   };
 
@@ -265,7 +287,7 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'AGENTS' && (
-        <EntitiesView agents={agents} objects={objects} econ={econ} />
+        <EntitiesView agents={agents} objects={objects} econ={econ} initialTab="AGENTS" />
       )}
 
       {consoleTab === 'AGENT_BUILDER' && (
@@ -276,7 +298,20 @@ export const App: React.FC = () => {
       )}
 
       {consoleTab === 'ASSETS' && (
-        <EntitiesView agents={agents} objects={objects} econ={econ} />
+        <EntitiesView agents={agents} objects={objects} econ={econ} initialTab="OBJECTS" />
+      )}
+
+      {consoleTab === 'SIMULATION_SLICE' && (
+        <SimulationSlice
+          econ={econ}
+          sim={simulation}
+          onStateChange={() => setRenderTrigger((p) => p + 1)}
+          onResetSeed={() => {
+            initializeDemoSeed(econ);
+            simulation.reset();
+            setRenderTrigger((p) => p + 1);
+          }}
+        />
       )}
 
       {consoleTab === 'MARKETPLACE' && (

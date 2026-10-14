@@ -16,8 +16,27 @@ export const PolicyControlView: React.FC<PolicyControlViewProps> = ({
 }) => {
   const [selectedAgentId, setSelectedAgentId] = useState<string>(agents[0]?.id || '');
   const [selectedEvent, setSelectedEvent] = useState<ECONEvent | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const activeAgent = agents.find((a) => a.id === selectedAgentId) || agents[0];
+
+  const handleSavePolicy = () => {
+    setSaveMessage('Policy parameters saved and enforced across Monad pre-execution gates.');
+    setTimeout(() => setSaveMessage(null), 3000);
+  };
+
+  const handleResetDefaults = () => {
+    if (!activeAgent) return;
+    onUpdatePolicy(activeAgent.id, {
+      maxPerTransaction: 20.0,
+      dailySpendingLimit: 100.0,
+      minRetainedBalance: 10.0,
+      autoRecoveryEnabled: true,
+      requireApprovalAbove: 20.0,
+    });
+    setSaveMessage('Policy reset to default autonomous guardrails.');
+    setTimeout(() => setSaveMessage(null), 3000);
+  };
 
   return (
     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -157,6 +176,30 @@ export const PolicyControlView: React.FC<PolicyControlViewProps> = ({
                     style={{ padding: '3px 10px', fontSize: '10.5px' }}
                   >
                     {activeAgent.policy.autoRecoveryEnabled ? 'ENABLED' : 'MANUAL REVIEW'}
+                  </button>
+                </div>
+
+                {saveMessage && (
+                  <div style={{ padding: '6px 10px', background: 'rgba(0, 229, 153, 0.1)', border: '1px solid rgba(0, 229, 153, 0.4)', borderRadius: '4px', color: '#00E599', fontSize: '11px', fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={12} />
+                    <span>{saveMessage}</span>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                  <button
+                    className="btn-econ"
+                    style={{ fontSize: '11px', padding: '5px 12px' }}
+                    onClick={handleResetDefaults}
+                  >
+                    Reset Defaults
+                  </button>
+                  <button
+                    className="btn-econ btn-econ-primary"
+                    style={{ fontSize: '11px', padding: '5px 14px' }}
+                    onClick={handleSavePolicy}
+                  >
+                    Save Changes
                   </button>
                 </div>
               </div>

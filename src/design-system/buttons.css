@@ -118,3 +118,65 @@
   font-size: 12.5px;
   border-radius: 12px;
 }
+
+/* ==========================================================================
+   CONSOLE & OPERATIONAL ACTION BUTTONS (.btn-econ)
+   Used throughout tables, modals, controls, and subtabs
+   ========================================================================== */
+
+.btn-econ {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--econ-text-primary, #E2E8F0);
+  font-family: var(--econ-font-mono, monospace);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+}
+
+.btn-econ:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 229, 153, 0.45);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-econ:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-econ:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-econ.active,
+.btn-econ-primary {
+  background: rgba(0, 229, 153, 0.14);
+  border-color: #00E599;
+  color: #00E599;
+  font-weight: 750;
+  box-shadow: 0 2px 8px rgba(0, 229, 153, 0.15);
+}
+
+.btn-econ-primary:hover:not(:disabled),
+.btn-econ.active:hover:not(:disabled) {
+  background: #00E599;
+  color: #041B26;
+  border-color: #00E599;
+  box-shadow: 0 4px 16px rgba(0, 229, 153, 0.35);
+  transform: translateY(-1px);
+}

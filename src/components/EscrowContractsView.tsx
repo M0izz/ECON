@@ -21,13 +21,26 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [isCreating, setIsCreating] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const networkProviders = [
+    { id: 'GeoVision-Provider', name: 'GeoVision-Provider (Satellite Imagery SLA 99.8%)' },
+    { id: 'ComputeAgent-3', name: 'ComputeAgent-3 (H100 GPU Cluster)' },
+    { id: 'MarketAgent-5', name: 'MarketAgent-5 (High-Frequency Orderbook Feed)' },
+    { id: 'DataAgent-7', name: 'DataAgent-7 (Web Extraction Pipeline)' },
+  ];
 
   // Form State
-  const [buyerId, setBuyerId] = useState(agents[0]?.id || '');
-  const [sellerId, setSellerId] = useState(agents[1]?.id || '');
+  const [buyerId, setBuyerId] = useState(agents[0]?.id || 'ResearchAgent-42');
+  const [sellerId, setSellerId] = useState(agents[1]?.id || 'GeoVision-Provider');
   const [amountMon, setAmountMon] = useState(5.0);
   const [condition, setCondition] = useState('High-throughput compute verification SLA 99.9%');
   const [deadlineHours, setDeadlineHours] = useState(6);
+
+  const availableSellers = [
+    ...agents.filter((a) => a.id !== buyerId).map((a) => ({ id: a.id, name: `${a.name} (${a.balanceMon.toFixed(1)} MON)` })),
+    ...networkProviders.filter((p) => p.id !== buyerId),
+  ];
 
   const filteredEscrows = escrows.filter((e) => {
     if (filterStatus === 'ALL') return true;
@@ -40,7 +53,19 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
 
   const handleCreateEscrow = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!buyerId || !sellerId || amountMon <= 0) return;
+    if (!buyerId) {
+      setFormError('Please select a purchasing buyer agent.');
+      return;
+    }
+    if (!sellerId) {
+      setFormError('Please select a counterparty seller or service provider.');
+      return;
+    }
+    if (amountMon <= 0) {
+      setFormError('Locked amount must be greater than 0 MON.');
+      return;
+    }
+    setFormError(null);
 
     try {
       const deadlineMs = Date.now() + deadlineHours * 3600 * 1000;
@@ -49,7 +74,7 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
       setIsCreating(false);
       onRefresh();
     } catch (err: any) {
-      setActionNotice(`Escrow lock failed: ${err.message}`);
+      setFormError(err.message);
     }
   };
 
@@ -204,8 +229,8 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
                   onChange={(e) => setSellerId(e.target.value)}
                   style={{ width: '100%', padding: '8px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: '#FFF', fontFamily: 'var(--font-mono)', fontSize: '12px' }}
                 >
-                  {agents.filter((a) => a.id !== buyerId).map((a) => (
-                    <option key={a.id} value={a.id}>{a.name} ({a.balanceMon.toFixed(1)} MON)</option>
+                  {availableSellers.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
               </div>
@@ -246,6 +271,12 @@ export const EscrowContractsView: React.FC<EscrowContractsViewProps> = ({
                   style={{ width: '100%', padding: '8px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: '#FFF', fontFamily: 'sans-serif', fontSize: '12px' }}
                 />
               </div>
+
+              {formError && (
+                <div style={{ padding: '8px 12px', background: 'rgba(244, 114, 182, 0.1)', border: '1px solid rgba(244, 114, 182, 0.4)', borderRadius: '4px', color: '#f472b6', fontSize: '11.5px', fontFamily: 'var(--font-mono)' }}>
+                  ⚠️ {formError}
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
                 <button type="button" className="btn-econ" onClick={() => setIsCreating(false)}>Cancel</button>
