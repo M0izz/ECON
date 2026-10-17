@@ -24,7 +24,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ store, onEnterConsole,
               <span className="econ-brand-symbol">∞</span>
               <span>ECON</span>
             </div>
-            <span className="econ-brand-title">ECON</span>
+            <span className="econ-brand-title">PROTOCOL</span>
           </div>
 
           {/* Clean Corporate Links */}

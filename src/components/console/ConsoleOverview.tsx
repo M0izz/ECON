@@ -1,7 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { EconomicStore } from '../../sdk/store';
 import { TRANSACTION_FEE_BPS, MARKETPLACE_FEE_BPS, RECOVERY_FEE_BPS, AGENT_PLANS } from '../../sdk/fee';
-import { Key, Shield, LogOut, Database, Layers, ExternalLink, RefreshCw } from 'lucide-react';
+import {
+  KeyRound,
+  LogIn,
+  Wallet,
+  LogOut,
+  Database,
+  Layers,
+  ExternalLink,
+  RefreshCw,
+  TrendingUp,
+  AlertTriangle,
+  Users,
+  Boxes,
+  Compass,
+  FileText,
+  Lock,
+  Play,
+  Scale,
+  Activity,
+  ArrowUpRight,
+  Plus,
+  Coins,
+  ShieldCheck,
+  PlusCircle,
+} from 'lucide-react';
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
 import { OnePasskeyManyKeysVisual } from '../mera/OnePasskeyManyKeysVisual';
 import { EnvioProvenanceBadge } from '../envio/EnvioProvenanceBadge';
@@ -97,70 +121,153 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
   return (
     <div className="console-overview-page">
-      {/* Top Welcome Narrative Banner */}
-      <div className="overview-welcome-banner">
-        <div className="welcome-left">
-          <span className="econ-eyebrow">// CONSOLE HEADQUARTERS</span>
-          <h1 className="welcome-headline">GOOD MORNING, RESEARCH NETWORK.</h1>
-          <p className="welcome-sub">
-            <strong className="text-lime-contrast">{agents.length} autonomous economic entities</strong> are
-            currently active and policy-governed across the network.
+      {/* Executive Command Center Header */}
+      <div className="overview-header-bar">
+        <div className="overview-header-titles">
+          <div className="overview-status-pill">
+            <span className="live-pulse-dot" />
+            <span>AUTONOMOUS NETWORK ACTIVE</span>
+          </div>
+          <h1 className="overview-title">Economic Command Center</h1>
+          <p className="overview-subtitle">
+            Monad parallel execution layer for autonomous agent identity, deterministic spend guardrails, and continuous value reclamation.
           </p>
         </div>
 
-        <div className="welcome-summary-quad">
-          <div
-            className="summary-pill interactive"
-            onClick={() => onNavigate('AGENTS')}
-            role="button"
-            tabIndex={0}
-            title="Inspect Agent Treasuries"
+        <div className="overview-header-actions">
+          <button
+            className="btn-econ btn-header-action"
+            onClick={() => onNavigate('AGENT_BUILDER')}
+            title="Deploy new ERC-8004 Agent"
           >
-            <span className="s-val">{walletBalance || `${derived.totalTreasuryMon.toFixed(2)} MON`}</span>
-            <span className="s-lbl">ECONOMIC VALUE ↗</span>
-          </div>
-          <div
-            className="summary-pill highlight-pink interactive"
+            <Plus size={14} />
+            <span>Deploy Agent</span>
+          </button>
+          <button
+            className="btn-econ btn-econ-primary btn-header-action"
             onClick={() => onNavigate('RECOVERY')}
-            role="button"
-            tabIndex={0}
-            title="Inspect Stranded Value & Recovery Engine"
+            title="Execute Garbage Collection & Recovery"
           >
-            <span className="s-val text-accent-pink">{derived.totalStrandedValueMon.toFixed(2)} MON</span>
-            <span className="s-lbl">STRANDED VALUE ↗</span>
+            <RefreshCw size={14} />
+            <span>Scan Recovery</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 5-Metric Telemetry Cards Grid */}
+      <div className="overview-metrics-grid">
+        {/* Treasury */}
+        <div
+          className="metric-card interactive"
+          onClick={() => onNavigate('AGENTS')}
+          role="button"
+          tabIndex={0}
+          title="Inspect Agent Treasuries"
+        >
+          <div className="metric-card-top">
+            <span className="metric-card-label">PROTOCOL TREASURY</span>
+            <div className="metric-card-icon-badge">
+              <Coins size={14} />
+            </div>
           </div>
-          <div
-            className="summary-pill interactive"
-            onClick={() => onNavigate('ASSETS')}
-            role="button"
-            tabIndex={0}
-            title="Inspect Circulating Economic Objects"
-          >
-            <span className="s-val">{objects.length}</span>
-            <span className="s-lbl">ACTIVE OBJECTS ↗</span>
+          <div className="metric-card-val">
+            {walletBalance || `${derived.totalTreasuryMon.toFixed(2)} MON`}
           </div>
-          <div
-            className="summary-pill interactive"
-            onClick={() => onNavigate('RECOVERY')}
-            role="button"
-            tabIndex={0}
-            title="Inspect Reclaimed Protocol Yield"
-          >
-            <span className="s-val text-mint">+{derived.totalRecoveredValueMon.toFixed(2)} MON</span>
-            <span className="s-lbl">RECOVERED YIELD ↗</span>
+          <div className="metric-card-footer">
+            <span className="text-secondary font-mono">Live settlement balance</span>
+            <ArrowUpRight size={13} className="metric-card-arrow" />
           </div>
-          <div
-            className="summary-pill interactive"
-            onClick={() => onNavigate('ASSETS')}
-            role="button"
-            tabIndex={0}
-            title="Inspect Credit Vault Liquidity"
-          >
-            <span className="s-val">{circulatingCredits.toFixed(0)} UNITS</span>
-            <span className="s-lbl">CREDIT LIQUIDITY ↗</span>
-            <span className="font-mono text-muted" style={{ fontSize: '10px' }}>
-              {reservedCredits.toFixed(0)} reserved / {creditPool.toFixed(0)} recyclable
-            </span>
+        </div>
+
+        {/* Stranded Capital */}
+        <div
+          className="metric-card interactive metric-card-pink"
+          onClick={() => onNavigate('RECOVERY')}
+          role="button"
+          tabIndex={0}
+          title="Inspect Stranded Value"
+        >
+          <div className="metric-card-top">
+            <span className="metric-card-label text-accent-pink">STRANDED CAPITAL</span>
+            <div className="metric-card-icon-badge icon-badge-pink">
+              <AlertTriangle size={14} />
+            </div>
+          </div>
+          <div className="metric-card-val text-accent-pink">
+            {derived.totalStrandedValueMon.toFixed(2)} MON
+          </div>
+          <div className="metric-card-footer">
+            <span className="text-accent-pink font-mono">{plans.length} GC Candidates</span>
+            <ArrowUpRight size={13} className="metric-card-arrow" />
+          </div>
+        </div>
+
+        {/* Recovered Value */}
+        <div
+          className="metric-card interactive metric-card-mint"
+          onClick={() => onNavigate('RECOVERY')}
+          role="button"
+          tabIndex={0}
+          title="Inspect Reclaimed Yield"
+        >
+          <div className="metric-card-top">
+            <span className="metric-card-label text-mint">RECOVERED YIELD</span>
+            <div className="metric-card-icon-badge icon-badge-mint">
+              <TrendingUp size={14} />
+            </div>
+          </div>
+          <div className="metric-card-val text-mint">
+            +{derived.totalRecoveredValueMon.toFixed(2)} MON
+          </div>
+          <div className="metric-card-footer">
+            <span className="text-mint font-mono">Reclaimed on-chain</span>
+            <ArrowUpRight size={13} className="metric-card-arrow" />
+          </div>
+        </div>
+
+        {/* Active Agents */}
+        <div
+          className="metric-card interactive"
+          onClick={() => onNavigate('AGENTS')}
+          role="button"
+          tabIndex={0}
+          title="View Sovereign Agents"
+        >
+          <div className="metric-card-top">
+            <span className="metric-card-label">SOVEREIGN IDENTITIES</span>
+            <div className="metric-card-icon-badge">
+              <Users size={14} />
+            </div>
+          </div>
+          <div className="metric-card-val">
+            {agents.length} <span className="metric-val-unit">ENTITIES</span>
+          </div>
+          <div className="metric-card-footer">
+            <span className="text-secondary font-mono">ERC-8004 Registered</span>
+            <ArrowUpRight size={13} className="metric-card-arrow" />
+          </div>
+        </div>
+
+        {/* Circulating Objects */}
+        <div
+          className="metric-card interactive"
+          onClick={() => onNavigate('ASSETS')}
+          role="button"
+          tabIndex={0}
+          title="Inspect Assets & Escrows"
+        >
+          <div className="metric-card-top">
+            <span className="metric-card-label">ECONOMIC OBJECTS</span>
+            <div className="metric-card-icon-badge">
+              <Boxes size={14} />
+            </div>
+          </div>
+          <div className="metric-card-val">
+            {objects.length} <span className="metric-val-unit">OBJECTS</span>
+          </div>
+          <div className="metric-card-footer">
+            <span className="text-secondary font-mono">{circulatingCredits.toFixed(0)} Liquidity units</span>
+            <ArrowUpRight size={13} className="metric-card-arrow" />
           </div>
         </div>
       </div>
@@ -190,89 +297,41 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
         />
       )}
 
-      {/* Economic Controller Credential & Treasury Card */}
-      <div
-        className="econ-card"
-        style={{
-          padding: '20px',
-          marginBottom: '20px',
-          background: 'linear-gradient(135deg, rgba(4, 27, 38, 0.95), rgba(10, 42, 59, 0.85))',
-          border: '1px solid rgba(0, 229, 153, 0.25)',
-          borderRadius: '12px',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span className="econ-eyebrow" style={{ color: '#00E599' }}>// ECONOMIC CONTROLLER CREDENTIAL</span>
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  fontFamily: 'monospace',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  background: passkeyMetadata
-                    ? 'rgba(0, 229, 153, 0.15)'
-                    : isConnected
-                    ? isWrongNetwork
-                      ? 'rgba(229, 165, 0, 0.2)'
-                      : 'rgba(0, 229, 153, 0.15)'
-                    : 'rgba(255, 255, 255, 0.08)',
-                  color: passkeyMetadata
-                    ? '#00E599'
-                    : isConnected
-                    ? (isWrongNetwork ? '#FFD000' : '#00E599')
-                    : 'rgba(255, 255, 255, 0.5)',
-                  border: passkeyMetadata
-                    ? '1px solid #00E599'
-                    : isConnected
-                    ? isWrongNetwork
-                      ? '1px solid #FFD000'
-                      : '1px solid #00E599'
-                    : '1px solid rgba(255, 255, 255, 0.15)',
-                }}
-              >
+      {/* Controller Credential Authority Card */}
+      <div className="controller-authority-card">
+        <div className="controller-card-header">
+          <div className="controller-card-info">
+            <div className="controller-card-tag-row">
+              <span className="controller-tag-eyebrow">CONTROLLER CREDENTIAL</span>
+              <span className={`controller-status-chip ${passkeyMetadata || isConnected ? 'active' : ''}`}>
                 {passkeyMetadata
                   ? 'PASSKEY CONTROLLER ACTIVE (MERA PRF)'
                   : isConnected
                   ? isWrongNetwork
                     ? 'WRONG NETWORK'
-                    : 'AUTHENTICATED CONTROLLER (WALLET)'
+                    : 'AUTHENTICATED WALLET CONTROLLER'
                   : 'NO CONTROLLER CONNECTED'}
               </span>
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#FFF', margin: '8px 0 4px 0' }}>
+            <h3 className="controller-card-title">
               {passkeyMetadata
-                ? 'Biometric Passkey Authority (Mera)'
+                ? 'Biometric Passkey Authority (Mera Dual-Key)'
                 : isConnected
                 ? 'Active Cryptographic Controller'
                 : 'Non-Custodial Controller Authority'}
             </h3>
-            <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.65)', margin: 0, maxWidth: '640px' }}>
+            <p className="controller-card-desc">
               {passkeyMetadata
                 ? 'Your biometric passkey deterministically derives 4 purpose-specific accounts (operating, treasury, escrow, recovery) via Mera PRF on Monad Testnet without seed phrases.'
                 : 'Your non-custodial wallet or biometric passkey provides cryptographic authority. ECON operates the persistent economic environment, sovereign identities, policy enforcement, and autonomous treasury settlement on Monad.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="controller-card-actions">
             {passkeyMetadata ? (
               <button
+                className="btn-econ btn-disconnect"
                 onClick={onDisconnectPasskey}
-                style={{
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  color: '#F87171',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '8px',
-                  padding: '8px 14px',
-                  fontWeight: 700,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
               >
                 <LogOut size={13} />
                 <span>Disconnect Passkey</span>
@@ -281,93 +340,47 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
               <>
                 {isWrongNetwork ? (
                   <button
+                    className="btn-econ btn-warn"
                     onClick={onSwitchNetwork}
-                    style={{
-                      background: '#E5A500',
-                      color: '#041B26',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '10px 18px',
-                      fontWeight: 800,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                    }}
                   >
                     Switch to Monad Testnet (10143)
                   </button>
                 ) : (
                   <button
+                    className="btn-econ btn-mint"
                     onClick={onOpenAccount}
-                    style={{
-                      background: 'rgba(0, 229, 153, 0.12)',
-                      color: '#00E599',
-                      border: '1px solid #00E599',
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      fontWeight: 700,
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                    }}
                   >
-                    Manage Controller ↗
+                    <span>Manage Controller</span>
+                    <ArrowUpRight size={13} />
                   </button>
                 )}
               </>
             ) : (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div className="controller-button-cluster">
                 <button
+                  className="btn-econ btn-passkey-primary"
                   onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('CREATE')}
-                  style={{
-                    background: '#00E599',
-                    color: '#041B26',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 16px',
-                    fontWeight: 800,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(0, 229, 153, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
                 >
-                  <Key size={14} />
-                  <span>Create with Passkey</span>
+                  <KeyRound size={14} />
+                  <span>Create Passkey</span>
                 </button>
 
                 <button
+                  className="btn-econ btn-passkey-secondary"
                   onClick={() => onOpenPasskeyModal && onOpenPasskeyModal('SIGNIN')}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    color: '#FFF',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    fontWeight: 700,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Sign In (Passkey)
+                  <LogIn size={14} />
+                  <span>Sign In</span>
                 </button>
 
                 <DynamicAuthButton variant="secondary" />
 
                 <button
+                  className="btn-econ btn-wallet-connect"
                   onClick={onConnectWallet}
-                  style={{
-                    background: 'transparent',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Connect Wallet (AppKit)
+                  <Wallet size={14} />
+                  <span>Connect Wallet</span>
                 </button>
               </div>
             )}
@@ -376,7 +389,7 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
         {/* Passkey Derived Accounts Strip or External Wallet Strip */}
         {passkeyMetadata ? (
-          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div className="controller-accounts-strip">
             <OnePasskeyManyKeysVisual
               accounts={passkeyMetadata.addresses}
               credentialId={passkeyMetadata.credentialId}
@@ -384,44 +397,30 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
             />
           </div>
         ) : isConnected && !isWrongNetwork ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '12px',
-              marginTop: '16px',
-              paddingTop: '16px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            }}
-          >
-            <div style={{ background: 'rgba(0, 0, 0, 0.25)', padding: '10px 14px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.5)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                CONTROLLER CREDENTIAL
-              </span>
+          <div className="controller-telemetry-strip">
+            <div className="telemetry-block">
+              <span className="telemetry-label">CONTROLLER CREDENTIAL</span>
               <a
                 href={`https://testnet.monadexplorer.com/address/${walletAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: '#FFF', fontFamily: 'monospace', fontWeight: 700, fontSize: '13px', textDecoration: 'none' }}
+                className="telemetry-link"
               >
-                {walletAddress ? `${walletAddress.slice(0, 10)}...${walletAddress.slice(-8)}` : '—'} ↗
+                <span>{walletAddress ? `${walletAddress.slice(0, 10)}...${walletAddress.slice(-8)}` : '—'}</span>
+                <ExternalLink size={11} />
               </a>
             </div>
 
-            <div style={{ background: 'rgba(0, 0, 0, 0.25)', padding: '10px 14px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.5)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                LIVE TREASURY BALANCE (MONAD)
-              </span>
-              <span style={{ color: '#00E599', fontFamily: 'monospace', fontWeight: 800, fontSize: '15px' }}>
+            <div className="telemetry-block">
+              <span className="telemetry-label">LIVE TREASURY BALANCE (MONAD)</span>
+              <span className="telemetry-val text-mint">
                 {walletBalance || '0.0000 MON'}
               </span>
             </div>
 
-            <div style={{ background: 'rgba(0, 0, 0, 0.25)', padding: '10px 14px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.5)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                SETTLEMENT FABRIC
-              </span>
-              <span style={{ color: '#836EF9', fontFamily: 'monospace', fontWeight: 700, fontSize: '13px' }}>
+            <div className="telemetry-block">
+              <span className="telemetry-label">SETTLEMENT FABRIC</span>
+              <span className="telemetry-val text-purple">
                 MONAD TESTNET (10143)
               </span>
             </div>
@@ -431,83 +430,49 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
       {/* Main Economic Activity Timeline */}
       <div className="econ-card console-timeline-card">
-        <div className="timeline-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="econ-eyebrow">// REAL-TIME CHRONICLE</span>
+        <div className="timeline-header">
+          <div className="timeline-title-area">
+            <div className="timeline-tag-area">
+              <Activity size={13} className="text-secondary" />
+              <span className="timeline-eyebrow">LIVE EVENT CHRONICLE</span>
               {envioStatus === 'LIVE' ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="envio-badge live">
+                  <span className="pulse-dot" />
                   LIVE (ENVIO HYPERINDEX)
                 </span>
               ) : envioStatus === 'INDEXING' ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-spin" />
+                <span className="envio-badge indexing">
+                  <RefreshCw size={10} className="animate-spin" />
                   INDEXING
                 </span>
               ) : envioStatus === 'SIMULATION' ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <span className="envio-badge simulation">
                   SIMULATION
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="envio-badge nodata">
                   NO DATA
                 </span>
               )}
             </div>
-            <h3 className="econ-title-md">AUTONOMOUS ECONOMIC ACTIVITY TIMELINE</h3>
+            <h3 className="timeline-heading">Autonomous Economic Activity Timeline</h3>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Source Mode Toggle */}
-            <div
-              style={{
-                display: 'flex',
-                background: 'rgba(0,0,0,0.3)',
-                borderRadius: '6px',
-                padding: '2px',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
+          <div className="timeline-controls">
+            <div className="timeline-source-toggle">
               <button
+                className={`timeline-toggle-btn ${timelineSource === 'ENVIO_INDEXED' ? 'active' : ''}`}
                 onClick={() => setTimelineSource('ENVIO_INDEXED')}
-                style={{
-                  background: timelineSource === 'ENVIO_INDEXED' ? '#836EF9' : 'transparent',
-                  color: timelineSource === 'ENVIO_INDEXED' ? '#FFF' : 'rgba(255,255,255,0.6)',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '3px 8px',
-                  fontSize: '10px',
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
               >
-                <Database size={10} />
-                ENVIO INDEXED
+                <Database size={11} />
+                <span>ENVIO INDEXED</span>
               </button>
               <button
+                className={`timeline-toggle-btn ${timelineSource === 'LOCAL_STREAM' ? 'active' : ''}`}
                 onClick={() => setTimelineSource('LOCAL_STREAM')}
-                style={{
-                  background: timelineSource === 'LOCAL_STREAM' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: timelineSource === 'LOCAL_STREAM' ? '#FFF' : 'rgba(255,255,255,0.6)',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '3px 8px',
-                  fontSize: '10px',
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
               >
-                <Layers size={10} />
-                STREAM
+                <Layers size={11} />
+                <span>STREAM</span>
               </button>
             </div>
 
@@ -515,11 +480,10 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
               <button
                 onClick={fetchEnvioData}
                 disabled={loadingEnvio}
-                className="btn-econ"
-                style={{ padding: '3px 6px', fontSize: '10px' }}
+                className="btn-econ btn-sync"
                 title="Sync from Envio"
               >
-                <RefreshCw size={10} className={loadingEnvio ? 'animate-spin' : ''} />
+                <RefreshCw size={12} className={loadingEnvio ? 'animate-spin' : ''} />
               </button>
             )}
 
@@ -529,174 +493,208 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
 
         {timelineSource === 'ENVIO_INDEXED' ? (
           envioEvents.length === 0 ? (
-            <div className="text-muted font-mono" style={{ padding: '32px', textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>
-                NO INDEXED ECONOMIC EVENTS FOUND ON MONAD TESTNET
-              </p>
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '4px', display: 'block' }}>
-                Events will appear here in real-time as transactions settle on Monad (Chain ID 10143).
-              </span>
+            <div className="timeline-empty-state">
+              <p>NO INDEXED ECONOMIC EVENTS FOUND ON MONAD TESTNET</p>
+              <span>Events will appear here in real-time as transactions settle on Monad (Chain ID 10143).</span>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px' }}>
+            <div className="timeline-events-list">
               {envioEvents.slice(0, 8).map((event) => (
-                <div key={event.id} className="branch-line" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="branch-meta font-mono" style={{ color: '#00E599' }}>
-                      {event.exactTime}
-                    </span>
-                    <strong className="branch-target">{event.type.replace(/_/g, ' ')}</strong>
-                    <span className="branch-meta font-mono">{event.summary}</span>
+                <div key={event.id} className="timeline-event-row">
+                  <div className="event-row-left">
+                    <span className="event-time font-mono">{event.exactTime}</span>
+                    <span className="event-type-badge">{event.type.replace(/_/g, ' ')}</span>
+                    <span className="event-summary">{event.summary}</span>
                   </div>
 
                   <a
                     href={getExplorerTxUrl(event.txHash)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-muted"
-                    style={{ fontSize: '10px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px', color: '#836EF9' }}
+                    className="event-tx-link font-mono"
                     title={event.txHash}
                   >
                     <span>Tx: {formatHash(event.txHash, 6, 4)}</span>
-                    <ExternalLink size={9} />
+                    <ExternalLink size={10} />
                   </a>
                 </div>
               ))}
             </div>
           )
         ) : events.length === 0 ? (
-          <div className="text-muted font-mono" style={{ padding: '28px', textAlign: 'center' }}>
-            No activity yet. Connect a wallet and publish an agent to begin.
+          <div className="timeline-empty-state">
+            <p>No activity recorded yet in current session.</p>
+            <span>Publish an agent or execute a transaction to stream live state transitions.</span>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '14px' }}>
+          <div className="timeline-events-list">
             {events.slice(0, 8).map((event) => (
-              <div key={event.id} className="branch-line">
-                <span className="branch-meta font-mono">
-                  {new Date(event.timestamp).toLocaleTimeString()} · {event.actor}
-                </span>
-                <strong className="branch-target">{event.type}</strong>
-                <span className="branch-meta font-mono">{event.summary}</span>
+              <div key={event.id} className="timeline-event-row">
+                <div className="event-row-left">
+                  <span className="event-time font-mono">
+                    {new Date(event.timestamp).toLocaleTimeString()} · {event.actor}
+                  </span>
+                  <span className="event-type-badge">{event.type}</span>
+                  <span className="event-summary">{event.summary}</span>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Operational Quick Launcher */}
+      {/* Operational Quick Launcher (7 Modules) */}
       <div className="overview-quick-grid">
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENTS')} role="button" tabIndex={0}>
-          <div className="q-icon">🪪</div>
+        <div className="launcher-card" onClick={() => onNavigate('AGENTS')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box">
+            <Users size={18} />
+          </div>
           <h4>Sovereign Agents</h4>
           <p>{agents.length} active ERC-8004 agents with verified passports and credit scores.</p>
-          <span className="q-link">View Agents ➔</span>
+          <span className="launcher-link">
+            <span>View Agents</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('RECOVERY')} role="button" tabIndex={0}>
-          <div className="q-icon">♻️</div>
+        <div className="launcher-card" onClick={() => onNavigate('RECOVERY')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-pink">
+            <RefreshCw size={18} />
+          </div>
           <h4>Recovery Engine</h4>
           <p>{plans.length} reclamation opportunities scanned by quantitative EV analysis.</p>
-          <span className="q-link">Open GC Engine ➔</span>
+          <span className="launcher-link text-accent-pink">
+            <span>Open GC Engine</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('POLICIES')} role="button" tabIndex={0}>
-          <div className="q-icon">🛡️</div>
+        <div className="launcher-card" onClick={() => onNavigate('POLICIES')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-blue">
+            <ShieldCheck size={18} />
+          </div>
           <h4>Policy Guard</h4>
           <p>Deterministic spend caps, velocity limits, and counterparty whitelists.</p>
-          <span className="q-link">Configure Policies ➔</span>
+          <span className="launcher-link">
+            <span>Configure Policies</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('AGENT_BUILDER')} role="button" tabIndex={0}>
-          <div className="q-icon">＋</div>
+        <div className="launcher-card" onClick={() => onNavigate('AGENT_BUILDER')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-mint">
+            <PlusCircle size={18} />
+          </div>
           <h4>Publish An Agent</h4>
           <p>Connect a wallet and publish a real ERC-8004 identity on Monad Testnet.</p>
-          <span className="q-link">Open Agent Builder ➔</span>
+          <span className="launcher-link text-mint">
+            <span>Open Builder</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('ESCROW')} role="button" tabIndex={0}>
-          <div className="q-icon">🔒</div>
+        <div className="launcher-card" onClick={() => onNavigate('ESCROW')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-purple">
+            <Lock size={18} />
+          </div>
           <h4>Conditional Escrow</h4>
           <p>Trustless milestone-based value locks with automated SLA and proof validation.</p>
-          <span className="q-link">Manage Escrows ➔</span>
+          <span className="launcher-link">
+            <span>Manage Escrows</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('MARKETPLACE')} role="button" tabIndex={0}>
-          <div className="q-icon">🧭</div>
+        <div className="launcher-card" onClick={() => onNavigate('MARKETPLACE')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-cyan">
+            <Compass size={18} />
+          </div>
           <h4>Service Marketplace</h4>
           <p>Decentralized AI services, GPU compute, and satellite feeds evaluated by Qwen.</p>
-          <span className="q-link">Discover Services ➔</span>
+          <span className="launcher-link">
+            <span>Discover Services</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
 
-        <div className="econ-card econ-card-interactive" onClick={() => onNavigate('SIMULATION_SLICE')} role="button" tabIndex={0}>
-          <div className="q-icon">▶️</div>
+        <div className="launcher-card" onClick={() => onNavigate('SIMULATION_SLICE')} role="button" tabIndex={0}>
+          <div className="launcher-icon-box icon-gold">
+            <Play size={18} />
+          </div>
           <h4>10-Step Simulation</h4>
           <p>Step-by-step verification of autonomous economic loop from discovery to value reclamation.</p>
-          <span className="q-link">Run Simulation ➔</span>
+          <span className="launcher-link text-gold">
+            <span>Run Simulation</span>
+            <ArrowUpRight size={13} className="launcher-arrow" />
+          </span>
         </div>
       </div>
 
-      {/* Revenue Model Panel */}
-      <div className="econ-card" style={{ marginTop: '20px', padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+      {/* Protocol Revenue Architecture Panel */}
+      <div className="econ-card revenue-panel-card">
+        <div className="revenue-panel-header">
           <div>
-            <span className="econ-eyebrow" style={{ color: '#00E599' }}>// PROTOCOL REVENUE MODEL</span>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#FFF', margin: '6px 0 4px 0' }}>ECON REVENUE STREAMS</h3>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-              ECON earns when it creates or facilitates economic value — through settlement, commerce, infrastructure, and recovered value.
+            <div className="revenue-eyebrow-row">
+              <Coins size={13} className="text-mint" />
+              <span className="revenue-eyebrow">PROTOCOL REVENUE ARCHITECTURE</span>
+            </div>
+            <h3 className="revenue-title">ECON Revenue Streams</h3>
+            <p className="revenue-desc">
+              ECON captures protocol fees only when creating verifiable economic utility — through settlement, commerce, infrastructure, and recovered value.
             </p>
           </div>
-          <span className="econ-badge econ-badge-lime">4 STREAMS ACTIVE</span>
+          <span className="revenue-active-badge">4 STREAMS ACTIVE</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+        <div className="revenue-streams-grid">
           {/* Transaction Fee */}
-          <div style={{ background: 'rgba(0,229,153,0.07)', border: '1px solid rgba(0,229,153,0.18)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#00E599' }}>TRANSACTION FEE</span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#00E599' }}>{TRANSACTION_FEE_BPS / 100}%</span>
+          <div className="revenue-stream-card stream-mint">
+            <div className="stream-top">
+              <span className="stream-name">TRANSACTION FEE</span>
+              <span className="stream-rate">{(TRANSACTION_FEE_BPS / 100).toFixed(2)}%</span>
             </div>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>On eligible ECON-settled transactions</p>
-            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+            <p className="stream-desc">On eligible ECON-settled agent transactions</p>
+            <div className="stream-example">
               10 MON → {(10 * TRANSACTION_FEE_BPS / 10000).toFixed(3)} fee → {(10 - 10 * TRANSACTION_FEE_BPS / 10000).toFixed(3)} net
             </div>
           </div>
 
           {/* Marketplace Fee */}
-          <div style={{ background: 'rgba(131,110,249,0.07)', border: '1px solid rgba(131,110,249,0.2)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#836EF9' }}>MARKETPLACE FEE</span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#836EF9' }}>{MARKETPLACE_FEE_BPS / 100}%</span>
+          <div className="revenue-stream-card stream-purple">
+            <div className="stream-top">
+              <span className="stream-name">MARKETPLACE FEE</span>
+              <span className="stream-rate">{(MARKETPLACE_FEE_BPS / 100).toFixed(2)}%</span>
             </div>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>On economic object marketplace purchases</p>
-            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+            <p className="stream-desc">On economic object and service purchases</p>
+            <div className="stream-example">
               10 MON → {(10 * MARKETPLACE_FEE_BPS / 10000).toFixed(3)} fee → {(10 - 10 * MARKETPLACE_FEE_BPS / 10000).toFixed(3)} net
             </div>
           </div>
 
           {/* Recovery Fee */}
-          <div style={{ background: 'rgba(255,94,120,0.07)', border: '1px solid rgba(255,94,120,0.2)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#FF5E78' }}>RECOVERY FEE</span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#FF5E78' }}>{RECOVERY_FEE_BPS / 100}%</span>
+          <div className="revenue-stream-card stream-pink">
+            <div className="stream-top">
+              <span className="stream-name">RECOVERY FEE</span>
+              <span className="stream-rate">{(RECOVERY_FEE_BPS / 100).toFixed(2)}%</span>
             </div>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>Of successfully recovered stranded value</p>
-            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.8 }}>
+            <p className="stream-desc">Of successfully reclaimed stranded protocol value</p>
+            <div className="stream-example">
               4 MON → {(4 * RECOVERY_FEE_BPS / 10000).toFixed(3)} fee → {(4 - 4 * RECOVERY_FEE_BPS / 10000).toFixed(3)} net
             </div>
           </div>
 
           {/* Agent Plans */}
-          <div style={{ background: 'rgba(255,208,0,0.06)', border: '1px solid rgba(255,208,0,0.18)', borderRadius: '10px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: '#FFD000' }}>AGENT PLANS</span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '14px', color: '#FFD000' }}>SaaS</span>
+          <div className="revenue-stream-card stream-gold">
+            <div className="stream-top">
+              <span className="stream-name">AGENT PLANS</span>
+              <span className="stream-rate">SaaS</span>
             </div>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 10px 0', lineHeight: 1.5 }}>Recurring infrastructure subscriptions</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <p className="stream-desc">Recurring enterprise infrastructure subscriptions</p>
+            <div className="stream-plan-list">
               {(['FREE', 'BUILDER', 'ENTERPRISE'] as const).map((tier) => (
-                <div key={tier} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'monospace', fontSize: '10px' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.45)' }}>{AGENT_PLANS[tier].label}</span>
-                  <span style={{ color: '#FFD000', fontWeight: 700 }}>
+                <div key={tier} className="stream-plan-row">
+                  <span className="plan-label">{AGENT_PLANS[tier].label}</span>
+                  <span className="plan-cost">
                     {tier === 'FREE' ? 'FREE' : tier === 'ENTERPRISE' ? 'CUSTOM' : `${AGENT_PLANS[tier].monthlyMon} MON/mo`}
                   </span>
                 </div>
@@ -705,10 +703,10 @@ export const ConsoleOverview: React.FC<ConsoleOverviewProps> = ({
           </div>
         </div>
 
-        <div style={{ marginTop: '14px', padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '14px' }}>⚖️</span>
-          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
-            <strong style={{ color: 'rgba(255,255,255,0.75)' }}>Fee engine rule:</strong> Transaction and marketplace fees are mutually exclusive — the fee engine routes each transaction to exactly one stream. Recovery fees never stack with other fees.
+        <div className="revenue-rule-strip">
+          <Scale size={14} className="text-secondary" />
+          <span>
+            <strong>Deterministic fee routing rule:</strong> Transaction and marketplace fees are mutually exclusive — the fee engine routes each execution to exactly one stream. Recovery fees never stack with execution fees.
           </span>
         </div>
       </div>

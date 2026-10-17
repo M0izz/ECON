@@ -18,6 +18,19 @@ export type ConsoleTab =
   | 'API_SDK'
   | 'AGENT_BUILDER';
 
+import {
+  LayoutDashboard,
+  Users,
+  Wrench,
+  Boxes,
+  Compass,
+  FileText,
+  Lock,
+  Play,
+  RefreshCw,
+  ShieldCheck,
+  Code2,
+} from 'lucide-react';
 import { ECONPasskeyPublicMetadata } from '../../integrations/mera/meraTypes';
 import { DynamicWalletDetails } from '../../integrations/dynamic';
 import { DynamicAuthButton } from '../dynamic/DynamicAuthButton';
@@ -240,7 +253,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'OVERVIEW' ? 'active' : ''}`}
               onClick={() => onSelectTab('OVERVIEW')}
             >
-              <span className="s-icon">📊</span>
+              <LayoutDashboard size={15} className="s-icon-svg" />
               <span>Overview</span>
             </button>
           </div>
@@ -252,28 +265,28 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'AGENTS' ? 'active' : ''}`}
               onClick={() => onSelectTab('AGENTS')}
             >
-              <span className="s-icon">🪪</span>
+              <Users size={15} className="s-icon-svg" />
               <span>Agents & Passports</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'AGENT_BUILDER' ? 'active' : ''}`}
               onClick={() => onSelectTab('AGENT_BUILDER')}
             >
-              <span className="s-icon">⚙️</span>
+              <Wrench size={15} className="s-icon-svg" />
               <span>Agent Builder</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'ASSETS' ? 'active' : ''}`}
               onClick={() => onSelectTab('ASSETS')}
             >
-              <span className="s-icon">💎</span>
+              <Boxes size={15} className="s-icon-svg" />
               <span>Economic Objects</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'MARKETPLACE' ? 'active' : ''}`}
               onClick={() => onSelectTab('MARKETPLACE')}
             >
-              <span className="s-icon">🌐</span>
+              <Compass size={15} className="s-icon-svg" />
               <span>Discovery Market</span>
             </button>
           </div>
@@ -285,21 +298,21 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'TRANSACTIONS' ? 'active' : ''}`}
               onClick={() => onSelectTab('TRANSACTIONS')}
             >
-              <span className="s-icon">📜</span>
+              <FileText size={15} className="s-icon-svg" />
               <span>Audit Ledger</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'ESCROW' ? 'active' : ''}`}
               onClick={() => onSelectTab('ESCROW')}
             >
-              <span className="s-icon">🔒</span>
+              <Lock size={15} className="s-icon-svg" />
               <span>Escrow Contracts</span>
             </button>
             <button
               className={`sidebar-link ${currentTab === 'SIMULATION_SLICE' ? 'active' : ''}`}
               onClick={() => onSelectTab('SIMULATION_SLICE')}
             >
-              <span className="s-icon">▶️</span>
+              <Play size={15} className="s-icon-svg" />
               <span>10-Step Simulation</span>
             </button>
           </div>
@@ -311,7 +324,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link recovery-link ${currentTab === 'RECOVERY' ? 'active' : ''}`}
               onClick={() => onSelectTab('RECOVERY')}
             >
-              <span className="s-icon">♻️</span>
+              <RefreshCw size={15} className="s-icon-svg" />
               <span>Economic GC</span>
               <span className="sidebar-pill-badge">{derived.totalStrandedValueMon.toFixed(1)}M</span>
             </button>
@@ -324,7 +337,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'POLICIES' ? 'active' : ''}`}
               onClick={() => onSelectTab('POLICIES')}
             >
-              <span className="s-icon">🛡️</span>
+              <ShieldCheck size={15} className="s-icon-svg" />
               <span>Policies & Caps</span>
             </button>
           </div>
@@ -336,7 +349,7 @@ export const ConsoleLayout: React.FC<ConsoleLayoutProps> = ({
               className={`sidebar-link ${currentTab === 'API_SDK' ? 'active' : ''}`}
               onClick={() => onSelectTab('API_SDK')}
             >
-              <span className="s-icon">💻</span>
+              <Code2 size={15} className="s-icon-svg" />
               <span>API & SDK Specs</span>
             </button>
           </div>
